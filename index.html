@@ -1,1 +1,121 @@
-NexorAir OK
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nexorair Virtual Airlines | MSFS 2024</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Columna esquerra: Menú d'usuari -->
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-tag">MSFS 2024</span>
+        <h1>NEXORAIR</h1>
+        <p>Virtual Airlines</p>
+      </div>
+
+      <!-- ESTAT 1: Visitant (Login / Registre) -->
+      <div id="guest-panel" class="panel">
+        <div class="auth-tabs">
+          <button type="button" id="tab-login" class="tab-btn active">Iniciar sessió</button>
+          <button type="button" id="tab-register" class="tab-btn">Alta pilot</button>
+        </div>
+
+        <!-- Formulari Login -->
+        <form id="login-form" class="auth-form">
+          <label>
+            Correu electrònic
+            <input type="email" id="login-email" required placeholder="pilot@nexorair.com" />
+          </label>
+          <label>
+            Contrasenya
+            <input type="password" id="login-password" required placeholder="••••••••" />
+          </label>
+          <button type="submit" class="btn-primary">Entrar a cabina</button>
+          <button type="button" id="forgot-password-btn" class="btn-link">Has oblidat la contrasenya?</button>
+        </form>
+
+        <!-- Formulari Registre -->
+        <form id="register-form" class="auth-form hidden">
+          <label>
+            Nom complet *
+            <input type="text" id="reg-fullname" required placeholder="Marc Vila" />
+          </label>
+          <label>
+            Callsign (opcional)
+            <input type="text" id="reg-callsign" placeholder="NXR102" maxlength="9" />
+          </label>
+          <label>
+            Correu electrònic *
+            <input type="email" id="reg-email" required placeholder="pilot@nexorair.com" />
+          </label>
+          <label>
+            Contrasenya *
+            <input type="password" id="reg-password" required minlength="6" placeholder="Mínim 6 caràcters" />
+          </label>
+          <label>
+            SimBrief ID (opcional)
+            <input type="text" id="reg-simbrief" inputmode="numeric" placeholder="123456" />
+          </label>
+          <label>
+            VATSIM ID (opcional)
+            <input type="text" id="reg-vatsim" inputmode="numeric" placeholder="1548920" />
+          </label>
+          <label>
+            IVAO ID (opcional)
+            <input type="text" id="reg-ivao" inputmode="numeric" placeholder="642190" />
+          </label>
+          <button type="submit" class="btn-primary">Sol·licitar alta</button>
+        </form>
+
+        <p id="auth-message" class="auth-message" role="alert"></p>
+      </div>
+
+      <!-- ESTAT 2: Pilot connectat -->
+      <div id="user-panel" class="panel hidden">
+        <div class="pilot-card">
+          <div class="pilot-header">
+            <span id="pilot-callsign" class="callsign-badge">NXR---</span>
+            <span id="pilot-role" class="role-badge">pilot</span>
+          </div>
+          <h2 id="pilot-name">Carregant...</h2>
+          <p id="pilot-rank" class="pilot-rank">Cadet</p>
+          <div class="pilot-stats">
+            <div>
+              <strong id="pilot-hours">0.00</strong>
+              <span>Hores</span>
+            </div>
+            <div>
+              <strong id="pilot-flights">0</strong>
+              <span>Vols</span>
+            </div>
+          </div>
+        </div>
+
+        <nav class="side-nav">
+          <a href="#" class="nav-item active">Tauler principal</a>
+          <a href="#" class="nav-item">Flota</a>
+          <a href="#" class="nav-item">Rutes</a>
+          <a href="#" class="nav-item">Enviar PIREP</a>
+          <a href="#" class="nav-item">El meu perfil</a>
+          <a href="#" id="nav-admin" class="nav-item admin-link hidden">Administració</a>
+        </nav>
+
+        <button type="button" id="logout-btn" class="btn-secondary">Tancar sessió</button>
+      </div>
+    </aside>
+
+    <!-- Àrea principal (la definirem més endavant) -->
+    <main class="main-content">
+      <div class="placeholder-box">
+        <h2>Benvingut a Nexorair</h2>
+        <p>Àrea principal pendent de definir. Prova primer el menú d'usuari de l'esquerra.</p>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
