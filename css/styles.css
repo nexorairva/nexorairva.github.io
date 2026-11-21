@@ -1,19 +1,22 @@
 :root {
   --nx-green: #0B5E3B;
-  --nx-green-dark: #073d26;
+  --nx-green-dark: #07442a;
   --nx-lime: #7ED321;
-  --nx-lime-hover: #6ec019;
+  --nx-lime-hover: #6bc016;
   --nx-gray: #9AA4B2;
   --nx-white: #F4F6F8;
 
-  /* Fons de cabina derivats de la paleta */
-  --bg-main: #07110d;
-  --bg-sidebar: #0b1913;
-  --bg-card: #10241b;
-  --border: rgba(154, 164, 178, 0.22);
+  /* Superficies claras y neutras */
+  --bg-main: #F4F6F8;
+  --bg-sidebar: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-input: #F8FAFC;
+  --text-main: #0F241B;
+  --text-muted: #5C6775;
+  --border: #D5DCE4;
 
-  --danger: #f87171;
-  --success: #7ED321;
+  --danger: #DC2626;
+  --success: #0B5E3B;
 }
 
 * {
@@ -25,17 +28,17 @@
 body {
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg-main);
-  color: var(--nx-white);
+  color: var(--text-main);
   min-height: 100vh;
 }
 
 .app-layout {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 320px minmax(0, 1fr);
   min-height: 100vh;
 }
 
-/* Columna esquerra */
+/* Columna izquierda: Menú de usuario */
 .sidebar {
   background-color: var(--bg-sidebar);
   border-right: 1px solid var(--border);
@@ -49,13 +52,15 @@ body {
 .brand {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  padding-bottom: 1rem;
+  align-items: flex-start;
+  gap: 0.45rem;
+  padding-bottom: 1.15rem;
   border-bottom: 1px solid var(--border);
 }
 
 .brand-logo {
-  max-width: 190px;
+  max-width: 210px;
+  width: 100%;
   height: auto;
   display: block;
 }
@@ -63,27 +68,31 @@ body {
 .brand-tag {
   font-size: 0.7rem;
   letter-spacing: 0.14em;
-  color: var(--nx-lime);
+  color: var(--nx-green);
+  background: rgba(126, 211, 33, 0.18);
+  border: 1px solid rgba(11, 94, 59, 0.2);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
   font-weight: 700;
   text-transform: uppercase;
 }
 
 .brand h1 {
-  font-size: 1.55rem;
-  letter-spacing: 0.06em;
-  color: var(--nx-white);
+  font-size: 1.5rem;
+  letter-spacing: 0.05em;
+  color: var(--nx-green);
 }
 
 .brand p {
   font-size: 0.85rem;
-  color: var(--nx-gray);
+  color: var(--text-muted);
 }
 
 .hidden {
   display: none !important;
 }
 
-/* Pestanyes Login / Alta */
+/* Pestañas Login / Alta */
 .auth-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -97,13 +106,17 @@ body {
 .tab-btn {
   background: transparent;
   border: none;
-  color: var(--nx-gray);
-  padding: 0.5rem;
+  color: var(--text-muted);
+  padding: 0.55rem;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
   font-size: 0.85rem;
   transition: all 0.15s ease;
+}
+
+.tab-btn:hover {
+  color: var(--text-main);
 }
 
 .tab-btn.active {
@@ -122,42 +135,47 @@ body {
   flex-direction: column;
   gap: 0.3rem;
   font-size: 0.8rem;
-  color: var(--nx-gray);
+  font-weight: 600;
+  color: var(--text-muted);
 }
 
 .auth-form input {
-  background: var(--bg-main);
+  background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 0.55rem 0.7rem;
-  color: var(--nx-white);
+  padding: 0.58rem 0.72rem;
+  color: var(--text-main);
   font-size: 0.9rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .auth-form input::placeholder {
-  color: rgba(154, 164, 178, 0.5);
+  color: var(--nx-gray);
 }
 
 .auth-form input:focus {
   outline: none;
-  border-color: var(--nx-lime);
+  border-color: var(--nx-green);
+  box-shadow: 0 0 0 3px rgba(126, 211, 33, 0.22);
+  background: #FFFFFF;
 }
 
 .btn-primary,
 .btn-secondary {
   border: none;
   border-radius: 6px;
-  padding: 0.65rem;
+  padding: 0.68rem;
   font-weight: 700;
   cursor: pointer;
   font-size: 0.9rem;
   margin-top: 0.3rem;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .btn-primary {
   background: var(--nx-lime);
-  color: #062115;
+  color: #092416;
+  border: 1px solid rgba(11, 94, 59, 0.25);
 }
 
 .btn-primary:hover {
@@ -165,8 +183,8 @@ body {
 }
 
 .btn-secondary {
-  background: var(--bg-card);
-  color: var(--nx-white);
+  background: var(--bg-main);
+  color: var(--text-main);
   border: 1px solid var(--border);
   width: 100%;
   margin-top: auto;
@@ -175,12 +193,13 @@ body {
 .btn-secondary:hover {
   border-color: var(--danger);
   color: var(--danger);
+  background: #FEF2F2;
 }
 
 .btn-link {
   background: none;
   border: none;
-  color: var(--nx-gray);
+  color: var(--text-muted);
   font-size: 0.8rem;
   text-align: left;
   cursor: pointer;
@@ -188,7 +207,7 @@ body {
 }
 
 .btn-link:hover {
-  color: var(--nx-lime);
+  color: var(--nx-green);
 }
 
 .auth-message {
@@ -197,10 +216,16 @@ body {
   line-height: 1.4;
 }
 
-.auth-message.error { color: var(--danger); }
-.auth-message.success { color: var(--success); }
+.auth-message.error {
+  color: var(--danger);
+}
 
-/* Fitxa pilot connectat */
+.auth-message.success {
+  color: var(--success);
+  font-weight: 600;
+}
+
+/* Ficha de piloto conectado */
 #user-panel {
   display: flex;
   flex-direction: column;
@@ -209,10 +234,12 @@ body {
 }
 
 .pilot-card {
-  background: linear-gradient(145deg, var(--nx-green), var(--bg-card));
-  border: 1px solid rgba(126, 211, 33, 0.35);
+  background: linear-gradient(155deg, var(--nx-green), var(--nx-green-dark));
+  border: 1px solid rgba(126, 211, 33, 0.45);
   border-radius: 10px;
   padding: 1rem;
+  color: var(--nx-white);
+  box-shadow: 0 4px 12px rgba(11, 94, 59, 0.12);
 }
 
 .pilot-header {
@@ -223,10 +250,9 @@ body {
 }
 
 .callsign-badge {
-  background: rgba(126, 211, 33, 0.18);
-  color: var(--nx-lime);
-  border: 1px solid rgba(126, 211, 33, 0.4);
-  font-weight: 700;
+  background: var(--nx-lime);
+  color: #082214;
+  font-weight: 800;
   font-size: 0.8rem;
   padding: 0.2rem 0.55rem;
   border-radius: 4px;
@@ -237,7 +263,8 @@ body {
   font-size: 0.72rem;
   text-transform: uppercase;
   color: var(--nx-white);
-  opacity: 0.85;
+  opacity: 0.9;
+  letter-spacing: 0.04em;
 }
 
 .pilot-card h2 {
@@ -258,7 +285,7 @@ body {
   gap: 0.5rem;
   margin-top: 0.9rem;
   padding-top: 0.8rem;
-  border-top: 1px solid rgba(244, 246, 248, 0.15);
+  border-top: 1px solid rgba(244, 246, 248, 0.18);
 }
 
 .pilot-stats strong {
@@ -269,7 +296,7 @@ body {
 
 .pilot-stats span {
   font-size: 0.75rem;
-  color: var(--nx-gray);
+  color: rgba(244, 246, 248, 0.75);
 }
 
 .side-nav {
@@ -283,16 +310,17 @@ body {
   align-items: center;
   gap: 0.65rem;
   text-decoration: none;
-  color: var(--nx-gray);
-  padding: 0.6rem 0.8rem;
+  color: var(--text-muted);
+  padding: 0.62rem 0.8rem;
   border-radius: 6px;
   font-size: 0.9rem;
+  font-weight: 500;
   transition: background 0.15s, color 0.15s;
 }
 
 .nav-item:hover {
-  background: var(--bg-card);
-  color: var(--nx-white);
+  background: var(--bg-main);
+  color: var(--text-main);
 }
 
 .nav-item.active {
@@ -305,31 +333,39 @@ body {
   border-left: 3px solid var(--nx-lime);
 }
 
-/* Àrea dreta */
+/* Área principal */
 .main-content {
   padding: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
 }
 
 .placeholder-box {
-  border: 1px dashed var(--border);
-  background: var(--bg-sidebar);
+  border: 1px dashed var(--nx-gray);
+  background: #FFFFFF;
   border-radius: 12px;
   padding: 2.5rem;
   text-align: center;
-  max-width: 480px;
-  color: var(--nx-gray);
+  max-width: 520px;
+  width: 100%;
+  color: var(--text-muted);
+  box-shadow: 0 2px 10px rgba(15, 36, 27, 0.04);
 }
 
 .placeholder-box h2 {
-  color: var(--nx-white);
+  color: var(--nx-green);
   margin-bottom: 0.5rem;
 }
 
 @media (max-width: 768px) {
   .app-layout {
     grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
   }
 }
