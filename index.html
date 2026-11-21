@@ -9,108 +9,132 @@
 </head>
 <body>
   <div class="app-layout">
-    <!-- Columna esquerra: Menú d'usuari -->
+    <!-- Columna izquierda: Menú de usuario -->
     <aside class="sidebar">
-        <div class="brand">
-            <img src="assets/img/logo.png" alt="Nexorair Virtual Airlines" class="brand-logo" />
-        </div>
+      <div class="brand">
+        <img src="assets/img/logo.png" alt="Nexorair Virtual Airlines" class="brand-logo" />
+      </div>
 
-      <!-- ESTAT 1: Visitant (Login / Registre) -->
+      <!-- Selector de idioma debajo de la línea del logo -->
+      <div class="lang-switcher" aria-label="Idioma / Language">
+        <button type="button" class="lang-btn active" data-lang="es" title="Español">
+          <svg width="22" height="15" viewBox="0 0 22 15" aria-hidden="true">
+            <rect width="22" height="15" rx="2" fill="#AA151B"/>
+            <rect y="3.75" width="22" height="7.5" fill="#F1BF00"/>
+          </svg>
+          <span>ES</span>
+        </button>
+        <button type="button" class="lang-btn" data-lang="en" title="English">
+          <svg width="22" height="15" viewBox="0 0 60 30" aria-hidden="true">
+            <clipPath id="uk-clip"><rect width="60" height="30" rx="4"/></clipPath>
+            <g clip-path="url(#uk-clip)">
+              <rect width="60" height="30" fill="#012169"/>
+              <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+              <path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="2"/>
+              <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
+              <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/>
+            </g>
+          </svg>
+          <span>EN</span>
+        </button>
+      </div>
+
+      <!-- ESTADO 1: Visitante (Login / Registro) -->
       <div id="guest-panel" class="panel">
         <div class="auth-tabs">
-          <button type="button" id="tab-login" class="tab-btn active">Iniciar sessió</button>
-          <button type="button" id="tab-register" class="tab-btn">Alta pilot</button>
+          <button type="button" id="tab-login" class="tab-btn active" data-i18n="tab_login">Iniciar sesión</button>
+          <button type="button" id="tab-register" class="tab-btn" data-i18n="tab_register">Alta piloto</button>
         </div>
 
-        <!-- Formulari Login -->
+        <!-- Formulario Login -->
         <form id="login-form" class="auth-form">
           <label>
-            Correu electrònic
+            <span data-i18n="label_email">Correo electrónico</span>
             <input type="email" id="login-email" required placeholder="pilot@nexorair.com" />
           </label>
           <label>
-            Contrasenya
+            <span data-i18n="label_password">Contraseña</span>
             <input type="password" id="login-password" required placeholder="••••••••" />
           </label>
-          <button type="submit" class="btn-primary">Entrar a cabina</button>
-          <button type="button" id="forgot-password-btn" class="btn-link">Has oblidat la contrasenya?</button>
+          <button type="submit" class="btn-primary" data-i18n="btn_login">Entrar a cabina</button>
+          <button type="button" id="forgot-password-btn" class="btn-link" data-i18n="btn_forgot">¿Has olvidado tu contraseña?</button>
         </form>
 
-        <!-- Formulari Registre -->
+        <!-- Formulario Registro -->
         <form id="register-form" class="auth-form hidden">
           <label>
-            Nom complet *
-            <input type="text" id="reg-fullname" required placeholder="Marc Vila" />
+            <span data-i18n="label_fullname">Nombre completo *</span>
+            <input type="text" id="reg-fullname" required data-i18n-placeholder="ph_fullname" placeholder="Carlos Mendoza" />
           </label>
           <label>
-            Callsign (opcional)
+            <span data-i18n="label_callsign">Callsign</span>
             <input type="text" id="reg-callsign" placeholder="NXR102" maxlength="9" />
           </label>
           <label>
-            Correu electrònic *
+            <span data-i18n="label_email_req">Correo electrónico *</span>
             <input type="email" id="reg-email" required placeholder="pilot@nexorair.com" />
           </label>
           <label>
-            Contrasenya *
-            <input type="password" id="reg-password" required minlength="6" placeholder="Mínim 6 caràcters" />
+            <span data-i18n="label_password_req">Contraseña *</span>
+            <input type="password" id="reg-password" required minlength="6" data-i18n-placeholder="ph_password_min" placeholder="Mínimo 6 caracteres" />
           </label>
           <label>
-            SimBrief ID (opcional)
+            <span data-i18n="label_simbrief">SimBrief ID (opcional)</span>
             <input type="text" id="reg-simbrief" inputmode="numeric" placeholder="123456" />
           </label>
           <label>
-            VATSIM ID (opcional)
+            <span data-i18n="label_vatsim">VATSIM ID</span>
             <input type="text" id="reg-vatsim" inputmode="numeric" placeholder="1548920" />
           </label>
           <label>
-            IVAO ID (opcional)
+            <span data-i18n="label_ivao">IVAO ID</span>
             <input type="text" id="reg-ivao" inputmode="numeric" placeholder="642190" />
           </label>
-          <button type="submit" class="btn-primary">Sol·licitar alta</button>
+          <button type="submit" class="btn-primary" data-i18n="btn_register">Solicitar alta</button>
         </form>
 
         <p id="auth-message" class="auth-message" role="alert"></p>
       </div>
 
-      <!-- ESTAT 2: Pilot connectat -->
+      <!-- ESTADO 2: Piloto conectado -->
       <div id="user-panel" class="panel hidden">
         <div class="pilot-card">
           <div class="pilot-header">
             <span id="pilot-callsign" class="callsign-badge">NXR---</span>
             <span id="pilot-role" class="role-badge">pilot</span>
           </div>
-          <h2 id="pilot-name">Carregant...</h2>
+          <h2 id="pilot-name">Cargando...</h2>
           <p id="pilot-rank" class="pilot-rank">Cadet</p>
           <div class="pilot-stats">
             <div>
               <strong id="pilot-hours">0.00</strong>
-              <span>Hores</span>
+              <span data-i18n="stat_hours">Horas</span>
             </div>
             <div>
               <strong id="pilot-flights">0</strong>
-              <span>Vols</span>
+              <span data-i18n="stat_flights">Vuelos</span>
             </div>
           </div>
         </div>
 
         <nav class="side-nav">
-          <a href="#" class="nav-item active">Tauler principal</a>
-          <a href="#" class="nav-item">Flota</a>
-          <a href="#" class="nav-item">Rutes</a>
-          <a href="#" class="nav-item">Enviar PIREP</a>
-          <a href="#" class="nav-item">El meu perfil</a>
-          <a href="#" id="nav-admin" class="nav-item admin-link hidden">Administració</a>
+          <a href="#" class="nav-item active" data-i18n="nav_dashboard">Panel principal</a>
+          <a href="#" class="nav-item" data-i18n="nav_fleet">Flota</a>
+          <a href="#" class="nav-item" data-i18n="nav_routes">Rutas</a>
+          <a href="#" class="nav-item" data-i18n="nav_pirep">Enviar PIREP</a>
+          <a href="#" class="nav-item" data-i18n="nav_profile">Mi perfil</a>
+          <a href="#" id="nav-admin" class="nav-item admin-link hidden" data-i18n="nav_admin">Administración</a>
         </nav>
 
-        <button type="button" id="logout-btn" class="btn-secondary">Tancar sessió</button>
+        <button type="button" id="logout-btn" class="btn-secondary" data-i18n="btn_logout">Cerrar sesión</button>
       </div>
     </aside>
 
-    <!-- Àrea principal (la definirem més endavant) -->
+    <!-- Área principal -->
     <main class="main-content">
       <div class="placeholder-box">
-        <h2>Benvingut a Nexorair</h2>
-        <p>Àrea principal pendent de definir. Prova primer el menú d'usuari de l'esquerra.</p>
+        <h2 data-i18n="welcome_title">Bienvenido a Nexorair</h2>
+        <p data-i18n="welcome_desc">Área principal pendiente de definir. Prueba primero el menú de usuario de la izquierda.</p>
       </div>
     </main>
   </div>

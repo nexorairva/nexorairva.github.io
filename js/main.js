@@ -6,6 +6,7 @@ import {
   signOutPilot,
   getPilotProfile,
 } from './auth.js';
+import { setLanguage, getLang, t } from './i18n.js';
 
 const guestPanel = document.getElementById('guest-panel');
 const userPanel = document.getElementById('user-panel');
@@ -25,7 +26,17 @@ function clearMessage() {
   authMessage.className = 'auth-message';
 }
 
-// Canvi entre pestanyes Login / Alta
+// Inicializar idioma guardado y eventos de las banderas
+setLanguage(getLang());
+
+document.querySelectorAll('.lang-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    setLanguage(btn.dataset.lang);
+    clearMessage();
+  });
+});
+
+// Cambio entre pestañas Login / Alta
 tabLogin.addEventListener('click', () => {
   tabLogin.classList.add('active');
   tabRegister.classList.remove('active');
@@ -52,11 +63,11 @@ loginForm.addEventListener('submit', async (e) => {
   try {
     await signInPilot(email, password);
   } catch (err) {
-    showMessage(err.message || 'No s’ha pogut iniciar sessió.');
+    showMessage(err.message || t('msg_login_err'));
   }
 });
 
-// Enviar Registre
+// Enviar Registro
 registerForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   clearMessage();
@@ -74,38 +85,38 @@ registerForm.addEventListener('submit', async (e) => {
   try {
     const data = await signUpPilot(payload);
     if (data.session) {
-      showMessage('Compte creat i sessió iniciada!', 'success');
+      showMessage(t('msg_reg_ok_session'), 'success');
     } else {
-      showMessage('Revisa el teu correu electrònic per confirmar el compte.', 'success');
+      showMessage(t('msg_reg_ok_email'), 'success');
     }
     registerForm.reset();
   } catch (err) {
-    showMessage(err.message || 'Error en crear el compte.');
+    showMessage(err.message || t('msg_reg_err'));
   }
 });
 
-// Oblidar contrasenya
+// Olvidar contraseña
 document.getElementById('forgot-password-btn').addEventListener('click', async () => {
   clearMessage();
   const email = document.getElementById('login-email').value.trim();
   if (!email) {
-    showMessage('Escriu primer el teu correu al camp de dalt i torna a prémer.');
+    showMessage(t('msg_forgot_empty'));
     return;
   }
   try {
     await resetPilotPassword(email);
-    showMessage('T’hem enviat un correu per restablir la contrasenya.', 'success');
+    showMessage(t('msg_forgot_ok'), 'success');
   } catch (err) {
-    showMessage(err.message || 'No s’ha pogut enviar el correu de recuperació.');
+    showMessage(err.message || t('msg_forgot_err'));
   }
 });
 
-// Tancar sessió
+// Cerrar sesión
 document.getElementById('logout-btn').addEventListener('click', async () => {
   await signOutPilot();
 });
 
-// Pintar el menú segons estat de sessió
+// Pintar el menú según estado de sesión
 async function renderSidebar(session) {
   if (!session) {
     guestPanel.classList.remove('hidden');
@@ -132,15 +143,13 @@ async function renderSidebar(session) {
       adminLink.classList.add('hidden');
     }
   } catch (err) {
-    console.error('Error carregant el perfil:', err);
+    console.error('Error cargando el perfil:', err);
   }
 }
 
-// Escoltar canvis de sessió en temps real
 supabase.auth.onAuthStateChange((_event, session) => {
   renderSidebar(session);
 });
 
-// Estat inicial en obrir la pàgina
 const { data: { session } } = await supabase.auth.getSession();
 renderSidebar(session);

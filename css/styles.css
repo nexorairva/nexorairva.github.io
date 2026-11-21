@@ -368,4 +368,41 @@ body {
     border-right: none;
     border-bottom: 1px solid var(--border);
   }
+
+  /* Selector de idioma (banderas) */
+.lang-switcher {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.lang-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.35rem 0.65rem;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+
+.lang-btn:hover {
+  border-color: var(--nx-green);
+  color: var(--text-main);
+}
+
+.lang-btn.active {
+  background: rgba(11, 94, 59, 0.1);
+  border-color: var(--nx-green);
+  color: var(--nx-green);
+}
+
+.lang-btn svg {
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
 }
