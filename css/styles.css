@@ -1,14 +1,19 @@
 :root {
-  --bg-main: #0b1120;
-  --bg-sidebar: #111827;
-  --bg-card: #1e293b;
-  --border: #283548;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --accent: #38bdf8;
-  --accent-hover: #0ea5e9;
+  --nx-green: #0B5E3B;
+  --nx-green-dark: #073d26;
+  --nx-lime: #7ED321;
+  --nx-lime-hover: #6ec019;
+  --nx-gray: #9AA4B2;
+  --nx-white: #F4F6F8;
+
+  /* Fons de cabina derivats de la paleta */
+  --bg-main: #07110d;
+  --bg-sidebar: #0b1913;
+  --bg-card: #10241b;
+  --border: rgba(154, 164, 178, 0.22);
+
   --danger: #f87171;
-  --success: #4ade80;
+  --success: #7ED321;
 }
 
 * {
@@ -18,9 +23,9 @@
 }
 
 body {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg-main);
-  color: var(--text-main);
+  color: var(--nx-white);
   min-height: 100vh;
 }
 
@@ -41,22 +46,37 @@ body {
   overflow-y: auto;
 }
 
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand-logo {
+  max-width: 190px;
+  height: auto;
+  display: block;
+}
+
 .brand-tag {
   font-size: 0.7rem;
-  letter-spacing: 0.12em;
-  color: var(--accent);
+  letter-spacing: 0.14em;
+  color: var(--nx-lime);
   font-weight: 700;
+  text-transform: uppercase;
 }
 
 .brand h1 {
-  font-size: 1.6rem;
+  font-size: 1.55rem;
   letter-spacing: 0.06em;
-  margin-top: 0.15rem;
+  color: var(--nx-white);
 }
 
 .brand p {
   font-size: 0.85rem;
-  color: var(--text-muted);
+  color: var(--nx-gray);
 }
 
 .hidden {
@@ -70,23 +90,25 @@ body {
   background: var(--bg-main);
   padding: 0.25rem;
   border-radius: 8px;
+  border: 1px solid var(--border);
   margin-bottom: 1rem;
 }
 
 .tab-btn {
   background: transparent;
   border: none;
-  color: var(--text-muted);
+  color: var(--nx-gray);
   padding: 0.5rem;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
   font-size: 0.85rem;
+  transition: all 0.15s ease;
 }
 
 .tab-btn.active {
-  background: var(--bg-card);
-  color: var(--text-main);
+  background: var(--nx-green);
+  color: var(--nx-white);
 }
 
 .auth-form {
@@ -100,7 +122,7 @@ body {
   flex-direction: column;
   gap: 0.3rem;
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: var(--nx-gray);
 }
 
 .auth-form input {
@@ -108,13 +130,17 @@ body {
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0.55rem 0.7rem;
-  color: var(--text-main);
+  color: var(--nx-white);
   font-size: 0.9rem;
+}
+
+.auth-form input::placeholder {
+  color: rgba(154, 164, 178, 0.5);
 }
 
 .auth-form input:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--nx-lime);
 }
 
 .btn-primary,
@@ -122,24 +148,25 @@ body {
   border: none;
   border-radius: 6px;
   padding: 0.65rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   font-size: 0.9rem;
   margin-top: 0.3rem;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .btn-primary {
-  background: var(--accent);
-  color: #082f49;
+  background: var(--nx-lime);
+  color: #062115;
 }
 
 .btn-primary:hover {
-  background: var(--accent-hover);
+  background: var(--nx-lime-hover);
 }
 
 .btn-secondary {
   background: var(--bg-card);
-  color: var(--text-main);
+  color: var(--nx-white);
   border: 1px solid var(--border);
   width: 100%;
   margin-top: auto;
@@ -153,11 +180,15 @@ body {
 .btn-link {
   background: none;
   border: none;
-  color: var(--text-muted);
+  color: var(--nx-gray);
   font-size: 0.8rem;
   text-align: left;
   cursor: pointer;
   text-decoration: underline;
+}
+
+.btn-link:hover {
+  color: var(--nx-lime);
 }
 
 .auth-message {
@@ -178,8 +209,8 @@ body {
 }
 
 .pilot-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: linear-gradient(145deg, var(--nx-green), var(--bg-card));
+  border: 1px solid rgba(126, 211, 33, 0.35);
   border-radius: 10px;
   padding: 1rem;
 }
@@ -192,27 +223,32 @@ body {
 }
 
 .callsign-badge {
-  background: rgba(56, 189, 248, 0.15);
-  color: var(--accent);
+  background: rgba(126, 211, 33, 0.18);
+  color: var(--nx-lime);
+  border: 1px solid rgba(126, 211, 33, 0.4);
   font-weight: 700;
   font-size: 0.8rem;
-  padding: 0.2rem 0.5rem;
+  padding: 0.2rem 0.55rem;
   border-radius: 4px;
+  letter-spacing: 0.05em;
 }
 
 .role-badge {
   font-size: 0.72rem;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--nx-white);
+  opacity: 0.85;
 }
 
 .pilot-card h2 {
   font-size: 1.05rem;
+  color: var(--nx-white);
 }
 
 .pilot-rank {
   font-size: 0.82rem;
-  color: var(--accent);
+  color: var(--nx-lime);
+  font-weight: 600;
   margin-top: 0.15rem;
 }
 
@@ -222,17 +258,18 @@ body {
   gap: 0.5rem;
   margin-top: 0.9rem;
   padding-top: 0.8rem;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(244, 246, 248, 0.15);
 }
 
 .pilot-stats strong {
   display: block;
   font-size: 1rem;
+  color: var(--nx-white);
 }
 
 .pilot-stats span {
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--nx-gray);
 }
 
 .side-nav {
@@ -242,22 +279,30 @@ body {
 }
 
 .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
   text-decoration: none;
-  color: var(--text-muted);
+  color: var(--nx-gray);
   padding: 0.6rem 0.8rem;
   border-radius: 6px;
   font-size: 0.9rem;
   transition: background 0.15s, color 0.15s;
 }
 
-.nav-item:hover,
-.nav-item.active {
+.nav-item:hover {
   background: var(--bg-card);
-  color: var(--text-main);
+  color: var(--nx-white);
+}
+
+.nav-item.active {
+  background: var(--nx-green);
+  color: var(--nx-white);
+  font-weight: 600;
 }
 
 .admin-link {
-  border-left: 2px solid var(--accent);
+  border-left: 3px solid var(--nx-lime);
 }
 
 /* Àrea dreta */
@@ -270,15 +315,16 @@ body {
 
 .placeholder-box {
   border: 1px dashed var(--border);
+  background: var(--bg-sidebar);
   border-radius: 12px;
   padding: 2.5rem;
   text-align: center;
   max-width: 480px;
-  color: var(--text-muted);
+  color: var(--nx-gray);
 }
 
 .placeholder-box h2 {
-  color: var(--text-main);
+  color: var(--nx-white);
   margin-bottom: 0.5rem;
 }
 
