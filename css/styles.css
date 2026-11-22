@@ -45,24 +45,26 @@ body {
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
   overflow-y: auto;
 }
 
 .brand {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  text-align: center;
   gap: 0.45rem;
   padding-bottom: 1.15rem;
   border-bottom: 1px solid var(--border);
 }
 
 .brand-logo {
-  max-width: 210px;
+  max-width: 250px;
   width: 100%;
   height: auto;
   display: block;
+  margin: 0 auto;
 }
 
 .brand-tag {
@@ -90,6 +92,44 @@ body {
 
 .hidden {
   display: none !important;
+}
+
+/* Selector de idioma (banderas) */
+.lang-switcher {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.lang-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.35rem 0.65rem;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+
+.lang-btn:hover {
+  border-color: var(--nx-green);
+  color: var(--text-main);
+}
+
+.lang-btn.active {
+  background: rgba(11, 94, 59, 0.1);
+  border-color: var(--nx-green);
+  color: var(--nx-green);
+}
+
+.lang-btn svg {
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
 }
 
 /* Pestañas Login / Alta */
@@ -158,6 +198,21 @@ body {
   border-color: var(--nx-green);
   box-shadow: 0 0 0 3px rgba(126, 211, 33, 0.22);
   background: #FFFFFF;
+}
+
+.checkbox-label {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.5rem !important;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--nx-green);
+  cursor: pointer;
 }
 
 .btn-primary,
@@ -337,9 +392,29 @@ body {
 .main-content {
   padding: 2rem;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   width: 100%;
+}
+
+.content-view {
+  width: 100%;
+  max-width: 920px;
+}
+
+.showcase-banners {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.brand-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(15, 36, 27, 0.08);
 }
 
 .placeholder-box {
@@ -350,6 +425,7 @@ body {
   text-align: center;
   max-width: 520px;
   width: 100%;
+  margin: 2rem auto;
   color: var(--text-muted);
   box-shadow: 0 2px 10px rgba(15, 36, 27, 0.04);
 }
@@ -357,6 +433,101 @@ body {
 .placeholder-box h2 {
   color: var(--nx-green);
   margin-bottom: 0.5rem;
+}
+
+/* Vista Mi perfil */
+.profile-card-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 16px rgba(15, 36, 27, 0.05);
+}
+
+.profile-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.profile-panel-header h2 {
+  color: var(--nx-green);
+  font-size: 1.4rem;
+  margin-bottom: 0.25rem;
+}
+
+.profile-panel-header p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.profile-meta-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rank-pill {
+  background: var(--bg-main);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.2rem 0.65rem;
+  border-radius: 4px;
+}
+
+.profile-form .form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.25rem;
+}
+
+.profile-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.profile-form input {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.62rem 0.75rem;
+  color: var(--text-main);
+  font-size: 0.92rem;
+}
+
+.profile-form input:focus {
+  outline: none;
+  border-color: var(--nx-green);
+  box-shadow: 0 0 0 3px rgba(126, 211, 33, 0.22);
+  background: #FFFFFF;
+}
+
+.profile-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.profile-actions .btn-primary {
+  margin-top: 0;
+  padding: 0.7rem 1.4rem;
+}
+
+.profile-actions .auth-message {
+  margin-top: 0;
 }
 
 @media (max-width: 768px) {
@@ -368,41 +539,10 @@ body {
     border-right: none;
     border-bottom: 1px solid var(--border);
   }
-
-  /* Selector de idioma (banderas) */
-.lang-switcher {
-  display: flex;
-  gap: 0.5rem;
 }
 
-.lang-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: var(--bg-main);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.35rem 0.65rem;
-  cursor: pointer;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  transition: all 0.15s ease;
-}
-
-.lang-btn:hover {
-  border-color: var(--nx-green);
-  color: var(--text-main);
-}
-
-.lang-btn.active {
-  background: rgba(11, 94, 59, 0.1);
-  border-color: var(--nx-green);
-  color: var(--nx-green);
-}
-
-.lang-btn svg {
-  border-radius: 2px;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
-}
+@media (max-width: 640px) {
+  .profile-form .form-grid {
+    grid-template-columns: 1fr;
+  }
 }

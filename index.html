@@ -12,7 +12,7 @@
     <!-- Columna izquierda: Menú de usuario -->
     <aside class="sidebar">
       <div class="brand">
-        <img src="assets/img/logo.png" alt="Nexorair Virtual Airlines" class="brand-logo" />
+        <img src="assets/img/logo_nexora.png" alt="Nexorair Virtual Airlines" class="brand-logo" />
       </div>
 
       <!-- Selector de idioma debajo de la línea del logo -->
@@ -50,11 +50,27 @@
         <form id="login-form" class="auth-form">
           <label>
             <span data-i18n="label_email">Correo electrónico</span>
-            <input type="email" id="login-email" required placeholder="pilot@nexorair.com" />
+            <input
+              type="email"
+              id="login-email"
+              autocomplete="email"
+              required
+              placeholder="pilot@nexorair.com"
+            />
           </label>
           <label>
             <span data-i18n="label_password">Contraseña</span>
-            <input type="password" id="login-password" required placeholder="••••••••" />
+            <input
+              type="password"
+              id="login-password"
+              autocomplete="current-password"
+              required
+              placeholder="••••••••"
+            />
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="remember-email" />
+            <span data-i18n="label_remember_email">Recordar correo</span>
           </label>
           <button type="submit" class="btn-primary" data-i18n="btn_login">Entrar a cabina</button>
           <button type="button" id="forgot-password-btn" class="btn-link" data-i18n="btn_forgot">¿Has olvidado tu contraseña?</button>
@@ -132,10 +148,71 @@
 
     <!-- Área principal -->
     <main class="main-content">
-      <div class="placeholder-box">
-        <h2 data-i18n="welcome_title">Bienvenido a Nexorair</h2>
-        <p data-i18n="welcome_desc">Área principal pendiente de definir. Prueba primero el menú de usuario de la izquierda.</p>
-      </div>
+      <!-- Vista 1: Panel principal -->
+      <section id="view-dashboard" class="content-view">
+        <div class="showcase-banners">
+          <img src="assets/img/banner3.png" alt="Nexorair Virtual Airlines" class="brand-image" />
+          <img src="assets/img/banner31.png" alt="Nexorair Virtual Airlines" class="brand-image" />
+        </div>
+      </section>
+
+      <!-- Vista 2: Mi perfil -->
+      <section id="view-profile" class="content-view hidden">
+        <div class="profile-card-panel">
+          <div class="profile-panel-header">
+            <div>
+              <h2 data-i18n="profile_title">Mi perfil de piloto</h2>
+              <p data-i18n="profile_subtitle">Actualiza tus identificadores de red y aeropuerto base para MSFS 2024.</p>
+            </div>
+            <div class="profile-meta-badges">
+              <span id="profile-readonly-callsign" class="callsign-badge">NXR---</span>
+              <span id="profile-readonly-rank" class="rank-pill">Cadet</span>
+            </div>
+          </div>
+
+          <form id="profile-form" class="profile-form">
+            <div class="form-grid">
+              <label>
+                <span data-i18n="profile_label_fullname">Nombre completo *</span>
+                <input type="text" id="prof-fullname" required />
+              </label>
+
+              <label>
+                <span data-i18n="profile_label_hub">Hub base (ICAO)</span>
+                <input type="text" id="prof-hub" maxlength="4" placeholder="LEBL" style="text-transform: uppercase;" />
+              </label>
+
+              <label>
+                <span data-i18n="profile_label_simbrief">SimBrief ID</span>
+                <input type="text" id="prof-simbrief" inputmode="numeric" placeholder="123456" />
+              </label>
+
+              <label>
+                <span data-i18n="profile_label_vatsim">VATSIM ID</span>
+                <input type="text" id="prof-vatsim" inputmode="numeric" placeholder="1548920" />
+              </label>
+
+              <label>
+                <span data-i18n="profile_label_ivao">IVAO ID</span>
+                <input type="text" id="prof-ivao" inputmode="numeric" placeholder="642190" />
+              </label>
+            </div>
+
+            <div class="profile-actions">
+              <button type="submit" id="save-profile-btn" class="btn-primary" data-i18n="profile_btn_save">Guardar cambios</button>
+              <p id="profile-message" class="auth-message" role="status"></p>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Vista 3: Secciones futuras -->
+      <section id="view-coming-soon" class="content-view hidden">
+        <div class="placeholder-box">
+          <h2 id="coming-soon-heading" data-i18n="coming_soon_title">Sección en preparación</h2>
+          <p data-i18n="coming_soon_desc">Estamos construyendo este módulo para Nexorair MSFS 2024.</p>
+        </div>
+      </section>
     </main>
   </div>
 

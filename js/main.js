@@ -5,6 +5,7 @@ import {
   resetPilotPassword,
   signOutPilot,
   getPilotProfile,
+  updatePilotProfile,
 } from './auth.js';
 import { setLanguage, getLang, t } from './i18n.js';
 
@@ -15,6 +16,91 @@ const tabRegister = document.getElementById('tab-register');
 const loginForm = document.getElementById('login-form');
 const registerForm = document.getElementById('register-form');
 const authMessage = document.getElementById('auth-message');
+const viewDashboard = document.getElementById('view-dashboard');
+const viewProfile = document.getElementById('view-profile');
+const viewComingSoon = document.getElementById('view-coming-soon');
+const profileForm = document.getElementById('profile-form');
+const profileMessage = document.getElementById('profile-message');
+const navItems = document.querySelectorAll('.side-nav .nav-item');
+
+let activeUser = null;
+let activeProfile = null;
+
+function setProfileMessage(text, type = 'error') {
+  profileMessage.textContent = text;
+  profileMessage.className = `auth-message ${type}`;
+}
+
+function fillProfileForm(profile) {
+  activeProfile = profile;
+  document.getElementById('profile-readonly-callsign').textContent = profile.callsign || 'NXR---';
+  document.getElementById('profile-readonly-rank').textContent = profile.rank || 'Cadet';
+  document.getElementById('prof-fullname').value = profile.full_name || '';
+  document.getElementById('prof-hub').value = profile.home_hub_icao || '';
+  document.getElementById('prof-simbrief').value = profile.simbrief_id || '';
+  document.getElementById('prof-vatsim').value = profile.vatsim_id || '';
+  document.getElementById('prof-ivao').value = profile.ivao_id || '';
+}
+
+function switchView(viewName, labelText = '') {
+  viewDashboard.classList.add('hidden');
+  viewProfile.classList.add('hidden');
+  viewComingSoon.classList.add('hidden');
+  profileMessage.textContent = '';
+
+  if (viewName === 'dashboard') {
+    viewDashboard.classList.remove('hidden');
+  } else if (viewName === 'profile') {
+    if (activeProfile) fillProfileForm(activeProfile);
+    viewProfile.classList.remove('hidden');
+  } else {
+    if (labelText) {
+      document.getElementById('coming-soon-heading').textContent = labelText;
+    }
+    viewComingSoon.classList.remove('hidden');
+  }
+}
+
+navItems.forEach((link, idx) => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    navItems.forEach((item) => item.classList.remove('active'));
+    link.classList.add('active');
+
+    if (idx === 0) {
+      switchView('dashboard');
+    } else if (idx === 4) {
+      switchView('profile');
+    } else {
+      switchView('coming-soon', link.textContent.trim());
+    }
+  });
+});
+
+profileForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!activeUser) return;
+
+  setProfileMessage(t('profile_msg_saving'), 'success');
+
+  const updates = {
+    full_name: document.getElementById('prof-fullname').value.trim(),
+    home_hub_icao: document.getElementById('prof-hub').value.trim().toUpperCase() || null,
+    simbrief_id: document.getElementById('prof-simbrief').value.trim() || null,
+    vatsim_id: document.getElementById('prof-vatsim').value.trim() || null,
+    ivao_id: document.getElementById('prof-ivao').value.trim() || null,
+  };
+
+  try {
+    const updated = await updatePilotProfile(activeUser.id, updates);
+    activeProfile = updated;
+    document.getElementById('pilot-name').textContent = updated.full_name;
+    setProfileMessage(t('profile_msg_saved'), 'success');
+  } catch (err) {
+    console.error('Error guardant perfil:', err);
+    setProfileMessage(err.message || t('profile_msg_err'), 'error');
+  }
+});
 
 function showMessage(text, type = 'error') {
   authMessage.textContent = text;
@@ -53,12 +139,29 @@ tabRegister.addEventListener('click', () => {
   clearMessage();
 });
 
+const SAVED_EMAIL_KEY = 'nexorair_saved_email';
+const loginEmailInput = document.getElementById('login-email');
+const rememberEmailCheckbox = document.getElementById('remember-email');
+
+// Carregar correu guardat si existeix
+const savedEmail = localStorage.getItem(SAVED_EMAIL_KEY);
+if (savedEmail) {
+  loginEmailInput.value = savedEmail;
+  rememberEmailCheckbox.checked = true;
+}
+
 // Enviar Login
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   clearMessage();
-  const email = document.getElementById('login-email').value.trim();
+  const email = loginEmailInput.value.trim();
   const password = document.getElementById('login-password').value;
+
+  if (rememberEmailCheckbox.checked) {
+    localStorage.setItem(SAVED_EMAIL_KEY, email);
+  } else {
+    localStorage.removeItem(SAVED_EMAIL_KEY);
+  }
 
   try {
     await signInPilot(email, password);
@@ -114,21 +217,34 @@ document.getElementById('forgot-password-btn').addEventListener('click', async (
 // Cerrar sesión
 document.getElementById('logout-btn').addEventListener('click', async () => {
   await signOutPilot();
+  loginForm.reset();
+  const currentSaved = localStorage.getItem(SAVED_EMAIL_KEY);
+  if (currentSaved) {
+    loginEmailInput.value = currentSaved;
+    rememberEmailCheckbox.checked = true;
+  }
 });
 
 // Pintar el menú según estado de sesión
 async function renderSidebar(session) {
   if (!session) {
+    activeUser = null;
+    activeProfile = null;
+    switchView('dashboard');
     guestPanel.classList.remove('hidden');
     userPanel.classList.add('hidden');
     return;
   }
 
+  activeUser = session.user;
   guestPanel.classList.add('hidden');
   userPanel.classList.remove('hidden');
 
   try {
-    const profile = await getPilotProfile(session.user.id);
+    const profile = await getPilotProfile(session.user);
+    activeProfile = profile;
+    fillProfileForm(profile);
+
     document.getElementById('pilot-callsign').textContent = profile.callsign;
     document.getElementById('pilot-role').textContent = profile.role;
     document.getElementById('pilot-name').textContent = profile.full_name;
