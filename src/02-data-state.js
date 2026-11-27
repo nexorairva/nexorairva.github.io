@@ -85,6 +85,8 @@ function tourProg(tr,pid){const en=(S.enroll[pid]||{})[tr.id];if(!en)return{en:0
 function load(){try{const r=localStorage.getItem(KEY);if(r){const s=JSON.parse(r);if(s&&s.v===3)return s}}catch(e){}return null}
 function save(){if(CL.on){cloudSaveSoon();return}try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){if(!save.w){save.w=1;setTimeout(()=>toast('No hay espacio en el navegador: las imágenes grandes no se guardarán.'),0)}}}
 function notify(pid,text){S.notes.push({id:uid('N'),to:pid,text,ts:Date.now(),read:false})}
+/* avisa a todo el staff que tenga el permiso indicado; en=texto en inglés, go=sección a la que lleva el botón Revisar */
+function notifyStaff(perm,text,en,go){S.pilots.forEach(p=>{if(isStaff(p)&&can(perm,p))S.notes.push({id:uid('N'),to:p.id,text,en:en||text,ts:Date.now(),read:false,go:go||''})})}
 function aud(a,tg){S.audit.push({ts:Date.now(),who:me()?me().name:'sistema',a,tg:tg||''})}
 function flightTx(e){const b=80+e.nm/8,f=e.kind==='free';S.tx.push({id:uid('X'),pilot:e.pilot,pts:Math.round(f?b*.3:b),xp:Math.round((e.mins*.5+15)*(f?.5:1)),why:(f?'Charter ':'Vuelo ')+e.no+' '+e.from+'-'+e.to,ref:'fl:'+e.id,ts:e.depTs})}
 function addEntry(R,pid,f,depTs,plat,o){const nm=dist(f.from,f.to),mins=cmins(nm,f.type)+Math.round((R()-.4)*6);

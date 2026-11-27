@@ -159,13 +159,16 @@ end $$;
 create or replace function public.handle_new_user() returns trigger
 language plpgsql security definer set search_path = public as $$
 declare first_user boolean; md jsonb := coalesce(new.raw_user_meta_data, '{}'::jsonb);
+        v_code text; v_name text;
 begin
   select not exists (select 1 from public.profiles) into first_user;
+  v_code := public.next_pilot_code();
+  v_name := left(coalesce(md->>'name', split_part(new.email,'@',1)), 80);
   insert into public.profiles(id, code, status, rol, net_ok, data)
-  values (new.id, public.next_pilot_code(),
+  values (new.id, v_code,
           case when first_user then 'Active' else 'Pending' end,
           case when first_user then 'admin' end, first_user,
-          jsonb_build_object('name', left(coalesce(md->>'name', split_part(new.email,'@',1)), 80),
+          jsonb_build_object('name', v_name,
                              'country', left(coalesce(md->>'country',''), 2),
                              'user', left(coalesce(md->>'user', split_part(new.email,'@',1)), 40),
                              'platform', case when md->>'platform' = 'IVAO' then 'IVAO' else 'VATSIM' end,
@@ -174,6 +177,21 @@ begin
   values (new.id, jsonb_build_object('vatsim', left(coalesce(md->>'vatsim',''), 20),
                                      'ivao', left(coalesce(md->>'ivao',''), 20),
                                      'simbrief', left(coalesce(md->>'simbrief',''), 40)));
+  -- Aviso al staff: una notificación (campana) para cada admin y cada nivel con permiso "pilotos".
+  if not first_user then
+    insert into public.nx_docs(coll, id, owner, data)
+    select 'notes', x.nid, x.uid,
+           jsonb_build_object('id', x.nid, 'to', x.code,
+             'text', 'Nueva alta pendiente de revisión: ' || v_name || ' (' || v_code || ')',
+             'en',   'New sign-up pending review: '       || v_name || ' (' || v_code || ')',
+             'ts', (extract(epoch from now()) * 1000)::bigint, 'read', false, 'go', 's-pilotos')
+    from (select pr.id as uid, pr.code, 'N-' || replace(gen_random_uuid()::text, '-', '') as nid
+            from public.profiles pr
+           where pr.id <> new.id
+             and (pr.rol = 'admin'
+                  or exists (select 1 from public.nx_docs d
+                              where d.coll = 'roles' and d.id = pr.rol and d.data->'perms' ? 'pilotos'))) x;
+  end if;
   return new;
 end $$;
 drop trigger if exists on_auth_user_created on auth.users;
