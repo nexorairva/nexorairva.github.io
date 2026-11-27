@@ -34,7 +34,7 @@ Object.assign(F,{
   else{const a=S.fleet.find(x=>x.reg===D.reg);a.name=name;a.desc=desc;a.img=D.img.slice();aud('Actualizó aeronave',D.reg)}
   ui.fd=null;done(t('Flota actualizada','Fleet updated'))},
  tb:(d)=>{const D=ui.tb;if(!D.n.trim())return err('tb-err',t('Pon un nombre al tour.','Give the tour a name.'));if(!D.stages.length||D.stages.some(s=>!s.length))return err('tb-err',t('Cada etapa necesita al menos una ruta.','Each stage needs at least one route.'));
-  const o={id:D.id||uid('t'),n:D.n.trim(),type:D.type,ac:D.ac||undefined,pts:+D.pts||0,xp:+D.xp||0,badge:(D.badge||'').trim()||D.n.trim(),stages:D.stages};
+  const o={id:D.id||uid('t'),n:D.n.trim(),type:D.type,ac:D.ac||undefined,pts:+D.pts||0,xp:+D.xp||0,badge:(D.badge||'').trim()||D.n.trim(),remark:(D.remark||'').trim()||undefined,stages:D.stages};
   const i=S.tours.findIndex(x=>x.id===o.id);if(i>=0)S.tours[i]=o;else S.tours.push(o);TOURS=S.tours;ui.tb=null;settle();aud('Guardó tour',o.n);done(t('Tour guardado','Tour saved'))}});
 document.addEventListener('input',e=>{const f=e.target.closest('form[data-f="tb"]');if(f&&e.target.name&&ui.tb){const k=e.target.name;ui.tb[k]=(k==='pts'||k==='xp')?+e.target.value:e.target.value}});
 document.addEventListener('change',async e=>{const x=e.target;

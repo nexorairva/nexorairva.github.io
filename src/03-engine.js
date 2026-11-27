@@ -68,10 +68,10 @@ function go(n){if(location.hash.slice(1)===n)render();else location.hash=n}
 let RT=[],RTOK=false;
 const BITS=[['A20N',1],['A21N',2],['B738',4],['B789',8],['E195',16]];
 async function loadData(){
-  try{const a=await (await fetch('airports.csv')).text();a.split('\n').forEach(l=>{const c=l.split(',');if(c.length>=5&&!APX[c[0]])APX[c[0]]=[+c[1],+c[2],c[3],c[4]]})}catch(e){}
+  try{const a=await (await fetch('airports.csv')).text();a.split('\n').forEach(l=>{const c=l.split(',');if(c.length>=5&&!APX[c[0]])APX[c[0]]=[+c[1],+c[2],c[3],c[4],c[5]||'',c[6]||'',(c[7]||'').trim()]})}catch(e){}
   try{const x=JSON.parse(localStorage.getItem('nexora-va-apx')||'null');if(x)Object.assign(APX,x)}catch(e){}
   try{let r=null;try{r=localStorage.getItem('nexora-va-rt')}catch(e){}if(!r)r=await (await fetch('routes.csv')).text();RT=r.split('\n').filter(Boolean).map(l=>{const c=l.split(',');return[norm(c[0]),norm(c[1]),+c[2]]});RTOK=true}catch(e){}
-  render()}
+  applyApo();render()}
 function importAirports(txt){const o={};let n=0;txt.split(/\r?\n/).forEach(l=>{const m=l.match(/("([^"]*)"|[^,]*)(,|$)/g);if(!m)return;const c=m.map(x=>x.replace(/,$/,'').replace(/^"|"$/g,''));if(c.length<8)return;const iata=c[4];if(/^[A-Z]{3}$/.test(iata)&&!isNaN(+c[6])&&!isNaN(+c[7])){o[iata]=[+c[6],+c[7],c[2],c[3]];n++}});
   Object.assign(APX,o);try{localStorage.setItem('nexora-va-apx',JSON.stringify(o))}catch(e){}return n}
 const EQM={};[['320 32N 32S 32A 319 31N 318 31B',1],['321 32B 32Q',2],['738 73H 73W 737 73G 73J 73C 739 73Y 7M8 7M9 733 734 735 736 73F 73R 73M 73X',4],['787 788 789 78X 332 333 330 359 351 358 763 764 767 772 773 77L 77W 777 744 748 388 343 346 345 342 340 310',8],['E90 E95 E70 E75 E7W E170 E190 E195 CR9 CRJ CR7 CR2 CR1 ERJ ER4 ER3 DH4',16]].forEach(([k,b])=>k.split(' ').forEach(x=>EQM[x]=b));

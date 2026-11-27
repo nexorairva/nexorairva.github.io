@@ -47,6 +47,7 @@ const DOCN={norm:['Normativa','Rules'],terms:['Términos de uso','Terms of Use']
 
 /* ===== geo / calc ===== */
 let APX={},ICX={};
+function applyApo(){try{Object.keys(S.apo||{}).forEach(k=>{APX[k]=S.apo[k]})}catch(e){}}   /* ediciones del staff sobre el catálogo de aeropuertos */
 const rebuildIx=()=>{ICX={};Object.keys(S.ap).forEach(k=>ICX[S.ap[k][0]]=k)};
 const norm=c=>{c=String(c||'').trim().toUpperCase();return c.length===3&&ICX[c]?ICX[c]:c};
 const geo=c=>{c=norm(c);if(S.ap[c])return[S.ap[c][3],S.ap[c][4]];const a=APX[c];return a?[a[0],a[1]]:null};
@@ -118,7 +119,7 @@ function seed(){
   S.docs&&['norm','terms','priv'].forEach(d=>S.pilots.filter(p=>p.status!=='Pending').forEach(p=>S.accept.push({pid:p.id,doc:d,v:'1.0',ts:p.joined+H})));
   const nx=instances().find(i=>i.ts>now+3*H&&i.ts<now+30*H&&i.free>0&&i.type!=='B789');
   if(nx)S.res.push({id:uid('R'),pilot:'NXR102',kind:'official',no:'NXR102',sched:nx.no,instId:nx.id,from:nx.from,to:nx.to,type:nx.type,depTs:nx.ts,mins:nx.mins,nm:nx.nm,platform:'VATSIM',status:'reserved',created:now-H,simbrief:null,checkin:null,session:'S-DEMO01',log:[{ts:now-H,text:'Reserva creada; caso operacional abierto'}]});
-  S.events=[];S.cal=[];S.chall=[];S.partners=[];syncCh();
+  S.events=[];S.cal=[];S.chall=[];S.partners=[];S.apo={};syncCh();
   S.news=[];
   S.tickets=[{id:'T-0001',pilot:'NXR103',subject:'No se importa mi OFP de SimBrief',st:'Open',last:D(2),msgs:[{from:'pilot',text:'Mi OFP no aparece en el caso operacional.',ts:D(2),files:[]}]}];
   S.inc=[{id:'NXR-INC-'+Y+'-000001',pilot:'NXR106',subject:'Desconexión en ruta NXR801',detail:'Se detectó una desconexión de 12 minutos sobre el Atlántico. Indica qué ocurrió.',st:'Abierta',created:now-2*H,deadline:now+46*H,responded:false,msgs:[]}];S.incSeq[Y]=1;

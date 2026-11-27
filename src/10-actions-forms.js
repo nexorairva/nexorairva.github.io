@@ -89,7 +89,7 @@ const F={
   const no=String(Math.max(...S.flights.map(f=>+f.no))+1);S.flights.push({no,from:a,to:b,m:d.get('m'),type:ty,slots:+d.get('slots'),blocked:false});aud('Creó vuelo','NXR'+no);done(t('Vuelo NXR','Flight NXR')+no+t(' creado',' created'))},
  nac:d=>{const reg=d.get('reg').toUpperCase();if(S.fleet.some(a=>a.reg===reg))return err('nac-err',t('Esa matrícula ya existe.','That registration already exists.'));S.fleet.push({reg,type:d.get('type'),name:d.get('name')});aud('Añadió aeronave',reg);done(reg+t(' añadida',' added'))},
  nap:d=>{const k=d.get('icao').toUpperCase();if(S.ap[k])return err('nap-err',t('Ese ICAO ya existe.','That ICAO already exists.'));S.ap[k]=[d.get('iata').toUpperCase(),d.get('city'),d.get('k').toUpperCase(),+d.get('lat'),+d.get('lon'),d.get('tz'),'',d.get('city')];rebuildIx();aud('Añadió aeropuerto',k);done(k+t(' añadido',' added'))},
- nev:d=>{const s=Date.parse(d.get('s'));S.events.push({id:uid('ev'),n:d.get('n'),d:d.get('d'),s,e:s+4*H,x:+d.get('x'),badge:'',part:{}});aud('Creó evento',d.get('n'));done(t('Evento creado','Event created'))},
+ nev:d=>{const s=Date.parse(d.get('s'));S.events.push({id:uid('ev'),n:d.get('n'),d:d.get('d'),s,e:s+4*H,x:+d.get('x'),badge:'',remark:(d.get('remark')||'').trim()||undefined,part:{}});aud('Creó evento',d.get('n'));done(t('Evento creado','Event created'))},
  nch:d=>{const k=d.get('k')==='ms'?'ms':'ch',n=(d.get('n')||'').trim(),g=+d.get('g'),pts=+d.get('pts'),xp=+d.get('xp'),m=d.get('m'),per=d.get('per');
   if(!n||!(g>0)||!['flights','hours','miles','airports','long'].includes(m)||!['day','week','month','season','special'].includes(per)||!(pts>=0)||!(xp>=0))return;
   S.chall.push({id:uid(k),k,n,m,g,per,pts,xp});syncCh();aud('Creó reto',n);done(t('Reto creado','Challenge created'))},

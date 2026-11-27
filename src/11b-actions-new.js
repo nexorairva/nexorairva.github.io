@@ -4,6 +4,7 @@ Object.assign(A,{
  ncancel:()=>{ui.nw=null;render()},
  ndel:id=>{const n=S.news.find(x=>x.id===id);if(!n)return;modal(t('Eliminar noticia','Delete news'),`<form data-f="ndel" class="form pad"><input type="hidden" name="id" value="${esc(id)}"><p class="full">${t('Se eliminará «','«')}${esc(n.n)}${t('» para todos. No se puede deshacer.','» will be deleted for everyone. This cannot be undone.')}</p><div class="full" style="display:flex;gap:8px"><button class="btn bad" type="submit">${t('Eliminar','Delete')}</button>${btn(t('Cancelar','Cancel'),'xm','','')}</div></form>`)},
  pdel:id=>{const x=S.partners.find(p=>p.id===id);if(!x)return;S.partners=S.partners.filter(p=>p.id!==id);aud('Quitó un colaborador',x.n);done(t('Colaborador quitado','Partner removed'),1)},
+ ctab:id=>{ui.ctab=id;render()},
  bgreset:()=>{['bgL','bgD','bgImg','bgVeil'].forEach(k=>delete S.brand[k]);aud('Restauró el fondo de la web','');done(t('Fondo restaurado','Background restored'),1)},
  bgimgdel:()=>{delete S.brand.bgImg;delete S.brand.bgVeil;aud('Quitó la imagen de fondo','');done(t('Imagen quitada','Image removed'),1)},
  brreset:k=>{delete S.brand[k];aud('Restauró imagen de marca',k);done(t('Restaurado','Restored'),1)},
