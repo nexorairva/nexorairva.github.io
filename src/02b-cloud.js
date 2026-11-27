@@ -14,7 +14,7 @@ function docsOf(){const m=new Map(),add=(coll,id,owner,data)=>m.set(coll+'|'+id,
   (S.delReq||[]).forEach(c=>add('delReq',c,pidUid(c),{v:c}));(S.revReq||[]).forEach(c=>add('revReq',c,CL.uid,{v:c}));
   add('site','main',CL.uid,{maint:!!S.maint,incSeq:S.incSeq||{}});return m}
 const PSTRIP=['id','uid','pass','email','vatsim','ivao','simbrief','status','rol','netOk','joined','hAdj'];
-function pilotRows(p){const data={};Object.keys(p).forEach(k=>{if(!PSTRIP.includes(k))data[k]=p[k]});return{cols:Object.assign({status:p.status,rol:p.rol||null,net_ok:!!p.netOk},isAdmin(me())?{h_adj:+p.hAdj||0}:{}),data,priv:{vatsim:p.vatsim||'',ivao:p.ivao||'',simbrief:p.simbrief||''}}}
+function pilotRows(p){const data={};Object.keys(p).forEach(k=>{if(!PSTRIP.includes(k))data[k]=p[k]});return{cols:Object.assign({status:p.status,rol:p.rol||null,net_ok:!!p.netOk},isAdmin(me())&&CL.hcol?{h_adj:+p.hAdj||0}:{}),data,priv:{vatsim:p.vatsim||'',ivao:p.ivao||'',simbrief:p.simbrief||''}}}
 const sortTs=a=>{if(a.length&&a.every(x=>typeof x.ts==='number'))a.sort((x,y)=>x.ts-y.ts);else if(a.length&&a.every(x=>typeof x.created==='number'))a.sort((x,y)=>x.created-y.created)};
 async function fetchAll(q){const out=[];for(let f=0;;f+=1000){const r=await q().range(f,f+999);if(r.error)throw r.error;out.push(...r.data);if(r.data.length<1000)break}return out}
 async function cloudPull(){const sb=CL.sb;
@@ -25,6 +25,7 @@ async function cloudPull(){const sb=CL.sb;
   Object.keys(CAR).forEach(c=>{S[c]=[]});S.enroll={};S.delReq=[];S.revReq=[];
   rows.forEach(r=>{const c=r.coll;if(CAR[c])S[c].push(r.data);else if(COBJ.includes(c))S[c]=r.data;else if(c==='enroll')S.enroll[r.id]=r.data;else if(c==='delReq')S.delReq.push(r.id);else if(c==='revReq')S.revReq.push(r.id);else if(c==='site'){S.maint=!!r.data.maint;S.incSeq=r.data.incSeq||{}}});
   Object.keys(CAR).forEach(c=>sortTs(S[c]));
+  CL.hcol=!prof.length||('h_adj' in prof[0]);   // false si la base aún no tiene la columna (falta ejecutar schema.sql)
   S.pilots=prof.map(r=>Object.assign({},r.data,pm[r.id]||{},{id:r.code,uid:r.id,status:r.status,rol:r.rol||null,netOk:!!r.net_ok,hAdj:+r.h_adj||0,joined:Date.parse(r.joined)||0}));
   const mine=prof.find(r=>r.id===CL.uid);
   if(CL.uid&&mine){const meP=S.pilots.find(p=>p.uid===CL.uid);meP.email=CL.email||'';S.session={id:mine.code,uid:CL.uid,staff:isStaff(meP)}}else S.session=null;

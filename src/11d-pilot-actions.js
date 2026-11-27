@@ -11,7 +11,7 @@ Object.assign(F,{
      CL.psnap[c.id]=CL.psnap[old];delete CL.psnap[old]}
    renamePid(old,c.id);notify(c.id,t('Tu ID de piloto es ahora ','Your pilot ID is now ')+c.id);aud('Cambió el ID de piloto',old+' → '+c.id);
    save();render();toast(t('ID actualizado: ','ID updated: ')+c.id);A.pfile(c.id)},
- phrs:(d,f)=>{if(!isAdmin(me()))return;const id=f.dataset.id,p=P_(id);if(!p)return;
+ phrs:(d,f)=>{if(!isAdmin(me()))return;if(typeof CL!=='undefined'&&CL.on&&!CL.hcol)return err('phrs-err',t('Falta actualizar la base de datos: ejecuta supabase/schema.sql en Supabase.','Database needs updating: run supabase/schema.sql in Supabase.'));const id=f.dataset.id,p=P_(id);if(!p)return;
    const tot=parseFloat(String(d.get('h')).replace(',','.')),why=(d.get('why')||'').trim();
    if(!isFinite(tot)||tot<0||tot>99999)return err('phrs-err',t('Indica unas horas entre 0 y 99999.','Enter hours between 0 and 99999.'));
    if(!why)return err('phrs-err',t('Indica el motivo del ajuste.','Enter the reason for the adjustment.'));
