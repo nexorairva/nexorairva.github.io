@@ -27,3 +27,8 @@ Cada vez que alguien se registra, todo el staff con permiso **Pilotos** (Admin y
 - **Noticias:** en Staff → Noticias, iconos ✎ (editar) y 🗑 (eliminar, con confirmación).
 - **Tema:** arranca en oscuro; el botón ☀/🌙 de la cabecera permite cambiarlo y se recuerda en el navegador.
 - **Configuración → Colaboradores:** logos (hasta 12, con enlace opcional) que aparecen en el pie de todas las páginas, sobre «© año NEXORA AIR». Colección `partners` (reejecutar `schema.sql`).
+
+## Menú staff unificado, aeropuertos y presentación
+- **Staff → Operaciones → Tours, eventos y retos:** una sola pestaña con sub-pestañas Tours / Eventos / Retos / Remarks. Cada tour y cada evento tiene su propio campo **Remark** (si se deja vacío se usa el general). El calendario se gestiona en Eventos.
+- **Staff → Operaciones → Aeropuertos:** pestañas *Catálogo* (los 6.737 aeropuertos, con buscador y paginación), *Red y hubs* y *Añadir / importar*. «Editar / Hub» permite cambiar nombre, ciudad, país, coordenadas y zona horaria, marcarlo como hub principal/secundario y meterlo o sacarlo de la red de NEXORA AIR. Las ediciones del catálogo se guardan en `apo` (reejecutar `schema.sql`). `public/airports.csv` ahora incluye nombre, ICAO y zona horaria (`tools/build_airports.py`).
+- **Presentación:** al entrar a la web (una vez por sesión del navegador, y solo en la portada) aparece una pantalla de bienvenida; al pulsar en cualquier parte (o Enter/Espacio) pasa al inicio.

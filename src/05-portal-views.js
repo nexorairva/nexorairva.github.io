@@ -56,7 +56,7 @@ function vRankings(){const tabs=[['gen',t('General','Overall')],['mon',t('Mensua
 function vCaso(){const r=S.res.find(x=>x.id===ui.case&&x.pilot===S.session.id);if(!r)return head(t('Caso operacional','Operational case'))+`<div class="card empty">${t('Selecciona una reserva.','Select a booking.')} <a href="#p-reservas">${t('Reservas','Bookings')}</a></div>`;
   const e=r.entryId&&S.log.find(x=>x.id===r.entryId),st=r.status,act=ACTIVE.includes(st),fin=st==='review'||st==='closed';
   const stp=[[t('Reserva','Booking'),1],['SimBrief',!!r.simbrief],['Check-in',!!r.checkin],[t('En vuelo','Flying'),['flying','review','closed'].includes(st)],[t('Finalización','Finish'),fin],[t('Validación','Validation'),st==='closed']];
-  const first=stp.findIndex(x=>!x[1]);const rem=r.kind==='free'?S.remarks.ff:(TOURS.some(tr=>(S.enroll[r.pilot]||{})[tr.id]&&tr.stages.some(s=>s.some(q=>q[0]===r.from&&q[1]===r.to)))?S.remarks.tour:S.remarks.flight);
+  const first=stp.findIndex(x=>!x[1]);const trr=TOURS.find(tr=>(S.enroll[r.pilot]||{})[tr.id]&&tr.stages.some(s=>s.some(q=>q[0]===r.from&&q[1]===r.to)));const rem=r.kind==='free'?S.remarks.ff:(trr?(trr.remark||S.remarks.tour):S.remarks.flight);
   const sbUrl=sbLink(r);
   return head(r.no+' · '+r.from+' → '+r.to,fdt(r.depTs)+' · '+nf(r.nm)+' nm · '+TYPES[r.type].mf+' '+TYPES[r.type].n+' · '+t('Sesión ','Session ')+r.session,pill(stateLabel(r),st==='review'?'warn':'acc')+(r.expires&&act?' '+pill(t('Caduca en ','Expires in ')+cd(r.expires),'warn'):''))+
   `<div class="card pad"><div class="steps">${stp.map((x,i)=>`<span class="${x[1]?(i===5&&st==='review'?'rev':'done'):(i===first&&act?'now':'')}">${x[0]}</span>`).join('')}</div></div>
