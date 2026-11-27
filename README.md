@@ -13,3 +13,10 @@ Cada vez que alguien se registra, todo el staff con permiso **Pilotos** (Admin y
 ## Rechazo de altas y ajuste de horas
 - **Rechazar** una solicitud (o eliminar una cuenta) la borra por completo: perfil, datos y, en modo nube, también el usuario de acceso. La persona tendrá que volver a darse de alta y ya no reaparece al refrescar. En modo nube hay que volver a ejecutar `supabase/schema.sql` (añade la función `remove_pilot`).
 - **Horas de vuelo (solo Admin):** en la ficha del piloto, "Ajustar horas de vuelo". Es un ajuste auditable (±, con motivo) que se suma a las horas reales: cambia el total y el rango, pero no los rankings mensuales/de temporada. Queda en auditoría y el piloto recibe un aviso. En la base de datos solo un admin puede modificar `profiles.h_adj`.
+
+## Sin datos de ejemplo, retos y textos legales
+- La app arranca **sin tours, eventos, retos, calendario ni noticias de ejemplo**. En modo demo se limpian solos una vez; en modo nube ejecuta `supabase/migrations/002_limpiar_ejemplos.sql`.
+- **Staff → Operaciones → Eventos y retos:** formulario "Crear reto" (desafío o misión; mide vuelos, horas, millas, aeropuertos o vuelos largos; periodo, objetivo y recompensa). Los retos y eventos se pueden eliminar. Colección `chall` (reejecutar `schema.sql`).
+- **Normativa / términos / privacidad:** texto de hasta 60.000 caracteres o archivo adjunto `.txt`, `.md`, `.html`, `.docx` (se convierte en texto de la web) o `.pdf` (se muestra incrustado, máx. 2 MB).
+- **Staff → Administración → Marca:** logos y, debajo, "Fondo de la web" (color claro/oscuro, imagen y velo).
+- El mapa del panel del piloto solo muestra su vuelo en curso; al terminarlo queda limpio.

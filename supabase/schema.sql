@@ -72,7 +72,7 @@ $$;
 --  own    : cada piloto escribe lo suyo    secure  : solo staff
 create or replace function public.coll_kind(c text) returns text language sql immutable as $$
   select case
-    when c in ('fleet','tours','events','cal','flights','news','social','brand','docs','ap','routeCodes','remarks','site') then 'public'
+    when c in ('fleet','tours','events','cal','chall','flights','news','social','brand','docs','ap','routeCodes','remarks','site') then 'public'
     when c in ('roles','res','log','tx') then 'shared'
     when c in ('notes','tickets','inc','enroll','accept','delReq','revReq') then 'own'
     else 'secure'
@@ -81,7 +81,7 @@ $$;
 create or replace function public.coll_perm(c text) returns text language sql immutable as $$
   select case
     when c in ('fleet','ap') then 'flota'
-    when c in ('tours','events','cal','flights','routeCodes','remarks') then 'operaciones'
+    when c in ('tours','events','cal','chall','flights','routeCodes','remarks') then 'operaciones'
     when c in ('news','docs') then 'noticias'
     when c = 'social' then 'redes'
     when c in ('brand','roles') then 'admin'
