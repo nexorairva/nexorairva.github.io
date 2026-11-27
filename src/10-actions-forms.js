@@ -5,6 +5,7 @@ const done=(m,keep)=>{save();if(!keep)modal();render();if(m)toast(m)};
 async function hp(s){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('nexora:'+s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}catch(e){return'x:'+s.length}}
 const A={
  xm:(id,el,ev)=>{if(ev.target.closest('.modal')&&!ev.target.closest('button[data-a="xm"]'))return;modal()},
+ theme:()=>{const n=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';document.documentElement.setAttribute('data-theme',n);try{localStorage.setItem('nexora-theme',n)}catch(e){}render()},
  lang:()=>{S.lang=S.lang==='es'?'en':'es';done()},
  logout:()=>{S.session=null;save();go('inicio')},
  demo:id=>{const st=isStaff(pilot(id));S.session={id,staff:st};save();go(st?'s-dash':'portal')},
@@ -71,7 +72,7 @@ const F={
  just:(d,f)=>{S.log.find(e=>e.id===f.dataset.id).just=d.get('t');done(t('Justificación enviada al staff','Explanation sent to staff'))},
  free:d=>{const a=d.get('from'),b=d.get('to'),ty=d.get('type');if(a===b)return err('free-err',t('Origen y destino deben ser distintos.','Origin and destination must differ.'));const nm=dist(a,b);
   if(nm>TYPES[ty].r*.9)return err('free-err',t('Esa aeronave no alcanza esa distancia (','That aircraft cannot fly ')+nf(nm)+' nm).');
-  const p=me(),r={id:uid('R'),pilot:p.id,kind:'free',no:'FREE',instId:null,from:a,to:b,type:ty,depTs:Date.now(),mins:cmins(nm,ty),nm,platform:d.get('plat'),status:'reserved',created:Date.now(),simbrief:null,checkin:null,session:'S-'+(hs(a+b+Date.now())%1e6).toString(36).toUpperCase(),log:[{ts:Date.now(),text:t('Free Flight creado','Free Flight created')}]};
+  const p=me(),r={id:uid('R'),pilot:p.id,kind:'free',no:p.id,instId:null,from:a,to:b,type:ty,depTs:Date.now(),mins:cmins(nm,ty),nm,platform:d.get('plat'),status:'reserved',created:Date.now(),simbrief:null,checkin:null,session:'S-'+(hs(a+b+Date.now())%1e6).toString(36).toUpperCase(),log:[{ts:Date.now(),text:t('Free Flight creado','Free Flight created')}]};
   S.res.push(r);ui.case=r.id;save();go('p-caso')},
  prof:d=>{const p=me();p.name=d.get('name');p.email=d.get('email');p.platform=d.get('platform');p.hub=d.get('hub');p.favT=d.getAll('ft');done(t('Perfil guardado','Profile saved'))},
  pw:async d=>{const p=me(),h=await hp(d.get('new'));if(p.pass===h)return err('pw-err',t('No puedes reutilizar la contraseña actual.','You cannot reuse the current password.'));p.pass=h;S.session=null;save();go('login');toast(t('Contraseña cambiada; se cerraron todas las sesiones.','Password changed; all sessions were closed.'))},
@@ -94,7 +95,10 @@ const F={
   S.chall.push({id:uid(k),k,n,m,g,per,pts,xp});syncCh();aud('Creó reto',n);done(t('Reto creado','Challenge created'))},
  ncal:d=>{S.cal.push({id:uid('c'),type:d.get('k'),n:d.get('n'),ts:Date.parse(d.get('s'))});aud('Añadió al calendario',d.get('n'));done(t('Añadido','Added'))},
  rem:d=>{Object.keys(S.remarks).forEach(k=>S.remarks[k]=d.get(k));aud('Actualizó remarks');done(t('Remarks guardados','Remarks saved'))},
- nnw:d=>{S.news.push({id:uid('n'),n:d.get('n'),b:d.get('b'),aud:d.get('aud'),ts:Date.now(),rel:d.get('rel')?1:0});aud('Publicó noticia',d.get('n'));done(t('Publicado','Published'))},
+ nnw:d=>{const id=d.get('id'),o={n:(d.get('n')||'').trim(),b:(d.get('b')||'').trim(),aud:d.get('aud'),rel:d.get('rel')?1:0};if(!o.n||!o.b)return;
+  if(id){const n=S.news.find(x=>x.id===id);if(!n)return;Object.assign(n,o,{edited:Date.now()});ui.nw=null;aud('Editó noticia',o.n);done(t('Noticia actualizada','News updated'))}
+  else{S.news.push(Object.assign({id:uid('n'),ts:Date.now()},o));aud('Publicó noticia',o.n);done(t('Publicado','Published'))}},
+ ndel:d=>{const id=d.get('id'),n=S.news.find(x=>x.id===id);if(!n)return;S.news=S.news.filter(x=>x.id!==id);if(ui.nw&&ui.nw.id===id)ui.nw=null;aud('Eliminó noticia',n.n);done(t('Noticia eliminada','News deleted'))},
  ngr:d=>{S.groups.push({n:d.get('n'),m:d.getAll('m')});aud('Creó grupo',d.get('n'));done(t('Grupo creado','Group created'))},
  ndoc:d=>{const k=d.get('d'),v=(parseFloat(S.docs[k].v)+.1).toFixed(1),x=(d.get('x')||'').trim(),pdf=ui.docPdf;if(!x&&!pdf){toast(t('Escribe el texto o adjunta un archivo.','Write the text or attach a file.'));return}
   S.docs[k]=Object.assign({v,ts:Date.now(),text:x},pdf?{file:{name:pdf.name,data:pdf.data}}:{});ui.docPdf=null;ui.docK=null;S.pilots.filter(p=>p.status!=='Pending').forEach(p=>notify(p.id,t('Nueva versión publicada: ','New version published: ')+t(...DOCN[k])+' v'+v));aud('Publicó '+DOCN[k][0],'v'+v);done(t('Versión publicada: los pilotos deben aceptarla','Version published: pilots must accept it'))},

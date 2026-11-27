@@ -84,7 +84,7 @@ function notifyStaff(perm,text,en,go){S.pilots.forEach(p=>{if(isStaff(p)&&can(pe
 function aud(a,tg){S.audit.push({ts:Date.now(),who:me()?me().name:'sistema',a,tg:tg||''})}
 function flightTx(e){const b=80+e.nm/8,f=e.kind==='free';S.tx.push({id:uid('X'),pilot:e.pilot,pts:Math.round(f?b*.3:b),xp:Math.round((e.mins*.5+15)*(f?.5:1)),why:(f?'Charter ':'Vuelo ')+e.no+' '+e.from+'-'+e.to,ref:'fl:'+e.id,ts:e.depTs})}
 function addEntry(R,pid,f,depTs,plat,o){const nm=dist(f.from,f.to),mins=cmins(nm,f.type)+Math.round((R()-.4)*6);
-  const e=Object.assign({id:uid('L'),pilot:pid,no:'NXR'+f.no,kind:'official',from:f.from,to:f.to,type:f.type,platform:plat,depTs,arrTs:depTs+mins*MIN,mins,nm,status:'Completado',session:'S-'+(hs(pid+depTs)%1e6).toString(36).toUpperCase(),sb:'ok',an:[]},o||{});
+  const e=Object.assign({id:uid('L'),pilot:pid,no:pid,kind:'official',from:f.from,to:f.to,type:f.type,platform:plat,depTs,arrTs:depTs+mins*MIN,mins,nm,status:'Completado',session:'S-'+(hs(pid+depTs)%1e6).toString(36).toUpperCase(),sb:'ok',an:[]},o||{});
   S.log.push(e);if(e.status==='Completado')flightTx(e);return e}
 const findF=(a,b)=>S.flights.find(f=>f.from===a&&f.to===b);
 const fm=f=>{const[h,m]=f.m.split(':');return(+h)*60+(+m)};
@@ -117,8 +117,8 @@ function seed(){
   {const f=findF('LEMD','LEBL');addEntry(R,'NXR103',f,D(1),'VATSIM',{mins:7,arrTs:D(1)+7*MIN,status:'En revisión',an:['Duración anormalmente corta'],session:'S-R3V1EW'})}
   S.docs&&['norm','terms','priv'].forEach(d=>S.pilots.filter(p=>p.status!=='Pending').forEach(p=>S.accept.push({pid:p.id,doc:d,v:'1.0',ts:p.joined+H})));
   const nx=instances().find(i=>i.ts>now+3*H&&i.ts<now+30*H&&i.free>0&&i.type!=='B789');
-  if(nx)S.res.push({id:uid('R'),pilot:'NXR102',kind:'official',no:nx.no,instId:nx.id,from:nx.from,to:nx.to,type:nx.type,depTs:nx.ts,mins:nx.mins,nm:nx.nm,platform:'VATSIM',status:'reserved',created:now-H,simbrief:null,checkin:null,session:'S-DEMO01',log:[{ts:now-H,text:'Reserva creada; caso operacional abierto'}]});
-  S.events=[];S.cal=[];S.chall=[];syncCh();
+  if(nx)S.res.push({id:uid('R'),pilot:'NXR102',kind:'official',no:'NXR102',sched:nx.no,instId:nx.id,from:nx.from,to:nx.to,type:nx.type,depTs:nx.ts,mins:nx.mins,nm:nx.nm,platform:'VATSIM',status:'reserved',created:now-H,simbrief:null,checkin:null,session:'S-DEMO01',log:[{ts:now-H,text:'Reserva creada; caso operacional abierto'}]});
+  S.events=[];S.cal=[];S.chall=[];S.partners=[];syncCh();
   S.news=[];
   S.tickets=[{id:'T-0001',pilot:'NXR103',subject:'No se importa mi OFP de SimBrief',st:'Open',last:D(2),msgs:[{from:'pilot',text:'Mi OFP no aparece en el caso operacional.',ts:D(2),files:[]}]}];
   S.inc=[{id:'NXR-INC-'+Y+'-000001',pilot:'NXR106',subject:'Desconexión en ruta NXR801',detail:'Se detectó una desconexión de 12 minutos sobre el Atlántico. Indica qué ocurrió.',st:'Abierta',created:now-2*H,deadline:now+46*H,responded:false,msgs:[]}];S.incSeq[Y]=1;

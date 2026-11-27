@@ -6069,3 +6069,669 @@ ETM,29.72,35.01,Eilat,Israel
 MNH,23.64,57.49,Al Masna'ah,Oman
 CGY,8.61,124.46,Cagayan de Oro City,Philippines
 CPO,-27.26,-70.78,Copiapo,Chile
+RIG,-32.08,-52.17,Rio Grande,Brazil
+IKR,35.04,-106.61,Kirtland A.f.b.,United States
+NSB,25.77,-79.25,Bimini,Bahamas
+TSS,40.74,-73.97,New York,United States
+QKL,50.94,6.96,Cologne,Germany
+ZWS,48.78,9.18,Stuttgart,Germany
+DWS,28.40,-81.57,Orlando,United States
+TMK,27.05,86.86,Thamkharka,Nepal
+HRJ,28.00,83.83,Chaurjhari,Nepal
+GDA,9.27,21.20,Gounda,Central African Republic
+KUS,65.57,-37.12,Kulusuk,Greenland
+MCM,43.73,7.42,Monaco,Monaco
+UUU,41.53,-71.28,Newport RI,United States
+VSF,43.34,-72.52,Springfield VT,United States
+SFM,43.39,-70.71,Sanford ME,United States
+BAK,40.47,50.05,Baku,Azerbaijan
+CGU,8.29,-62.76,Ciudad Guayana,Venezuela
+HKV,41.98,25.59,Haskovo,Bulgaria
+ATT,30.32,-97.77,Austin TX,United States
+FDE,61.39,5.76,Forde,Norway
+CUK,17.73,-88.03,Caye Caulker,Belize
+PND,16.10,-88.81,Punta Gorda,Belize
+NTG,32.07,120.98,Nantong,China
+TCD,-2.87,-69.73,Tarapacá,Colombia
+HIL,6.08,44.77,Shilavo,Ethiopia
+SHC,14.08,38.27,Shire Indasilase,Ethiopia
+JCA,43.54,7.04,Cannes,France
+GAX,-2.71,9.96,Gamba,Gabon
+FOA,60.12,-2.05,Foula,United Kingdom
+PSV,60.32,-1.69,Papa Stour,United Kingdom
+CRU,12.48,-61.47,Carriacou Island,Grenada
+JCU,35.90,-5.30,Ceuta,Spain
+JGR,61.23,-48.10,Groennedal,Greenland
+QCU,68.75,-52.33,Akunnaaq,Greenland
+QFI,68.70,-52.97,Iginniarfik,Greenland
+TQR,42.10,15.49,Tremiti Islands,Italy
+KWY,-1.96,41.30,Kiwayu,Kenya
+MRA,32.33,15.06,Misratah,Libya
+QUB,26.57,12.82,Ubari,Libya
+AIM,10.22,169.98,Ailuk Island,Marshall Islands
+AUL,8.15,171.17,Aur Atoll,Marshall Islands
+BII,11.52,165.56,Bikini Atoll,Marshall Islands
+JAT,7.45,168.55,Ailinglapalap Atoll,Marshall Islands
+JEJ,7.57,168.96,Ailinglapalap Atoll,Marshall Islands
+KBT,8.90,170.84,Kaben,Marshall Islands
+LIK,9.82,169.31,Likiep Island,Marshall Islands
+MAV,8.70,171.23,Maloelap Island,Marshall Islands
+MJB,10.28,170.88,Mejit Atoll,Marshall Islands
+MJE,7.83,168.17,Majkin,Marshall Islands
+NDK,5.63,168.12,Namorik Atoll,Marshall Islands
+RNP,11.16,166.89,Rongelap Island,Marshall Islands
+UIT,5.91,169.64,Jabor Jaluit Atoll,Marshall Islands
+WJA,7.08,171.13,Majuro Atoll,Marshall Islands
+WTE,9.47,170.23,Wotje Atoll,Marshall Islands
+WTO,10.17,166.00,Wotho Island,Marshall Islands
+SCX,16.21,-95.20,Salina Cruz,Mexico
+LBP,3.18,115.45,Long Banga,Malaysia
+MWP,28.00,85.33,Mountain,Nepal
+BFQ,7.58,-78.20,Bahia Piña,Panama
+ELE,8.13,-77.70,El Real,Panama
+OTD,8.63,-79.03,Contadora Island,Panama
+SAX,8.02,-78.20,Boca de Sábalo,Panama
+ATP,-3.19,142.43,Aitape,Papua New Guinea
+GMI,-6.27,150.33,Gasmata Island,Papua New Guinea
+IHU,-7.90,145.40,Ihu,Papua New Guinea
+IIS,-4.50,154.23,Nissan Island,Papua New Guinea
+JAQ,-5.65,151.51,Jacquinot Bay,Papua New Guinea
+KDR,-6.18,149.53,Kandrian,Papua New Guinea
+KKD,-8.88,147.73,Kokoda,Papua New Guinea
+KUY,-7.42,143.12,Kamusi,Papua New Guinea
+LMY,-7.01,141.49,Lake Murray,Papua New Guinea
+LNV,-3.04,152.63,Londolovit,Papua New Guinea
+LSA,-8.51,151.08,Losuia,Papua New Guinea
+OBX,-7.58,141.32,Obo,Papua New Guinea
+SKC,-8.03,141.72,Suki,Papua New Guinea
+TFI,-9.08,149.32,Tufi,Papua New Guinea
+UKU,-3.67,142.48,Nuku,Papua New Guinea
+WPM,-8.79,142.88,Wipim,Papua New Guinea
+ENI,11.20,119.42,El Nido,Philippines
+BXX,9.93,43.15,Boorama,Somalia
+GTA,-8.75,158.20,Gatokae,Solomon Islands
+OYG,3.63,31.75,Moyo,Uganda
+BKX,44.30,-96.82,Brookings,United States
+EAR,40.73,-99.01,Kearney,United States
+IFP,35.16,-114.56,Bullhead,United States
+IGM,35.26,-113.94,Kingman,United States
+SVC,32.64,-108.16,Silver City,United States
+KON,14.35,108.02,Kontum,Vietnam
+KBU,-3.29,116.17,Laut Island,Indonesia
+ZVE,41.30,-72.93,New Haven,United States
+XOZ,24.83,50.92,Doha,Qatar
+GCW,35.59,-113.49,Grand Canyon West,United States
+BLD,35.57,-114.51,Boulder City,United States
+LKE,47.63,-122.34,Seattle,United States
+TZA,17.53,-88.30,Belize,Belize
+FSZ,34.80,138.19,Shizuoka,Japan
+FWM,56.82,-5.12,Fort William,United Kingdom
+JPU,48.87,2.33,Paris,France
+RRA,36.75,-5.17,Ronda,Spain
+PME,50.80,-1.08,Portsmouth,United Kingdom
+ZWU,38.90,-77.01,Washington,United States
+PHO,68.35,-166.80,Point Hope,United States
+LGQ,0.09,-76.87,Lago Agrio,Ecuador
+TGC,2.18,111.20,Tanjung Manis,Malaysia
+EAP,47.59,7.53,Mulhouse,France
+MXY,61.44,-142.90,McCarthy,United States
+NPZ,41.45,-87.01,Valparaiso,United States
+MCD,45.86,-84.64,Mackinac Island,United States
+IWD,46.53,-90.13,Ironwood,United States
+GEN,60.19,11.10,Oslo,Norway
+MQB,40.52,-90.65,Macomb,United States
+XYD,45.76,4.86,Lyon,France
+RAF,-31.28,-61.50,Rafaela,Argentina
+OXD,39.50,-84.78,Oxford,United States
+DKB,41.93,-88.71,De Kalb,United States
+TYE,61.08,-151.14,Tyonek,United States
+SUE,44.84,-87.42,Sturgeon Bay,United States
+QDU,51.22,6.79,Dusseldorf,Germany
+CDI,39.98,-81.58,Cambridge,United States
+UES,43.04,-88.24,Waukesha,United States
+BEH,42.13,-86.43,Benton Harbor,United States
+JDR,-21.09,-44.23,Sao Joao del Rei,Brazil
+BNY,-11.30,159.80,Bellona,Solomon Islands
+DAQ,46.58,125.00,Daqing,China
+HHA,28.19,113.22,Changsha,China
+ZBP,39.31,-76.62,Baltimore,United States
+ZYP,40.75,-73.99,New York,United States
+FNE,-8.55,147.08,Fane,Papua New Guinea
+ITK,-9.20,148.25,Itokama,Papua New Guinea
+ONB,-8.58,147.20,Ononge,Papua New Guinea
+TPI,-8.35,146.98,Tapini,Papua New Guinea
+AGL,-9.33,149.15,Wanigela,Papua New Guinea
+WTP,-8.53,147.25,Woitape,Papua New Guinea
+AWB,-8.01,142.75,Awaba,Papua New Guinea
+TFM,-5.12,141.63,Telefomin,Papua New Guinea
+GSS,-24.94,31.44,Sabi Sabi,South Africa
+ZFV,39.96,-75.18,Philadelphia,United States
+BWD,31.79,-98.96,Brownwood,United States
+LXY,31.64,-96.51,Mexia,United States
+YPI,54.57,-130.43,Port Simpson,Canada
+KEH,47.75,-122.26,Kenmore,United States
+CZH,18.38,-88.41,Corozal,Belize
+EGA,39.64,-106.92,Eagle,United States
+ZRT,41.77,-72.68,Hartford,United States
+ZTF,41.05,-73.54,Stamford,United States
+ZRP,40.73,-74.16,Newark,United States
+JGC,35.97,-112.13,Grand Canyon,United States
+OTS,48.50,-122.66,Anacortes,United States
+WTL,60.34,-162.67,Tuntutuliak,United States
+KEK,59.36,-157.47,Ekwok,United States
+KLL,59.13,-156.86,Levelock,United States
+TWA,59.07,-160.28,Twin Hills,United States
+LIV,65.53,-148.54,Livingood,United States
+MNT,65.14,-149.37,Minto,United States
+RMP,65.51,-150.14,Rampart,United States
+TAL,65.18,-152.08,Tanana,United States
+KBC,66.26,-145.82,Brich Creek,United States
+CXF,67.25,-150.18,Coldfoot,United States
+TKE,57.78,-135.22,Tenakee Springs,United States
+PEC,57.96,-136.24,Pelican,United States
+CYM,57.52,-134.95,Sitka,United States
+EXI,58.42,-135.45,Excursion Inlet,United States
+CGA,55.48,-133.15,Craig,United States
+HYL,55.48,-132.65,Hollis,United States
+KTB,55.69,-132.54,Thorne Bay,United States
+WHD,55.90,-130.01,Hyder,United States
+KPB,56.35,-133.62,Point Baker,United States
+PPV,56.33,-133.61,Port Protection,United States
+WWP,56.12,-133.12,North Whale Pass,United States
+KCQ,56.26,-158.78,Chignik Lake,United States
+KCL,56.31,-158.53,Chignik Lagoon,United States
+KBW,56.30,-158.40,Chignik,United States
+OLH,57.22,-153.27,Old Harbor,United States
+KOZ,57.92,-152.50,Ouzinkie,United States
+ORI,57.89,-152.85,Port Lions,United States
+ALZ,56.90,-154.25,Lazy Bay,United States
+AOS,57.47,-153.82,Amook Bay,United States
+KKB,58.19,-152.37,Kitoi Bay,United States
+KMY,57.03,-154.15,Moser Bay,United States
+KOY,57.16,-154.23,Olga Bay,United States
+KPY,57.93,-153.04,Port Bailey,United States
+KPR,58.49,-152.58,Port Williams,United States
+SYB,58.17,-152.50,Seal Bay,United States
+WSJ,57.73,-153.32,San Juan,United States
+KWP,57.77,-153.55,West Point,United States
+KZB,57.55,-153.75,Zachar Bay,United States
+CIL,64.90,-163.70,Council,United States
+WBB,63.52,-162.28,Stebbins,United States
+ICY,59.97,-141.66,Icy Bay,United States
+SXP,62.52,-164.85,Nunam Iqua,United States
+PDB,59.78,-154.13,Pedro Bay,United States
+NUP,60.91,-162.44,Nunapitchuk,United States
+TCT,62.97,-156.08,Takotna,United States
+PQS,61.93,-162.90,Pilot Station,United States
+TLT,61.10,-160.97,Tuluksak,United States
+KGX,62.89,-160.06,Grayling,United States
+OLN,-45.60,-69.08,Colonia Sarmiento,Argentina
+RYO,-51.53,-72.30,Rio Turbio,Argentina
+CVI,-46.43,-67.53,Caleta Olivia,Argentina
+ELX,-49.33,-72.93,El Chalten,Argentina
+CZN,62.07,-142.05,Chisana,United States
+KCC,56.01,-132.83,Coffman Cove,United States
+CKD,61.87,-158.13,Crooked Creek,United States
+RDV,61.79,-157.35,Red Devil,United States
+SRV,61.79,-156.59,Stony River,United States
+KAE,56.97,-133.95,Kake,United States
+TEK,60.87,-146.69,Tatitlek,United States
+WFB,55.34,-131.66,Ketchikan,United States
+XQU,49.34,-124.39,Qualicum Beach,Canada
+YHS,49.46,-123.72,Sechelt-Gibsons,Canada
+PVP,27.09,-112.10,San Bruno,Mexico
+ZYR,50.80,4.40,Brussels,Belgium
+CYC,17.68,-88.05,Caye Chapel,Belize
+BGK,16.52,-88.42,Big Creek,Belize
+DGA,16.97,-88.22,Dangriga,Belize
+PLJ,16.54,-88.36,Placencia,Belize
+SJX,18.36,-88.13,Sarteneja,Belize
+FUS,47.59,10.69,Fussen,Germany
+EBO,51.48,7.22,Bochum,Germany
+KFB,47.87,10.63,Kaufbeuren,Germany
+ZMU,48.14,11.55,Munich,Germany
+ZAQ,49.45,11.08,Nuernberg,Germany
+RLO,-32.35,-65.18,Merlo,Argentina
+SSB,17.75,-64.70,Christiansted,Virgin Islands
+ZAU,48.37,10.89,Augsburg,Germany
+ZMA,49.48,8.47,Mannheim,Germany
+ZES,51.45,7.01,Essen,Germany
+CPS,38.57,-90.16,East St. Louis,United States
+BTO,4.23,-55.45,Botopasi,Suriname
+DOE,4.02,-55.48,Djoemoe,Suriname
+KIA,5.16,-59.48,Kaieteur Falls,Guyana
+LCR,-0.73,-73.02,La Chorrera,Colombia
+LMC,2.18,-73.79,La Macarena,Colombia
+ZXE,55.95,-3.19,Edinburgh,United Kingdom
+AMY,-17.17,47.18,Ambatomainty,Madagascar
+UKY,35.02,135.77,Kyoto,Japan
+BZB,-21.54,35.47,Bazaruto Island,Mozambique
+BCW,-21.85,35.44,Benguera Island,Mozambique
+IBL,-21.71,35.45,Indigo Bay Lodge,Mozambique
+YMY,45.50,-73.57,Montreal,Canada
+YBZ,43.65,-79.38,Toronto,Canada
+XDB,50.56,3.09,Lille,France
+BVV,44.92,147.62,Iturup Island,Russia
+OHH,53.58,142.93,Okha,Russia
+QYI,52.23,5.18,Hilversum,Netherlands
+COL,56.63,-6.56,Coll,United Kingdom
+XZM,22.20,113.56,Macau,Macau
+RBN,24.62,-82.87,Fort Jefferson - Dry Tortugas,United States
+WNH,23.38,104.24,Wenshan,China
+LTU,18.41,76.47,Latur,India
+QFZ,0.00,0.00,Mainz,Germany
+QMZ,50.01,8.27,Mainz,Germany
+GWW,52.48,13.14,Berlin,Germany
+ZPQ,52.28,7.44,Rheine,Germany
+HAE,38.01,125.78,Haeju,North Korea
+LAC,7.37,113.84,Layang Layang Atoll,Malaysia
+BJT,6.42,79.98,Bentota,Sri Lanka
+DIW,5.97,80.68,Dickwella,Sri Lanka
+MWB,-29.21,116.01,Morawa,Australia
+EXM,-21.93,114.13,Exmouth,Australia
+BXS,33.26,-116.32,Borrego Springs,United States
+BOT,-7.24,141.09,Bosset,Papua New Guinea
+IMI,7.02,171.48,Ine,Marshall Islands
+TIC,7.13,171.92,Tinak,Marshall Islands
+EAL,9.08,167.33,Elenak,Marshall Islands
+LML,8.92,166.27,Lae,Marshall Islands
+AIC,7.10,171.23,Airok,Marshall Islands
+EJT,6.04,171.98,Enejit,Marshall Islands
+AAU,-13.51,-172.63,Savai\'i,Samoa
+OFU,-14.18,-169.67,Ofu,American Samoa
+BPU,33.30,131.53,Beppu,Japan
+HRN,-23.44,151.91,Heron Island,Australia
+LYT,-24.11,152.72,Lady Elliot Island,Australia
+ORS,-18.63,146.50,Orpheus Island,Australia
+QQP,51.52,-0.18,London,United Kingdom
+NEZ,57.48,43.30,Nezhitino,Russia
+MFT,-13.12,-72.57,Machu Pichu,Peru
+XPG,48.88,2.36,Paris,France
+XGB,48.84,2.32,Paris,France
+XSH,47.39,0.72,Tours,France
+ZYA,52.38,4.90,Amsterdam,Netherlands
+JMY,8.49,-13.29,Freetown,Sierra Leone
+QPP,52.52,13.37,Berlin,Germany
+ONH,42.52,-75.06,Oneonta,United States
+ZWR,11.11,11.11,Kota Kinabalu,Malaysia
+KFX,47.88,10.63,Kaufbeuren,Germany
+MUQ,48.14,11.55,Munich,Germany
+NUR,49.45,11.08,Nurnberg,Germany
+AUB,48.37,10.89,Augsburg,Germany
+BIE,47.85,10.63,Biessenhofen,Germany
+BUH,48.04,10.71,Buchloe,Germany
+FUX,47.59,10.69,Fussen,Germany
+AIE,-5.80,144.44,Aiome,Papua New Guinea
+SIM,-4.00,144.00,Simbai,Papua New Guinea
+AUJ,-4.15,142.51,Ambunti,Papua New Guinea
+MOS,47.78,10.62,Marktoberdorf,Germany
+LES,47.75,10.60,Leuterschach,Germany
+UDE,51.66,5.71,Volkel,Netherlands
+HTF,51.77,-0.25,Hatfield,United Kingdom
+NOI,44.40,37.78,Novorossiysk,Russia
+HDB,49.39,8.65,Heidelberg,Germany
+WZY,25.09,-77.32,Nassau,Bahamas
+STO,59.32,18.08,Stockholm,Sweden
+JHE,56.04,12.69,Helsingborg,Sweden
+PYC,9.30,-78.24,Playon Chico,Panama
+UTU,9.14,-77.93,Ustupo,Panama
+MPU,9.19,-77.98,Mamitupo,Panama
+PVE,9.56,-78.97,El Porvenir,Panama
+RGB,49.02,12.11,Regensburg,Germany
+TLG,49.04,11.08,Treuchtlingen,Germany
+RSI,8.97,-80.33,Rio Sidra,Panama
+MPB,25.78,-80.17,Miami,United States
+WZB,49.80,9.96,Wurzburg,Germany
+TWD,48.03,-122.48,Port Townsend,United States
+XDS,45.42,-75.65,Ottawa,Canada
+XVV,44.18,-77.37,Belleville,Canada
+XZL,53.58,-113.53,Edmonton,Canada
+ZRD,37.53,-77.43,Richmond,United States
+XKL,3.13,101.69,Kuala Lumpur,Malaysia
+XAD,58.77,-94.17,Churchill,Canada
+XEF,49.89,-97.13,Winnipeg,Canada
+KIP,50.14,30.18,KIEV,Ukraine
+BAM,49.91,10.90,Bamberg,Germany
+ZRB,50.11,8.66,Frankfurt,Germany
+XYG,50.08,14.44,Prague,Czech Republic
+ZMS,43.78,11.25,Florence,Italy
+QQS,51.53,-0.13,London,United Kingdom
+ULX,-24.78,31.35,Ulusaba,Namibia
+TYA,54.14,37.36,Tula,Russia
+HCC,42.29,-73.71,Hudson NY,United States
+SSX,41.16,36.18,Samsun,Turkey
+XEG,44.26,-76.54,Kingston,Canada
+XAX,45.45,-73.74,Dorval,Canada
+NDA,-4.53,129.90,Bandanaira-Naira Island,Indonesia
+SIB,45.46,24.05,Sibiu,Romania
+MGR,31.08,-83.80,Moultrie,United States
+RCE,48.61,-123.16,Roche Harbor,United States
+BYW,48.56,-122.80,Blakely Island,United States
+RSJ,48.65,-122.87,Rosario,United States
+WSX,48.62,-122.95,Westsound,United States
+FBS,48.54,-123.01,Friday Harbor,United States
+YRR,50.40,-125.13,Big Bay,Canada
+DVA,45.52,22.58,Deva,Romania
+DZM,46.46,23.43,Dezmir,Romania
+MOW,55.76,37.62,Moscow,Russia
+TNK,60.58,-165.27,Tununak,United States
+GNU,59.12,-161.58,Goodnews Bay,United States
+WWT,60.94,-164.64,Newtok,United States
+ACU,9.20,-77.98,Achutupo,Panama
+TUW,9.52,-79.03,Tubuala,Panama
+GHE,8.06,-78.36,Garachine,Panama
+MPP,8.95,-77.75,Mulatupo,Panama
+QXG,47.46,-0.56,Angers,France
+AAJ,3.90,-55.58,Cayana,Suriname
+LDO,4.38,-55.41,Laduani,Suriname
+SGJ,29.96,-81.34,St. Augustine,United States
+LDZ,-24.83,31.50,Londolozi,South Africa
+INY,-24.82,31.42,Sabi Sands,South Africa
+VDF,28.01,-82.35,Tampa,United States
+MYF,32.48,117.76,San Diego,United States
+SEL,37.56,126.79,Seoul,South Korea
+NIC,35.15,33.27,Nicosia,Cyprus
+XWG,48.59,7.73,Strasbourg,France
+GZS,22.99,113.27,Guangzhou,China
+OMM,18.13,55.27,Marmul,Oman
+BER,52.37,13.50,Berlin,Germany
+QOT,43.19,141.00,Otaru,Japan
+VIF,41.87,16.17,Vieste,Italy
+FGL,-43.40,170.03,Fox Glacier,New Zealand
+XEV,59.33,18.06,Stockholm,Sweden
+QYX,59.86,17.65,Uppsala,Sweden
+QRH,51.92,4.47,Rotterdam,Netherlands
+XYJ,50.11,14.44,Praha,Czech Republic
+ZGH,55.67,12.56,Copenhagen,Denmark
+ZSB,47.81,13.05,Salzburg,Austria
+ZWE,51.22,4.42,Antwerp,Belgium
+ELL,-23.67,27.75,Lephalale,South Africa
+QWC,52.51,13.33,Berlin,Germany
+ZFR,52.34,14.55,Frankfurt Oder,Germany
+PLY,48.84,2.37,Paris,France
+XHP,48.88,2.36,Paris,France
+PAR,48.86,2.35,Paris,France
+BHF,52.51,13.43,Berlin,Germany
+LON,51.51,-0.13,London,United Kingdom
+NYC,40.71,-74.01,New York,United States
+CHI,41.88,-87.63,Chicago,United States
+TYO,35.69,139.69,Tokyo,Japan
+BJS,39.90,116.41,Beijing,China
+MIL,45.46,9.19,Milan,Italy
+WAS,38.89,-77.04,Washington,United States
+YMQ,45.51,-73.55,Montreal,Canada
+YTO,43.65,-79.38,Toronto,Canada
+BGS,52.55,13.39,Berlin,Germany
+NBU,42.09,-87.82,Glenview,United States
+XBG,48.33,-71.00,Bogande,Canada
+CHE,51.93,-10.23,Caherciveen,Ireland
+KLK,3.49,35.84,Kalokol,Kenya
+KRV,0.19,35.40,Kimwarer,Kenya
+DVD,-22.11,43.27,Andavadoaka,Madagascar
+ZRA,39.37,-74.44,Atlantic City NJ,United States
+ZSF,42.11,-72.59,Springfield MA,United States
+XZK,42.38,-72.51,Amherst MA,United States
+QQK,51.53,-0.12,London,United Kingdom
+XVJ,51.90,-0.21,Stevenage,United Kingdom
+XVH,52.57,-0.25,Peterborough,United Kingdom
+PUM,-4.18,121.62,Pomalaa,Indonesia
+WLF,52.10,0.17,Whittlesford,United Kingdom
+ZVM,52.33,9.82,Hannover,Germany
+XHN,50.63,5.57,Liege,Belgium
+OHR,54.41,8.31,Wyk,Germany
+WIH,45.66,-120.97,Wishram,United States
+YJS,41.91,128.41,Samjiyon,North Korea
+CDK,29.13,-83.05,Cedar Key,United States
+ZMB,53.55,10.01,Hamburg,Germany
+IRU,5.74,73.32,Maldives Hilton Iru fushi,Maldives
+DHG,3.59,72.88,Dhigurah,Maldives
+CZW,50.88,19.20,RUDNIKI,Poland
+CLC,29.56,-95.14,Clear Lake City,United States
+CFX,-26.06,-65.93,Cafayate,Argentina
+TVS,39.72,118.00,Tangshan,China
+QPJ,46.07,18.23,Pecs,Hungary
+JHL,57.22,-111.42,Wood Buffalo,Canada
+EQY,35.02,-80.62,Charlotte,United States
+KNN,10.45,-9.23,Kankan,Guinea
+DUU,-3.02,34.98,Ndutu,Tanzania
+SES,32.44,-86.95,Selma Alabama,United States
+ZDY,24.50,52.34,Dalma Island,United Arab Emirates
+PCM,20.62,-87.08,Playa del Carmen,Mexico
+EIA,-8.20,147.85,Popondetta,Papua New Guinea
+ZTY,42.35,-71.08,Boston,United States
+ULI,10.02,139.80,Ulithi,Micronesia
+BKN,39.48,54.36,Balkanabat,Turkmenistan
+ZWI,39.74,-75.55,Wilmington,United States
+NML,57.06,-111.57,Fort McMurray,Canada
+GGR,8.24,48.29,Garowe,Somalia
+ZRZ,38.95,-76.87,New Carrollton,United States
+THD,19.90,105.47,Thanh Hoa,Vietnam
+JCO,36.02,14.33,Comino,Malta
+QUA,54.50,11.22,Puttgarden,Germany
+MJU,-2.58,119.03,Mamuju,Indonesia
+COI,28.34,-80.69,Cocoa,United States
+TCY,-19.97,13.02,Terrace Bay,Namibia
+KEZ,6.97,79.88,Colombo,Sri Lanka
+KDZ,7.33,80.64,Kandy,Sri Lanka
+XWW,48.20,16.34,Vienna,Austria
+XCM,42.31,-82.08,Chatham,Canada
+GLQ,55.86,-4.25,Glasgow,United Kingdom
+LKK,58.97,-155.11,Kulik Lake,United States
+ZGG,55.86,-4.26,Glasgow,United Kingdom
+QQU,51.53,-0.13,London,United Kingdom
+QQW,51.50,-0.11,London,United Kingdom
+BHZ,-19.85,-43.95,Belo Horizonte,Brazil
+PRL,60.21,-147.82,Port Oceanic,United States
+ИКУ,42.35,76.43,Tamchy,Kyrgyzstan
+UCA,43.10,-75.22,Utica,United States
+YPT,49.62,-124.02,Pender Harbour,Canada
+YMU,50.07,-124.98,Mansons Landing,Canada
+YMP,50.58,-127.03,Port McNeill,Canada
+YTG,50.88,-126.83,Sullivan Bay,Canada
+DHB,48.62,-123.01,Deer Harbor,United States
+OLT,32.76,-117.20,San Diego,United States
+ZFQ,44.83,-0.56,Bordeaux,France
+XZO,59.91,10.75,Oslo,Norway
+QFV,60.39,5.33,Bergen,Norway
+ZYN,43.83,4.37,Nimes,France
+XZN,43.92,4.79,Avignon,France
+XHJ,50.77,6.09,Aachen,Germany
+TPY,45.06,7.68,Turin,Italy
+YJH,43.32,-1.98,San Sebastian,Spain
+EEP,42.82,-1.66,Pamplona,Spain
+QQY,53.96,-1.09,York,United Kingdom
+QQN,52.48,-1.90,Birmingham,United Kingdom
+ZIV,57.48,-4.22,Inverness,United Kingdom
+ZXA,57.14,-2.10,Aberdeen,United Kingdom
+XFP,55.61,13.00,Malmo,Sweden
+XGC,55.71,13.19,Lund,Sweden
+DJN,64.05,-145.72,Delta Junction,United States
+SVS,66.02,-149.05,Stevens Village,United States
+KKI,60.91,-161.43,Akiachak,United States
+KCG,56.32,-158.59,Chignik,United States
+YKT,52.58,-128.53,Klemtu,Canada
+CYD,17.10,-89.10,San Ignacio,Belize
+SVK,16.73,-88.37,Stann Creek,Belize
+INB,16.52,-88.41,Independence,Belize
+CZJ,9.45,-78.58,Corazon de Jesus,Panama
+ESP,41.04,-75.16,East Stroudsburg,United States
+XJN,41.63,-4.72,Valladolid,Spain
+XJO,41.77,-2.47,Soria,Spain
+XER,48.59,7.73,Strasbourg,France
+GLN,29.03,-10.05,Goulimime,Morocco
+SZE,11.79,40.99,Semera,Ethiopia
+GTZ,-2.16,34.23,Grumeti Game Reserve,Tanzania
+XNB,25.15,55.23,Dubai,United Arab Emirates
+SZI,47.49,84.89,Zaysan,Kazakhstan
+TCR,8.72,78.03,Thoothukudi,India
+KVN,31.36,120.95,Kunshan,China
+ABU,-9.33,124.90,Atambua,Indonesia
+KAS,-2.30,138.03,Kasonaweja,Indonesia
+LWE,-8.64,122.24,Lewoleba,Indonesia
+SAU,-10.43,121.90,Savu Island,Indonesia
+PCU,-0.69,114.44,Puruk Cahu,Indonesia
+MLK,-0.20,115.76,Melak,Indonesia
+DEK,-4.86,139.48,Dekai,Indonesia
+KNY,-4.60,138.38,Keneyan,Indonesia
+BFC,-15.87,145.33,Bloomfield,Australia
+XDH,52.88,-118.08,Jasper,Canada
+ALV,42.51,1.52,Andorra La Vella,Spain
+NGL,-24.39,31.33,Ngala,South Africa
+ZLY,42.64,-73.74,Rennselaer,United States
+HAL,4.04,72.92,Halaveli,Maldives
+FVM,0.31,73.43,Fuvahmulah,Maldives
+DWO,6.91,79.91,Colombo,Sri Lanka
+QQM,53.48,-2.23,Manchester,United Kingdom
+AUE,28.54,33.12,Abu Rudeis,Egypt
+XIK,40.38,-149.40,NIK,Juan de Nova Island
+YGC,53.92,-118.87,Grand Cache,Canada
+GUD,60.88,6.82,Gudvangen,Norway
+TNP,64.26,-21.15,Selfoss,Iceland
+XFF,50.90,1.81,Calais,France
+HEC,60.17,24.94,Helsinki,Finland
+NKJ,31.97,118.79,Nanjing,China
+QDH,51.14,0.87,Ashford,United Kingdom
+QLJ,47.05,8.31,Lucerne,Switzerland
+XIT,51.35,12.38,Leipzig,Germany
+XLV,43.11,-79.06,Niagara Falls,Canada
+XQE,51.44,0.32,Ebbsfleet Valley,United Kingdom
+YON,27.26,91.51,Yongphulla,Bhutan
+FID,41.15,-72.02,Southold,United States
+ZRV,41.83,-71.41,Providence,United States
+ZTD,42.81,-73.94,Schenectady,United States
+DYN,32.00,119.59,Danyang,China
+HVT,60.29,25.05,Helsinki,Finland
+XIZ,49.22,3.99,Reims,France
+XXZ,62.39,17.32,Sundsvall,Sweden
+FEC,-12.20,-38.91,Feira de Santana,Brazil
+CXC,61.52,-144.44,Chitina,United States
+YWO,65.76,-111.25,Lupin Mine,Canada
+OZS,37.97,-92.69,Camdenton,United States
+PCT,40.40,-74.66,Princeton,United States
+NRW,36.39,-94.15,Bentonville,United States
+NGM,13.48,144.79,Agana,United States
+XDV,53.92,-122.74,Prince George,Canada
+XDW,54.30,-130.35,Prince Rupert,Canada
+JBB,-8.24,113.69,Jember,Indonesia
+OLW,46.99,-122.79,Olympia,United States
+ZXS,42.88,-78.87,Buffalo,United States
+QFB,48.00,7.84,Freiburg,Germany
+RSE,-33.87,151.27,Sydney,Australia
+ZBA,47.57,7.61,Basel,Switzerland
+ZEU,51.54,9.93,Gottingen,Germany
+ZRL,40.05,-76.31,Lancaster,United States
+ZUG,40.26,-76.88,Harrisburg,United States
+QJZ,47.22,-1.54,Nantes,France
+XPJ,43.60,3.88,Montpellier,France
+XYH,56.05,12.70,Helsingborg,Sweden
+ZLS,51.52,-0.08,London,United Kingdom
+ZTJ,40.32,-74.62,Princeton,United States
+ZPY,50.79,7.20,Siegburg,Germany
+YJD,41.38,2.19,Barcelona,Spain
+QKU,50.94,6.97,Cologne,Germany
+FVS,59.96,30.36,St. Petersburg,Russia
+SDI,-5.63,146.47,Saidor,Papua New Guinea
+BCP,-5.86,146.49,Bambu,Papua New Guinea
+YAQ,48.82,-123.60,Maple Bay,Canada
+AMG,-9.44,147.22,Amboin,Papua New Guinea
+KRM,3.75,-59.31,Karanambo,Guyana
+WIT,-22.22,118.35,Wittenom,Australia
+ETD,-28.74,138.59,Etadunna,Australia
+MNE,-28.01,138.66,Mungeranie,Australia
+CWR,-27.71,138.33,Cowarie,Australia
+CFH,-27.02,138.89,Clifton Hills,Australia
+DRR,-25.68,140.23,Durrie,Australia
+ODL,-26.75,140.64,Cordillo Downs,Australia
+DHD,-27.07,141.90,Durham Downs,Australia
+INM,-27.70,140.73,Innamincka,Australia
+GLG,-24.80,139.60,Glengyle,Australia
+HWK,-31.86,138.47,Wilpena Pound,Australia
+MIH,-14.79,125.82,Mitchell Plateau,Australia
+WHO,-43.36,170.13,Franz Josef Aerodrome,New Zealand
+SNG,37.41,126.80,Siheung,South Korea
+ZDJ,46.95,7.44,Bern,Switzerland
+JKT,-6.15,106.85,Jakarta,Indonesia
+ZYH,52.08,4.32,Den Haag,Netherlands
+DIC,37.79,-122.43,DICKA,United States
+XBA,44.14,133.27,Arseniev,Russia
+QII,47.55,9.68,Lindau,Germany
+XGZ,47.50,9.74,Bregenz,Austria
+ZYZ,51.20,4.43,Antwerpen,Belgium
+XEW,59.22,17.95,Flemingsberg,Sweden
+PHG,4.80,7.00,Port harcourt,Nigeria
+XJY,48.73,2.26,Massy,France
+ZLN,48.00,0.19,Le Mans,France
+FIN,29.46,-81.21,Flagler County,United States
+PRK,44.53,-73.40,Port Kent,United States
+BNF,60.40,5.32,Bergen,Norway
+COP,42.63,-74.89,Cooperstown,United States
+OCO,43.11,-88.49,Oconomowoc,United States
+BXW,-5.72,112.68,Bawean,Indonesia
+CMC,-2.92,-40.83,Camocim,Brazil
+LZS,48.29,14.29,Linz,Austria
+BNL,40.51,-88.98,Normal,United States
+NZM,28.59,77.25,Delhi,India
+EMB,37.80,-122.39,San Francisco,United States
+ДЖБ,40.56,72.58,Jalal-Abad,Kyrgyzstan
+TWM,47.05,-91.74,Two Harbors,United States
+SXU,34.94,-104.64,Santa Rosa,United States
+IKW,43.66,-84.26,Midland,United States
+IBO,-12.35,40.60,Ibo Island,Mozambique
+NWK,39.67,-75.75,Newark,United States
+DIO,65.76,-168.95,Diomede,United States
+RJM,-0.43,130.77,Waisai,Indonesia
+TAV,-14.23,-169.51,Ta'u,American Samoa
+AIY,39.36,-74.46,Atlantic City,United States
+RWA,52.23,21.00,Warszawa,Poland
+SRB,36.06,-85.53,Sparta,United States
+QIE,43.31,4.56,Istres,France
+KWF,55.30,-133.24,Waterfall,United States
+ORZ,18.05,-88.58,Orange Walk Town,Belize
+CTE,9.45,-78.98,Carti Islands,Panama
+PDM,7.56,-80.02,Pedasi,Panama
+NMG,8.46,-78.93,San Miguel,Panama
+ZDH,47.55,7.59,Basel,Switzerland
+LBN,0.67,36.10,Lake Baringo,Kenya
+AAD,6.10,46.64,Adado,Somalia
+GUO,5.32,45.99,Guriel,Somalia
+ADV,11.40,26.12,Ed Daein,Sudan
+SHF,44.24,85.89,Shihezi,China
+JGB,19.07,82.04,Jagdalpur,India
+JLG,20.96,75.63,Jalgaon,India
+NVY,11.61,79.53,Neyveli,India
+PXA,-4.02,103.38,Pagar Alam,Indonesia
+KJT,-6.67,108.19,Majalengka,Indonesia
+LMU,2.96,105.75,Jamaja Island,Indonesia
+TXE,4.72,96.85,Takengon,Indonesia
+MKF,5.56,126.58,Miangas,Indonesia
+WUB,0.88,128.29,Buli,Indonesia
+LKA,-8.27,123.00,Larantuka,Indonesia
+RTI,-10.77,123.07,Rote Ndao Regency,Indonesia
+JIO,-8.14,127.91,Tiakur,Indonesia
+GLX,1.84,127.79,Galela,Indonesia
+LAH,-0.64,127.50,Labuha,Indonesia
+LLO,-3.08,120.25,Palopo,Indonesia
+WNI,-5.32,123.58,Wangi-wangi,Indonesia
+ZDU,56.46,-2.97,Dundee,United Kingdom
+КПЖ,42.51,78.41,Karakol,Kyrgyzstan
+GHK,63.44,-109.14,Gahcho Kue,Canada
+CMV,52.83,-83.92,Victor Mine,Canada
+UKH,19.39,56.40,Mukhaizna,Oman
+SWL,10.53,119.27,San Vicente,Philippines
+SIL,9.79,122.45,Sipalay,Philippines
+RIM,-22.63,-152.81,Rimatara,French Polynesia
+RRT,-22.45,-151.34,Rurutu,French Polynesia
+RPA,-27.61,-144.32,Rapa Iti,French Polynesia
+GEM,40.43,29.16,Gemlik,Turkey
+MLH,47.59,7.53,Bale-Mulhouse-Freiburg,France
+CBC,-18.99,125.51,Djugerari,Australia
+CDF,46.58,12.12,Cortina d'Ampezzo,Italy
+RVH,59.98,30.59,St-Peterburg,Russia
+KHX,-0.72,29.70,Kihihi,Uganda
+БОВ,70.31,68.34,Bovanenkovo,Russia
+XRJ,41.90,12.50,Rome,Italy
+RVI,47.26,39.82,Rostov-on-Don,Russia
+MHB,-36.85,174.79,Auckland,New Zealand
+SLI,-12.17,26.37,Solwezi,Zambia
+TKL,58.49,-133.94,Taku Lodge,United States
+UVL,25.48,30.59,El Kharga,Egypt

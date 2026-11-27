@@ -1,6 +1,6 @@
 """Convierte routes.dat de OpenFlights (CSV con cabecera) en public/routes.csv.
 Quita las aerolíneas reales y deja pares únicos origen,destino,máscara de equipo
-(1=A20N 2=A21N 4=B738 8=B789 16=E195).  Uso: python3 tools/build_routes.py routes.csv"""
+(1=A20N 2=A21N 4=B738 8=B789 16=E195).  Uso: python3 tools/build_routes.py data/routes_original.csv  (ejecutar antes tools/build_airports.py)"""
 import csv,sys
 M={}
 def put(c,b):
@@ -16,6 +16,9 @@ for x in csv.DictReader(open(sys.argv[1],encoding='utf-8-sig')):
         m=p.get((a,b),0)
         for e in x['Equipment'].split(): m|=M.get(e,0)
         p[(a,b)]=m
+# solo rutas cuyos dos aeropuertos tienen coordenadas en public/airports.csv
+known={l.split(',')[0] for l in open('public/airports.csv',encoding='utf-8')}
+n0=len(p);p={k:v for k,v in p.items() if k[0] in known and k[1] in known}
 with open('public/routes.csv','w') as f:
     for (a,b),m in sorted(p.items()): f.write(f'{a},{b},{m}\n')
-print(len(p),'rutas')
+print(len(p),'rutas (descartadas %d sin coordenadas)'%(n0-len(p)))
