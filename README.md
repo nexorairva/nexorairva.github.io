@@ -20,3 +20,10 @@ Cada vez que alguien se registra, todo el staff con permiso **Pilotos** (Admin y
 - **Normativa / términos / privacidad:** texto de hasta 60.000 caracteres o archivo adjunto `.txt`, `.md`, `.html`, `.docx` (se convierte en texto de la web) o `.pdf` (se muestra incrustado, máx. 2 MB).
 - **Staff → Administración → Marca:** logos y, debajo, "Fondo de la web" (color claro/oscuro, imagen y velo).
 - El mapa del panel del piloto solo muestra su vuelo en curso; al terminarlo queda limpio.
+
+## Aeropuertos, rutas, códigos de vuelo, tema y pie de página
+- **Aeropuertos y rutas** (`public/airports.csv`, `public/routes.csv`: es la carpeta que se publica; `data/` solo guarda el original). `tools/build_airports.py` completa el listado con todos los aeropuertos con IATA de OpenFlights (6.737 con coordenadas) y `tools/build_routes.py` descarta las rutas con algún extremo sin coordenadas (quedan 37.406). Regenerar: `python3 tools/build_airports.py airports-extended.dat && python3 tools/build_routes.py data/routes_original.csv`.
+- **Código de vuelo = ID del piloto** que reserva (oficial, ruta/charter o libre): `NXR104`, etc. La referencia de la programación se guarda aparte (`sched`).
+- **Noticias:** en Staff → Noticias, iconos ✎ (editar) y 🗑 (eliminar, con confirmación).
+- **Tema:** arranca en oscuro; el botón ☀/🌙 de la cabecera permite cambiarlo y se recuerda en el navegador.
+- **Configuración → Colaboradores:** logos (hasta 12, con enlace opcional) que aparecen en el pie de todas las páginas, sobre «© año NEXORA AIR». Colección `partners` (reejecutar `schema.sql`).

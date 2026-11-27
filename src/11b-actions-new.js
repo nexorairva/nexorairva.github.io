@@ -1,5 +1,9 @@
 /* ===== acciones nuevas ===== */
 Object.assign(A,{
+ nedit:id=>{const n=S.news.find(x=>x.id===id);if(!n)return;ui.nw=Object.assign({},n);render();window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})},
+ ncancel:()=>{ui.nw=null;render()},
+ ndel:id=>{const n=S.news.find(x=>x.id===id);if(!n)return;modal(t('Eliminar noticia','Delete news'),`<form data-f="ndel" class="form pad"><input type="hidden" name="id" value="${esc(id)}"><p class="full">${t('Se eliminará «','«')}${esc(n.n)}${t('» para todos. No se puede deshacer.','» will be deleted for everyone. This cannot be undone.')}</p><div class="full" style="display:flex;gap:8px"><button class="btn bad" type="submit">${t('Eliminar','Delete')}</button>${btn(t('Cancelar','Cancel'),'xm','','')}</div></form>`)},
+ pdel:id=>{const x=S.partners.find(p=>p.id===id);if(!x)return;S.partners=S.partners.filter(p=>p.id!==id);aud('Quitó un colaborador',x.n);done(t('Colaborador quitado','Partner removed'),1)},
  bgreset:()=>{['bgL','bgD','bgImg','bgVeil'].forEach(k=>delete S.brand[k]);aud('Restauró el fondo de la web','');done(t('Fondo restaurado','Background restored'),1)},
  bgimgdel:()=>{delete S.brand.bgImg;delete S.brand.bgVeil;aud('Quitó la imagen de fondo','');done(t('Imagen quitada','Image removed'),1)},
  brreset:k=>{delete S.brand[k];aud('Restauró imagen de marca',k);done(t('Restaurado','Restored'),1)},
@@ -60,3 +64,13 @@ document.addEventListener('change',async e=>{const x=e.target;if(x.id!=='bgimg'|
   if(!d){toast(t('Solo se admiten imágenes JPG, PNG o WebP.','Only JPG, PNG or WebP images are accepted.'));return}
   if(d.length>1500000){toast(t('La imagen es demasiado pesada; usa una más pequeña.','The image is too large; use a smaller one.'));return}
   S.brand.bgImg=d;if(S.brand.bgVeil===undefined)S.brand.bgVeil=35;aud('Cambió la imagen de fondo','');save();render();toast(t('Imagen de fondo actualizada','Background image updated'))});
+
+F.npt=(d)=>{const n=(d.get('n')||'').trim();let url=(d.get('url')||'').trim();
+  if(!ui.ptImg){toast(t('Sube primero el logo.','Upload the logo first.'));return}
+  if(S.partners.length>=12){toast(t('Máximo 12 colaboradores.','Maximum 12 partners.'));return}
+  if(url&&!/^https?:\/\//i.test(url))url='https://'+url;if(url&&!/^https?:\/\/[^\s"'<>]+$/i.test(url))url='';
+  if(!n)return;S.partners.push({id:uid('pt'),n,url,img:ui.ptImg});ui.ptImg=null;aud('Añadió un colaborador',n);done(t('Colaborador añadido','Partner added'),1)};
+function readLogo(file){return new Promise(res=>{if(!file||!/^image\/(png|jpeg|webp)$/.test(file.type))return res(null);const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,400/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/png'))};im.onerror=()=>res(null);im.src=fr.result};fr.onerror=()=>res(null);fr.readAsDataURL(file)})}
+document.addEventListener('change',async e=>{const x=e.target;if(x.id!=='ptimg'||!x.files||!x.files[0])return;const d=await readLogo(x.files[0]),i=document.getElementById('npt-info');
+  if(!d){ui.ptImg=null;if(i)i.textContent=t('Solo se admiten imágenes PNG, JPG o WebP.','Only PNG, JPG or WebP images are accepted.');return}
+  ui.ptImg=d;if(i)i.textContent=t('Logo cargado ✓','Logo loaded ✓')});

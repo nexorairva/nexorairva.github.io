@@ -47,6 +47,7 @@ function ensure(){let ch=0;
   if(!CL.on&&!S.clean1){   /* retirada única de los tours, eventos, retos y avisos de ejemplo */
     S.tours=[];S.events=[];S.cal=[];S.chall=[];S.enroll={};S.news=(S.news||[]).filter(n=>!/^n[123]$/.test(n.id));S.clean1=1;ch=1}
   if(!S.chall){S.chall=[];if(!CL.on)ch=1}
+  if(!S.partners)S.partners=[];
   TOURS=S.tours;syncCh();
   if(ch&&!CL.on)save()}
 /* ----- marca ----- */
@@ -69,7 +70,7 @@ function gcF(A,B){const r=Math.PI/180,a1=A[0]*r,o1=A[1]*r,a2=B[0]*r,o2=B[1]*r,d=
 const px=(la,lo)=>[+(lo+180).toFixed(2),+(85-la).toFixed(2)];
 function arc(A,B,f0,f1){const g=gcF(A,B),n=Math.max(8,Math.round((f1-f0)*56));let s='',pl=null;for(let i=0;i<=n;i++){const q=g(f0+(f1-f0)*i/n),p=px(q[0],q[1]);s+=(pl===null||Math.abs(p[0]-pl)>180?'M':'L')+p[0]+' '+p[1];pl=p[0]}return s}
 function liveFlights(){const now=Date.now(),out=[];
-  S.res.forEach(r=>{if(r.status!=='flying')return;const st=r.flyTs||r.checkin||r.depTs,pr=Math.min(.98,Math.max(.03,(now-st)/(Math.max(10,r.mins)*MIN)));out.push({id:r.id,pid:r.pilot,cs:r.kind==='free'?'CHARTER':r.no,from:r.from,to:r.to,pl:r.platform,ty:r.type,pr,demo:false})});
+  S.res.forEach(r=>{if(r.status!=='flying')return;const st=r.flyTs||r.checkin||r.depTs,pr=Math.min(.98,Math.max(.03,(now-st)/(Math.max(10,r.mins)*MIN)));out.push({id:r.id,pid:r.pilot,cs:r.no,from:r.from,to:r.to,pl:r.platform,ty:r.type,pr,demo:false})});
   (S.live||[]).forEach(d=>{const f=S.flights.find(x=>x.no===d.no);if(!f)return;const nm=dist(f.from,f.to);if(!nm)return;const mins=cmins(nm,f.type),pr=((now+d.off*MIN)%(mins*1.15*MIN))/(mins*MIN);if(pr>=1||pr<.03)return;out.push({id:'d'+d.no,pid:d.pid,cs:'NXR'+d.no,from:f.from,to:f.to,pl:d.pl,ty:f.type,pr,demo:true})});
   return out}
 function mapInner(o){o=o||{};const F=liveFlights().filter(f=>!o.only||f.pid===o.only);let g='',pl='',ap={};
@@ -96,7 +97,7 @@ function barcode(seed){let h=hs(seed),x=0,s='';for(let i=0;i<38;i++){h=(h*110351
 function bpass(r){const p=pilot(r.pilot),ac=S.fleet.find(x=>x.reg===r.reg),tag=r.kind==='free'?'CHARTER':r.kind==='route'?t('RUTA','ROUTE'):t('VUELO','FLIGHT');
   return '<article class="bp"><div class="bpm"><div class="bpt"><span class="bpb">'+markImg(20)+' NEXORA AIR · '+t('TARJETA DE EMBARQUE','BOARDING PASS')+'</span>'+pill(stateLabel(r),r.status==='review'?'warn':'acc')+'</div>'+
    '<div class="bpr"><div><b class="ia">'+esc(iata(r.from))+'</b><small>'+esc(apName(r.from))+'</small></div><div class="bpp"><svg viewBox="0 0 120 20" aria-hidden="true"><path d="M2 10H100" stroke="currentColor" stroke-dasharray="3 4"/><g transform="translate(108 10) rotate(90)"><path d="'+PLANE+'" fill="currentColor"/></g></svg><span class="mono">'+nf(r.nm)+' nm · '+fh(r.mins)+'</span></div><div style="text-align:right"><b class="ia">'+esc(iata(r.to))+'</b><small>'+esc(apName(r.to))+'</small></div></div>'+
-   '<div class="bpf"><div><small>'+t('Vuelo','Flight')+'</small><b>'+(r.kind==='free'?'CHARTER':esc(r.no))+'</b></div><div><small>'+t('Salida','Departure')+'</small><b>'+fdt(r.depTs)+'</b></div><div><small>'+t('Aeronave','Aircraft')+'</small><b>'+esc(r.reg||'—')+' · '+(TYPES[r.type]?TYPES[r.type].n:'')+'</b></div><div><small>'+t('Red','Network')+'</small><b>'+r.platform+'</b></div><div><small>'+t('Piloto','Pilot')+'</small><b>'+esc(p.name)+'</b></div></div></div>'+
+   '<div class="bpf"><div><small>'+t('Vuelo','Flight')+'</small><b>'+esc(r.no)+'</b></div><div><small>'+t('Salida','Departure')+'</small><b>'+fdt(r.depTs)+'</b></div><div><small>'+t('Aeronave','Aircraft')+'</small><b>'+esc(r.reg||'—')+' · '+(TYPES[r.type]?TYPES[r.type].n:'')+'</b></div><div><small>'+t('Red','Network')+'</small><b>'+r.platform+'</b></div><div><small>'+t('Piloto','Pilot')+'</small><b>'+esc(p.name)+'</b></div></div></div>'+
    '<div class="bps"><span class="eyebrow">'+tag+'</span>'+barcode(r.id)+(r.expires?'<small>'+t('Caduca en','Expires in')+'</small><b data-cd="'+r.expires+'">'+cd(r.expires)+'</b>':'<small>'+t('Salida','Departure')+'</small><b>'+fz(r.depTs)+' UTC</b>')+btn(t('Abrir caso','Open case'),'case',r.id,'pri sm')+'</div></article>'}
 setInterval(()=>{document.querySelectorAll('[data-cd]').forEach(e=>e.textContent=cd(+e.dataset.cd));document.querySelectorAll('.lmap').forEach(e=>{try{e.innerHTML=mapInner(JSON.parse(e.dataset.o))}catch(x){}})},15000);
 /* ----- navegación por grupos y pestañas ----- */
