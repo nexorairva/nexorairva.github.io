@@ -18,6 +18,13 @@ function nextPid(){const used=new Set(S.pilots.map(p=>p.id));let n=Math.max(100,
 function pidCheck(v,self){const id=(v||'').trim().toUpperCase();
   if(!PID_RE.test(id))return{err:t('Formato: NXR y 3 o 4 cifras (por ejemplo NXR101).','Format: NXR plus 3 or 4 digits (for example NXR101).')};
   if(S.pilots.some(p=>p.id===id&&p.id!==self))return{err:t('Ese ID ya lo usa otro piloto.','That ID is already used by another pilot.')};return{id}}
+/* borra a un piloto y todo lo suyo (modo demo) */
+function purgePilot(id){S.pilots=S.pilots.filter(p=>p.id!==id);
+  ['log','tx','res','tickets','inc'].forEach(k=>S[k]=(S[k]||[]).filter(x=>x.pilot!==id));
+  S.accept=(S.accept||[]).filter(a=>a.pid!==id);S.live=(S.live||[]).filter(x=>x.pid!==id);
+  S.notes=(S.notes||[]).filter(n=>n.to!==id&&!(n.go==='s-pilotos'&&(n.text||'').includes('('+id+')')));
+  delete S.enroll[id];delete S.prefs[id];(S.events||[]).forEach(e=>{if(e.part)delete e.part[id]});(S.groups||[]).forEach(g=>{g.m=(g.m||[]).filter(x=>x!==id)});
+  S.delReq=S.delReq.filter(x=>x!==id);S.revReq=S.revReq.filter(x=>x!==id)}
 /* cambia el ID de un piloto y todas las referencias a él */
 function renamePid(a,b){if(a===b)return;const ren=x=>x===a?b:x,rk=o=>{if(o&&Object.prototype.hasOwnProperty.call(o,a)){o[b]=o[a];delete o[a]}};
   const p=S.pilots.find(x=>x.id===a);if(p)p.id=b;

@@ -11,6 +11,14 @@ Object.assign(F,{
      CL.psnap[c.id]=CL.psnap[old];delete CL.psnap[old]}
    renamePid(old,c.id);notify(c.id,t('Tu ID de piloto es ahora ','Your pilot ID is now ')+c.id);aud('Cambió el ID de piloto',old+' → '+c.id);
    save();render();toast(t('ID actualizado: ','ID updated: ')+c.id);A.pfile(c.id)},
+ phrs:(d,f)=>{if(!isAdmin(me()))return;const id=f.dataset.id,p=P_(id);if(!p)return;
+   const tot=parseFloat(String(d.get('h')).replace(',','.')),why=(d.get('why')||'').trim();
+   if(!isFinite(tot)||tot<0||tot>99999)return err('phrs-err',t('Indica unas horas entre 0 y 99999.','Enter hours between 0 and 99999.'));
+   if(!why)return err('phrs-err',t('Indica el motivo del ajuste.','Enter the reason for the adjustment.'));
+   const s0=stats(id),r0=rankOf(s0.h);p.hAdj=Math.round((tot-s0.hl)*100)/100;if(!p.hAdj)delete p.hAdj;const s1=stats(id);
+   if(Math.abs(s1.h-s0.h)<0.005){modal();return}
+   notify(id,t('El staff ha ajustado tus horas de vuelo: ','Staff adjusted your flight hours: ')+nd(s0.h)+' → '+nd(s1.h)+' h.');const r1=rankOf(s1.h);if(r1.i>r0.i)notify(id,t('¡Ascenso a ','Promoted to ')+r1.n+'!');
+   aud('Ajustó las horas de vuelo',id+': '+nd(s0.h)+' → '+nd(s1.h)+' h · '+why);save();render();toast(t('Horas actualizadas','Hours updated'));A.pfile(id)},
  pdata:(d,f)=>{if(!isAdmin(me()))return;const id=f.dataset.id,p=P_(id);if(!p)return;const g=k=>(d.get(k)||'').trim();
    const v={name:g('name'),country:g('country').toUpperCase(),user:g('user'),platform:g('platform')==='IVAO'?'IVAO':'VATSIM',vatsim:g('vatsim'),ivao:g('ivao'),simbrief:g('simbrief'),hub:g('hub')||p.hub,netOk:d.get('netOk')==='1'};
    if(!v.name)return err('pdata-err',t('Indica el nombre.','Enter the name.'));

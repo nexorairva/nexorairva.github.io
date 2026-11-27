@@ -20,6 +20,7 @@ create table if not exists public.profiles (
   status    text not null default 'Pending',      -- Pending | Active | Inactive | Suspended
   rol       text,                                 -- null | 'admin' | id de un nivel de nx_docs(coll='roles')
   net_ok    boolean not null default false,       -- plataforma VATSIM/IVAO verificada por el staff
+  h_adj     numeric not null default 0,           -- ajuste de horas de vuelo (+/-); solo lo cambia un administrador
   joined    timestamptz not null default now(),
   data      jsonb not null default '{}'::jsonb    -- nombre, país, plataforma, hub, favoritos, logros…
 );
@@ -30,6 +31,7 @@ do $$ begin
     alter table public.profiles add constraint profiles_code_fmt check (code ~ '^NXR[0-9]{3,4}$') not valid;
   end if;
 end $$;
+alter table public.profiles add column if not exists h_adj numeric not null default 0;   -- bases ya creadas
 create table if not exists public.profile_private (
   id   uuid primary key references public.profiles(id) on delete cascade,
   data jsonb not null default '{}'::jsonb         -- IDs de VATSIM/IVAO y de SimBrief
@@ -122,6 +124,9 @@ begin
      and not public.has_perm('pilotos') then
     raise exception 'sin permiso para cambiar estado o verificación';
   end if;
+  if new.h_adj is distinct from old.h_adj and not public.has_perm('admin') then
+    raise exception 'solo un administrador puede ajustar las horas de vuelo';
+  end if;
   if new.rol is distinct from old.rol and not public.has_perm('admin') then
     raise exception 'solo un administrador puede cambiar roles';
   end if;
@@ -142,6 +147,27 @@ drop policy if exists pp_write on public.profile_private;
 create policy pp_write on public.profile_private for all
   using (id = auth.uid() or public.has_perm('pilotos'))
   with check (id = auth.uid() or public.has_perm('pilotos'));
+
+-- Rechazar una alta o eliminar una cuenta: borra el perfil, sus datos y el usuario de acceso, para que
+-- tenga que volver a registrarse (con el mismo correo si quiere). Solo staff con permiso "pilotos";
+-- no permite borrar cuentas de staff ni la propia.
+create or replace function public.remove_pilot(p_uid uuid) returns void
+language plpgsql security definer set search_path = public as $$
+declare v_code text; v_rol text;
+begin
+  if auth.uid() is not null and not public.has_perm('pilotos') then raise exception 'sin permiso'; end if;
+  select code, rol into v_code, v_rol from public.profiles where id = p_uid;
+  if not found then return; end if;
+  if v_rol is not null then raise exception 'es una cuenta de staff: quítale antes el nivel'; end if;
+  if p_uid = auth.uid() then raise exception 'no puedes eliminar tu propia cuenta desde aquí'; end if;
+  delete from public.nx_docs where owner = p_uid;
+  delete from public.nx_docs where (coll in ('enroll','delReq','revReq') and id = v_code)
+                                or (coll = 'accept' and id like v_code || '-%')
+                                or (coll = 'notes' and data->>'go' = 's-pilotos' and data->>'text' like '%(' || v_code || ')%');
+  delete from auth.users where id = p_uid;                 -- borra profiles y profile_private en cascada
+end $$;
+revoke all on function public.remove_pilot(uuid) from public, anon;
+grant execute on function public.remove_pilot(uuid) to authenticated;
 
 -- Siguiente ID libre: NXR101, NXR102… cuenta siempre hacia arriba y salta los que ya estén en uso.
 create or replace function public.next_pilot_code() returns text
