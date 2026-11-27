@@ -1,8 +1,8 @@
 /* ===== modo nube: Supabase (PostgreSQL + Auth). Sin public/config.js la web funciona en modo demo local ===== */
 const CL={on:false,sb:null,uid:null,snap:new Map(),psnap:{},busy:false,dirty:false,timer:null,cat:null,loaded:false,sig:''};
-const CAR={flights:['no'],fleet:['reg'],tours:['id'],log:['id','pilot'],tx:['id','pilot'],res:['id','pilot'],accept:[a=>a.pid+'-'+a.doc,'pid'],notes:['id','to'],tickets:['id','pilot'],inc:['id','pilot'],news:['id'],events:['id'],cal:['id'],audit:[a=>a.ts+'-'+hs(a.a+a.who),null],sec:[a=>a.ts+'-'+hs(a.txt),null],intg:['n'],roles:['id'],social:['id']};
+const CAR={flights:['no'],fleet:['reg'],tours:['id'],log:['id','pilot'],tx:['id','pilot'],res:['id','pilot'],accept:[a=>a.pid+'-'+a.doc,'pid'],notes:['id','to'],tickets:['id','pilot'],inc:['id','pilot'],news:['id'],events:['id'],cal:['id'],audit:[a=>a.ts+'-'+hs(a.a+a.who),null],sec:[a=>a.ts+'-'+hs(a.txt),null],intg:['n'],roles:['id'],social:['id'],chall:['id']};
 const COBJ=['brand','docs','remarks','ap','routeCodes'];
-const CATS=['flights','fleet','tours','social','roles','intg','news','events','cal'];
+const CATS=['flights','fleet','tours','social','roles','intg','news','events','cal','chall'];
 const loadSB=()=>new Promise((ok,ko)=>{if(window.supabase)return ok();const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js';s.onload=ok;s.onerror=()=>ko(new Error('supabase-js'));document.head.appendChild(s)});
 function cloudBlank(){seed();CL.cat={};CATS.forEach(k=>CL.cat[k]=JSON.parse(JSON.stringify(S[k]||[])));CL.cat.roles=clone(DEF_ROLES);CL.cat.social=clone(DEF_SOCIAL);
   ['pilots','log','tx','res','notes','audit','tickets','inc','sec','accept','live','delReq','revReq'].concat(CATS).forEach(k=>S[k]=[]);S.enroll={};S.brand={};S.session=null;S.maint=false}
@@ -30,7 +30,7 @@ async function cloudPull(){const sb=CL.sb;
   const mine=prof.find(r=>r.id===CL.uid);
   if(CL.uid&&mine){const meP=S.pilots.find(p=>p.uid===CL.uid);meP.email=CL.email||'';S.session={id:mine.code,uid:CL.uid,staff:isStaff(meP)}}else S.session=null;
   if(!rows.length&&mine&&mine.rol==='admin'&&CL.cat){CATS.forEach(k=>S[k]=JSON.parse(JSON.stringify(CL.cat[k])));ensure();CL.dirty=true}   /* primer arranque: catálogo inicial */
-  TOURS=S.tours;rebuildIx();
+  TOURS=S.tours;syncCh();rebuildIx();
   CL.snap=new Map();docsOf().forEach((d,k)=>{if(!(CL.dirty&&!rows.length))CL.snap.set(k,JSON.stringify(d.data))});
   CL.psnap={};S.pilots.forEach(p=>CL.psnap[p.id]=JSON.stringify(pilotRows(p)));
   const sig=JSON.stringify([rows.length,rows.map(r=>r.id).join().length,S.pilots.length,rows.reduce((a,r)=>a+JSON.stringify(r.data).length,0)]);const ch=sig!==CL.sig;CL.sig=sig;CL.loaded=true;return ch}

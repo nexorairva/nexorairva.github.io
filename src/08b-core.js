@@ -44,6 +44,10 @@ function ensure(){let ch=0;
   if(!S.social&&!CL.on){S.social=clone(DEF_SOCIAL);ch=1}
   if(!S.live&&!CL.on){const L=S.flights.map(f=>({f,nm:dist(f.from,f.to)||0})).filter(x=>x.nm>150).sort((a,b)=>b.nm-a.nm),seen=new Set(),pick=[];for(const x of L){const k=x.f.from+x.f.to;if(seen.has(k))continue;seen.add(k);pick.push(x.f);if(pick.length>=6)break}
     const pl=['NXR103','NXR104','NXR106','NXR108','NXR109','NXR105'];S.live=pick.map((f,i)=>{const p=pilot(pl[i]);return{no:f.no,pid:pl[i],pl:p.platform||'VATSIM',off:i*47+13}});ch=1}
+  if(!CL.on&&!S.clean1){   /* retirada única de los tours, eventos, retos y avisos de ejemplo */
+    S.tours=[];S.events=[];S.cal=[];S.chall=[];S.enroll={};S.news=(S.news||[]).filter(n=>!/^n[123]$/.test(n.id));S.clean1=1;ch=1}
+  if(!S.chall){S.chall=[];if(!CL.on)ch=1}
+  TOURS=S.tours;syncCh();
   if(ch&&!CL.on)save()}
 /* ----- marca ----- */
 const BR=()=>S.brand||{};
@@ -51,7 +55,12 @@ const brandLogo=(dark)=>{const b=BR();return dark?(b.logoDark||b.logo||'img/bran
 const logoImg=(h=40)=>`<img class="lg lg-l" src="${brandLogo(false)}" height="${h}" alt="NEXORA AIR"><img class="lg lg-d" src="${brandLogo(true)}" height="${h}" alt="NEXORA AIR">`;
 const logoLight=(h=40)=>`<img class="lg" style="display:inline-block" src="${brandLogo(true)}" height="${h}" alt="NEXORA AIR">`;
 const markImg=(h=34)=>`<img src="${BR().mark||'img/brand-mark.png'}" height="${h}" alt="">`;
-function setFav(){try{let l=document.querySelector('link[rel~=icon]');if(!l){l=document.createElement('link');l.rel='icon';document.head.appendChild(l)}l.href=BR().favicon||'img/brand-favicon.png'}catch(e){}}
+function applyBg(){try{const b=BR();let st=document.getElementById('bgstyle');if(!st){st=document.createElement('style');st.id='bgstyle';document.head.appendChild(st)}
+  const ok=c=>/^#[0-9a-f]{6}$/i.test(c||''),L=ok(b.bgL)?b.bgL:'',D=ok(b.bgD)?b.bgD:'';let css='';
+  if(L||D)css+=(L?':root{--bg:'+L+'}':'')+(D?'@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:'+D+'}}:root[data-theme="dark"]{--bg:'+D+'}':'');
+  if(b.bgImg&&/^data:image\//.test(b.bgImg)){const v=Math.max(0,Math.min(90,+b.bgVeil||0));css+='body{background-image:'+(v?'linear-gradient(color-mix(in srgb,var(--bg) '+v+'%,transparent),color-mix(in srgb,var(--bg) '+v+'%,transparent)),':'')+'url("'+b.bgImg+'")!important;background-size:cover!important;background-position:center!important;background-attachment:fixed!important;background-repeat:no-repeat!important}'}
+  if(st.textContent!==css)st.textContent=css}catch(e){}}
+function setFav(){applyBg();try{let l=document.querySelector('link[rel~=icon]');if(!l){l=document.createElement('link');l.rel='icon';document.head.appendChild(l)}l.href=BR().favicon||'img/brand-favicon.png'}catch(e){}}
 /* ----- mapa ----- */
 const PLANE='M0-4.2 .9-1.4 4.6 .9V2.1L.9 1 .6 3.2 1.9 4.2V5L0 4.5-1.9 5V4.2L-.6 3.2-.9 1-4.6 2.1V.9L-.9-1.4Z';
 let _land;function land(){if(_land)return _land;let s='';LAND_HEX.split(',').forEach((h,r)=>{const b=[...h].map(c=>parseInt(c,16).toString(2).padStart(4,'0')).join('').slice(-180);for(let c=0;c<180;c++)if(b[c]==='1')s+='M'+(c*2+1)+' '+(r*2+1)+'h0'});return _land=s}
@@ -64,7 +73,8 @@ function liveFlights(){const now=Date.now(),out=[];
   (S.live||[]).forEach(d=>{const f=S.flights.find(x=>x.no===d.no);if(!f)return;const nm=dist(f.from,f.to);if(!nm)return;const mins=cmins(nm,f.type),pr=((now+d.off*MIN)%(mins*1.15*MIN))/(mins*MIN);if(pr>=1||pr<.03)return;out.push({id:'d'+d.no,pid:d.pid,cs:'NXR'+d.no,from:f.from,to:f.to,pl:d.pl,ty:f.type,pr,demo:true})});
   return out}
 function mapInner(o){o=o||{};const F=liveFlights().filter(f=>!o.only||f.pid===o.only);let g='',pl='',ap={};
-  if(o.trail){const seen=new Set();S.log.filter(e=>e.pilot===o.trail&&e.status==='Completado').forEach(e=>{const k=e.from+e.to;if(seen.has(k))return;seen.add(k);const A=geo(e.from),B=geo(e.to);if(A&&B){g+='<path d="'+arc(A,B,0,1)+'" class="tr"/>';ap[e.from]=A;ap[e.to]=B}})}
+  if(o.trail){/* solo el vuelo en curso del piloto: al terminarlo el mapa se queda limpio */
+    S.res.filter(r=>r.pilot===o.trail&&['reserved','checkedin','flying'].includes(r.status)).forEach(r=>{const A=geo(r.from),B=geo(r.to);if(A&&B){g+='<path d="'+arc(A,B,0,1)+'" class="tr"/>';ap[r.from]=A;ap[r.to]=B}})}
   F.forEach(f=>{const A=geo(f.from),B=geo(f.to);if(!A||!B)return;const G=gcF(A,B),q=G(f.pr),q2=G(Math.min(1,f.pr+.012)),p=px(q[0],q[1]),p2=px(q2[0],q2[1]);ap[f.from]=A;ap[f.to]=B;
     const rot=Math.abs(p2[0]-p[0])>180?0:Math.round(Math.atan2(p2[0]-p[0],-(p2[1]-p[1]))*180/Math.PI);
     g+='<path d="'+arc(A,B,0,1)+'" class="rt"/><path d="'+arc(A,B,0,f.pr)+'" class="fl '+f.pl+'"/>';
@@ -95,7 +105,7 @@ const TABL={'s-operaciones':['Vuelos','Flights'],'s-tours':['Tours','Tours'],'s-
 Object.assign(TABL,{'p-ops':['Centro','Center'],'p-vuelos':['Vuelos','Flights'],'p-reservas':['Reservas','Bookings'],'p-rutas':['Rutas','Routes'],'p-charter':['Charter','Charter'],'p-tours':['Tours','Tours'],'p-eventos':['Eventos','Events'],'p-perfil':['Perfil','Profile'],'p-logbook':['Logbook','Logbook'],'p-historial':['Historial','History'],'p-stats':['Estadísticas','Statistics'],'p-logros':['Logros','Badges'],'p-rankings':['Rankings','Rankings'],'p-desafios':['Desafíos','Challenges'],'p-misiones':['Misiones','Missions'],'p-calendario':['Calendario','Calendar'],'p-soporte':['Soporte','Support'],'p-incidentes':['Incidentes','Incidents'],'p-normativa':['Normativa','Rules'],
   operaciones:['Vuelos','Flights'],rutas:['Rutas','Routes'],destinos:['Destinos','Destinations'],tours:['Tours','Tours'],noticias:['Noticias','News'],normativa:['Normativa','Rules'],contacto:['Contacto','Contact']});
 const PG=[['inicio',t=>t('Inicio','Home'),['inicio']],['compania',t=>t('Compañía','Company'),['compania']],['flota',t=>t('Flota','Fleet'),['flota']],['operaciones',t=>t('Operaciones','Operations'),['operaciones','rutas','destinos','tours']],['pilotos',t=>t('Pilotos','Pilots'),['pilotos']],['noticias',t=>t('Noticias','News'),['noticias']],['redes',t=>t('Redes sociales','Social networks'),['redes']],['normativa',t=>t('Normativa y contacto','Rules and contact'),['normativa','contacto']]];
-const PTG=[['portal',t=>t('Inicio','Home'),['portal']],['p-ops',t=>t('Operaciones','Operations'),['p-ops','p-vuelos','p-reservas','p-rutas','p-charter','p-tours','p-eventos']],['p-perfil',t=>t('Mi piloto','My pilot'),['p-perfil','p-logbook','p-historial','p-stats','p-logros']],['p-rankings',t=>t('Competición','Competition'),['p-rankings','p-desafios','p-misiones','p-calendario']],['p-noticias',t=>t('Noticias','News'),['p-noticias']],['p-redes',t=>t('Redes sociales','Social networks'),['p-redes']],['p-soporte',t=>t('Ayuda','Help'),['p-soporte','p-incidentes','p-normativa']]];
+const PTG=[['portal',t=>t('Inicio','Home'),['portal']],['p-ops',t=>t('Operaciones','Operations'),['p-ops','p-vuelos','p-reservas','p-rutas','p-charter','p-tours','p-eventos']],['p-perfil',t=>t('Mi perfil','My profile'),['p-perfil','p-logbook','p-historial','p-stats','p-logros']],['p-rankings',t=>t('Competición','Competition'),['p-rankings','p-desafios','p-misiones','p-calendario']],['p-noticias',t=>t('Noticias','News'),['p-noticias']],['p-redes',t=>t('Redes sociales','Social networks'),['p-redes']],['p-soporte',t=>t('Ayuda','Help'),['p-soporte','p-incidentes','p-normativa']]];
 function groupNav(G,n,ok){const cur=G.find(g=>g[2].includes(n)||(n==='p-caso'&&g[0]==='p-ops'));return G.map(g=>{const ms=g[2].filter(ok);if(!ms.length)return'';const on=g===cur;return'<a href="#'+ms[0]+'" '+(on?'aria-current="page"':'')+'>'+g[1](t)+'</a>'}).join('')}
 function tabsBar(G,n,ok,P){const cur=G.find(g=>g[2].includes(n)||(n==='p-caso'&&g[0]==='p-ops'));if(!cur)return'';const ms=cur[2].filter(ok);if(ms.length<2)return'';
   return '<div class="tabs" role="tablist">'+ms.map(m=>{const tl=TABL[m];const hash=(m===(n==='p-caso'?'p-reservas':n));return'<a href="#'+m+'" role="tab" '+(hash?'aria-selected="true"':'')+'>'+(tl?t(tl[0],tl[1]):m)+'</a>'}).join('')+'</div>'}

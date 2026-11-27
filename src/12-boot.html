@@ -2,7 +2,7 @@
 (async()=>{
   const cloud=await cloudStart();
   if(!cloud){S=load()||{};if(!S.v)seed()}
-  TOURS=S.tours;rebuildIx();ensure();cloudHook();
+  TOURS=S.tours;syncCh();rebuildIx();ensure();cloudHook();
   render();loadData();
 })();
 </script>

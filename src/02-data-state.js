@@ -32,16 +32,10 @@ const FL0=[['101','LEMD','LEBL','06:30','A20N',8],['102','LEBL','LEMD','08:10','
 ['311','LEMD','GCTS','14:55','B738',8],['312','GCTS','LEMD','19:20','B738',8],['401','LEMD','LFPG','07:40','A20N',6],['402','LFPG','LEMD','10:30','A20N',6],['411','LEMD','EGLL','12:15','A21N',8],['412','EGLL','LEMD','15:25','A21N',8],
 ['421','LEMD','EDDF','09:45','B738',6],['422','EDDF','LEMD','13:05','B738',6],['431','LEMD','LIRF','17:10','A20N',6],['441','LEMD','EHAM','19:00','A21N',6],['442','EHAM','LEMD','21:45','A21N',6],
 ['801','LEMD','KJFK','10:00','B789',6],['802','KJFK','LEMD','20:30','B789',6],['811','LEMD','KMIA','11:30','B789',6],['812','KMIA','LEMD','17:00','B789',6],['821','LEMD','SBGR','22:00','B789',6],['822','SBGR','LEMD','09:20','B789',6]];
-const TOURS0=[
- {id:'isl',n:'Islas y Península',type:'permanent',pts:500,xp:300,badge:'Isleño',stages:[[['LEMD','GCLP'],['LEMD','GCTS']],[['GCLP','LEMD'],['GCTS','LEMD']]]},
- {id:'eur',n:'Gran Tour de Europa',type:'seasonal',pts:800,xp:500,badge:'Europeo',stages:[[['LEMD','LFPG'],['LEMD','EGLL']],[['LFPG','LEMD'],['EGLL','LEMD']],[['LEMD','EDDF'],['LEMD','EHAM']],[['EDDF','LEMD'],['EHAM','LEMD']]]},
- {id:'tra',n:'Transatlántico',type:'recurring',pts:900,xp:600,ac:'B789',badge:'Transoceánico',stages:[[['LEMD','KJFK'],['LEMD','KMIA']],[['KJFK','LEMD'],['KMIA','LEMD']]]},
- {id:'ibe',n:'Ruta Ibérica',type:'temporary',pts:450,xp:250,badge:'Ibérico',stages:[[['LEMD','LEMG'],['LEMD','LEZL']],[['LEMD','LEVC']],[['LEMD','LPPT']],[['LPPT','LEMD']]]}];
+const TOURS0=[];   // sin tours de ejemplo: los crea el staff
 let TOURS=TOURS0;
-const CHALL=[{id:'c1',n:'Doce vuelos al mes',m:'flights',g:12,per:'month',pts:200,xp:100},{id:'c2',n:'Veinte horas este mes',m:'hours',g:20,per:'month',pts:250,xp:150},
- {id:'c3',n:'25.000 millas de temporada',m:'miles',g:25000,per:'season',pts:600,xp:400},{id:'c4',n:'Doce aeropuertos distintos',m:'airports',g:12,per:'season',pts:400,xp:250}];
-const MISS=[{id:'m1',n:'Un vuelo hoy',m:'flights',g:1,per:'day',pts:20,xp:10},{id:'m2',n:'Tres vuelos esta semana',m:'flights',g:3,per:'week',pts:70,xp:40},{id:'m3',n:'Cinco horas esta semana',m:'hours',g:5,per:'week',pts:90,xp:50},
- {id:'m4',n:'Mil millas este mes',m:'miles',g:1000,per:'month',pts:120,xp:60},{id:'m5',n:'Primer vuelo transoceánico',m:'long',g:1,per:'special',pts:200,xp:120}];
+let CHALL=[],MISS=[];   // retos creados por el staff (S.chall): desafíos (k:'ch') y misiones (k:'ms')
+function syncCh(){S.chall=S.chall||[];CHALL=S.chall.filter(c=>c.k!=='ms');MISS=S.chall.filter(c=>c.k==='ms')}
 const BADGES=[{id:'b1',n:'Primer vuelo',d:'Completa tu primer vuelo.',f:(L)=>L.length>=1},{id:'b2',n:'Diez vuelos',d:'Completa 10 vuelos.',f:L=>L.length>=10},{id:'b3',n:'50 horas',d:'Acumula 50 horas.',f:L=>metric(L,'hours')>=50},
  {id:'b4',n:'Cinco aeropuertos',d:'Visita 5 aeropuertos.',f:L=>metric(L,'airports')>=5},{id:'b5',n:'Tres modelos',d:'Vuela 3 modelos distintos.',f:L=>new Set(L.map(e=>e.type)).size>=3},
  {id:'h1',n:'Noctámbulo',d:'Despega entre 00:00z y 05:00z.',hid:1,f:L=>L.some(e=>new Date(e.depTs).getUTCHours()<5)},{id:'h2',n:'Doblete',d:'Dos vuelos el mismo día.',hid:1,f:L=>new Set(L.map(e=>iso(e.depTs))).size<L.length},
@@ -109,7 +103,7 @@ function seed(){
    docs:{norm:{v:'1.0',ts:D(300),text:'Los pilotos vuelan con respeto a la red, a los controladores y a la comunidad. Una cuenta por persona. Los vuelos se reservan antes de realizarse y se completan con la plataforma elegida.'},
     terms:{v:'1.0',ts:D(300),text:'NEXORA AIR VA es un servicio de simulación sin ánimo de lucro. El uso de la plataforma implica aceptar estas condiciones y la normativa vigente.'},
     priv:{v:'1.0',ts:D(300),text:'Tratamos los datos necesarios para operar tu cuenta: identificación, plataformas de vuelo, actividad y comunicaciones. Puedes solicitar la eliminación de tu cuenta desde tu perfil.'}}};
-  TOURS=S.tours;rebuildIx();
+  TOURS=S.tours;syncCh();rebuildIx();
   const mk=(id,name,k,user,plat,hub,status,ago,x)=>S.pilots.push(Object.assign({id,name,country:k,user,email:user+'@example.com',pass:null,platform:plat,vatsim:plat==='VATSIM'?String(1300000+hs(id)%90000):'',ivao:plat==='IVAO'?String(600000+hs(id)%90000):'',simbrief:String(100000+hs(id)%800000),netOk:true,hub,status,joined:D(ago),fav:[],favT:[],badges:[]},x||{}));
   mk('NXR101','Admin NEXORA','ES','admin','VATSIM','LEMD','Active',400,{sys:true});mk('NXR102','Alex Demo','ES','piloto','VATSIM','LEMD','Active',150);mk('NXR103','Ana Ruiz','ES','ana','VATSIM','LEMD','Active',320);
   mk('NXR104','Jorge Salas','MX','jorge','IVAO','LEBL','Active',280);mk('NXR105','Marta Ibáñez','ES','marta','IVAO','LEMD','Active',200);mk('NXR106','Luca Ferri','IT','luca','VATSIM','LEMD','Active',360);
@@ -120,21 +114,12 @@ function seed(){
   Object.keys(N).forEach(pid=>{const p=pilot(pid),span=pid==='NXR110'?[150,290]:[2,Math.min(280,Math.round((now-p.joined)/DAY)-1)];
     for(let i=0;i<N[pid];i++){const f=S.flights[Math.floor(R()*S.flights.length)];let k=span[0]+Math.floor(R()*(span[1]-span[0]));let ts=dUTC(now)-k*DAY+fm(f)*MIN;if(ts>now-H)ts-=DAY;
       addEntry(R,pid,f,ts,R()<.85?p.platform:(p.platform==='VATSIM'?'IVAO':'VATSIM'))}});
-  const tourFor=(pid,tid,ago)=>{const tr=TOURS.find(x=>x.id===tid);S.enroll[pid]=S.enroll[pid]||{};S.enroll[pid][tid]=D(ago);let ts=D(ago-2);
-    tr.stages.forEach(s=>{const f=findF(s[0][0],s[0][1]);ts=dUTC(ts)+DAY*3+fm(f)*MIN;addEntry(R,pid,f,ts,pilot(pid).platform)})};
-  tourFor('NXR102','tra',60);tourFor('NXR106','isl',200);tourFor('NXR106','tra',120);tourFor('NXR103','isl',100);
-  S.enroll.NXR102.isl=D(100);{const f=findF('LEMD','GCLP');addEntry(R,'NXR102',f,dUTC(D(40))+fm(f)*MIN,'VATSIM')}
-  S.enroll.NXR104={eur:D(90)};S.enroll.NXR108={ibe:D(60)};
   {const f=findF('LEMD','LEBL');addEntry(R,'NXR103',f,D(1),'VATSIM',{mins:7,arrTs:D(1)+7*MIN,status:'En revisión',an:['Duración anormalmente corta'],session:'S-R3V1EW'})}
   S.docs&&['norm','terms','priv'].forEach(d=>S.pilots.filter(p=>p.status!=='Pending').forEach(p=>S.accept.push({pid:p.id,doc:d,v:'1.0',ts:p.joined+H})));
   const nx=instances().find(i=>i.ts>now+3*H&&i.ts<now+30*H&&i.free>0&&i.type!=='B789');
   if(nx)S.res.push({id:uid('R'),pilot:'NXR102',kind:'official',no:nx.no,instId:nx.id,from:nx.from,to:nx.to,type:nx.type,depTs:nx.ts,mins:nx.mins,nm:nx.nm,platform:'VATSIM',status:'reserved',created:now-H,simbrief:null,checkin:null,session:'S-DEMO01',log:[{ts:now-H,text:'Reserva creada; caso operacional abierto'}]});
-  S.events=[{id:'ev1',n:'Cross the Pond',d:'Vuelos transatlánticos con los B787 de la flota.',s:dUTC(now)+3*DAY+18*H,e:dUTC(now)+3*DAY+22*H,x:150,badge:'Cruce del charco',part:{NXR106:[],NXR103:[]}},
-   {id:'ev2',n:'Fly-in Madrid–Barcelona',d:'Puente aéreo con ATC completo.',s:dUTC(now)+10*DAY+17*H,e:dUTC(now)+10*DAY+21*H,x:80,badge:'Puente aéreo',part:{}},
-   {id:'ev3',n:'Aniversario NEXORA',d:'Celebración de la comunidad (finalizado).',s:D(20),e:D(20)+4*H,x:100,badge:'Aniversario',part:{NXR102:[],NXR106:[]}}];
-  S.cal=[{id:'c1',type:'staff',n:'Revisión de normativa',ts:now+5*DAY},{id:'c2',type:'maint',n:'Mantenimiento programado de la plataforma',ts:dUTC(now)+8*DAY+2*H},{id:'c3',type:'date',n:'Cierre de temporada '+Y,ts:Date.UTC(Y,11,31)}];
-  S.news=[{id:'n1',n:'Bienvenida a la temporada '+Y,b:'Nuevos tours, desafíos mensuales y el ranking de temporada ya están activos.',aud:'public',ts:D(12),rel:1},{id:'n2',n:'Cross the Pond: inscripciones abiertas',b:'Evento abierto sin límite de plazas. Vincula tus vuelos transatlánticos para sumar puntos extra.',aud:'public',ts:D(3),rel:1},
-   {id:'n3',n:'Cambios en la validación automática',b:'Los vuelos sin reserva se ignoran por completo. Reserva siempre antes de conectarte.',aud:'internal',ts:D(5),rel:1}];
+  S.events=[];S.cal=[];S.chall=[];syncCh();
+  S.news=[];
   S.tickets=[{id:'T-0001',pilot:'NXR103',subject:'No se importa mi OFP de SimBrief',st:'Open',last:D(2),msgs:[{from:'pilot',text:'Mi OFP no aparece en el caso operacional.',ts:D(2),files:[]}]}];
   S.inc=[{id:'NXR-INC-'+Y+'-000001',pilot:'NXR106',subject:'Desconexión en ruta NXR801',detail:'Se detectó una desconexión de 12 minutos sobre el Atlántico. Indica qué ocurrió.',st:'Abierta',created:now-2*H,deadline:now+46*H,responded:false,msgs:[]}];S.incSeq[Y]=1;
   S.sec=[{ts:D(1),txt:'3 intentos fallidos de acceso para el usuario "marta"',sev:'media'}];
