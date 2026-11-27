@@ -56,7 +56,7 @@ const F={
  reg:async d=>{const u=d.get('user').trim(),pl=d.get('platform'),id=pl==='VATSIM'?d.get('vatsim'):d.get('ivao');
   if(S.pilots.some(p=>p.user.toLowerCase()===u.toLowerCase()))return err('reg-err',t('Ese usuario ya existe.','That username already exists.'));
   if(!id)return err('reg-err',t('Indica tu ID de ','Enter your ')+pl+t('.',' ID.'));
-  const n=S.pilots.length;const p={id:'NX'+pad(Math.floor(n/100))+pad(n%100+13),name:d.get('name').trim(),country:d.get('country').toUpperCase(),user:u,email:d.get('email'),pass:await hp(d.get('pass')),platform:pl,vatsim:d.get('vatsim')||'',ivao:d.get('ivao')||'',simbrief:d.get('simbrief'),netOk:false,hub:'LEMD',status:'Pending',joined:Date.now(),fav:[],favT:[],badges:[]};
+  const p={id:nextPid(),name:d.get('name').trim(),country:d.get('country').toUpperCase(),user:u,email:d.get('email'),pass:await hp(d.get('pass')),platform:pl,vatsim:d.get('vatsim')||'',ivao:d.get('ivao')||'',simbrief:d.get('simbrief'),netOk:false,hub:'LEMD',status:'Pending',joined:Date.now(),fav:[],favT:[],badges:[]};
   S.pilots.push(p);aud('Nueva solicitud de alta',p.id);save();go('login');toast(t('Solicitud enviada. SimBrief verificado; el staff revisará tu plataforma.','Request sent. SimBrief verified; staff will review your platform.'))},
  login:async d=>{const u=d.get('user').trim().toLowerCase(),k=S.att[u]||{n:0,until:0};
   if(k.until>Date.now())return err('login-err',t('Acceso bloqueado temporalmente. Inténtalo más tarde.','Access temporarily locked. Try again later.'));

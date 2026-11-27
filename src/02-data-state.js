@@ -99,7 +99,7 @@ function instances(){const out=[],now=Date.now(),d0=dUTC(now);
   return out}
 function seed(){
   const now=Date.now(),Y=new Date(now).getUTCFullYear(),R=mul(2026),D=n=>now-n*DAY;
-  S={v:3,lang:'es',session:null,seq:100,ap:JSON.parse(JSON.stringify(AP0)),flights:FL0.map(x=>({no:x[0],from:x[1],to:x[2],m:x[3],type:x[4],slots:x[5],blocked:x[0]==='431'})),
+  S={v:3,lang:'es',session:null,seq:100,pidSeq:113,ap:JSON.parse(JSON.stringify(AP0)),flights:FL0.map(x=>({no:x[0],from:x[1],to:x[2],m:x[3],type:x[4],slots:x[5],blocked:x[0]==='431'})),
    fleet:[['EC-NXA','A20N','Alhambra'],['EC-NXB','A20N','Giralda'],['EC-NXC','A20N','Montjuïc'],['EC-NXD','A21N','Teide'],['EC-NXE','A21N','Sierra Nevada'],['EC-NXF','B738','Cibeles'],['EC-NXG','B738','Retiro'],['EC-NXJ','B789','Quijote'],['EC-NXK','B789','Atlántico'],['EC-NXL','E195','Duero']].map(x=>({reg:x[0],type:x[1],name:x[2],desc:DESC[x[1]],img:x[1]==='A20N'?GALL.slice():[]})),tours:JSON.parse(JSON.stringify(TOURS0)),
    pilots:[],log:[],tx:[],res:[],enroll:{},prefs:{},accept:[],notes:[],audit:[],tickets:[],inc:[],incSeq:{},news:[],groups:[],events:[],cal:[],sec:[],maint:false,ignored:37,delReq:[],revReq:[],att:{},routeCodes:{},
    intg:[['SimBrief','Operativa'],['VATSIM','Operativa'],['IVAO','Degradada'],['Correo electrónico','Operativa'],['Almacenamiento de archivos','Operativa'],['Generación de PDF','Operativa']].map(x=>({n:x[0],st:x[1],ts:now-5*MIN})),
@@ -109,34 +109,34 @@ function seed(){
     priv:{v:'1.0',ts:D(300),text:'Tratamos los datos necesarios para operar tu cuenta: identificación, plataformas de vuelo, actividad y comunicaciones. Puedes solicitar la eliminación de tu cuenta desde tu perfil.'}}};
   TOURS=S.tours;rebuildIx();
   const mk=(id,name,k,user,plat,hub,status,ago,x)=>S.pilots.push(Object.assign({id,name,country:k,user,email:user+'@example.com',pass:null,platform:plat,vatsim:plat==='VATSIM'?String(1300000+hs(id)%90000):'',ivao:plat==='IVAO'?String(600000+hs(id)%90000):'',simbrief:String(100000+hs(id)%800000),netOk:true,hub,status,joined:D(ago),fav:[],favT:[],badges:[]},x||{}));
-  mk('NX0000','Admin NEXORA','ES','admin','VATSIM','LEMD','Active',400);mk('NX0001','Alex Demo','ES','piloto','VATSIM','LEMD','Active',150);mk('NX0002','Ana Ruiz','ES','ana','VATSIM','LEMD','Active',320);
-  mk('NX0003','Jorge Salas','MX','jorge','IVAO','LEBL','Active',280);mk('NX0004','Marta Ibáñez','ES','marta','IVAO','LEMD','Active',200);mk('NX0005','Luca Ferri','IT','luca','VATSIM','LEMD','Active',360);
-  mk('NX0006','Pablo Nieto','ES','pablo','VATSIM','LEBL','Active',40);mk('NX0007','Sofía Marín','AR','sofia','IVAO','LEMD','Active',260);mk('NX0008','Iván Costa','PT','ivan','VATSIM','LEMD','Active',120);
-  mk('NX0009','Nerea Gil','ES','nerea','IVAO','LEBL','Inactive',300);mk('NX0010','Hugo Lasa','ES','hugo','VATSIM','LEMD','Pending',2,{netOk:false});
-  mk('NX0011','Clara Méndez','ES','clara','IVAO','LEMD','Suspended',90,{susp:{reason:'Conducta inadecuada en frecuencia',until:now+10*DAY,ended:false}});mk('NX0012','Tomás Ortega','CL','tomas','VATSIM','LEBL','Active',60);
-  const N={NX0002:70,NX0003:34,NX0004:20,NX0005:90,NX0006:8,NX0007:50,NX0008:24,NX0009:5,NX0011:12,NX0012:16,NX0001:12};
-  Object.keys(N).forEach(pid=>{const p=pilot(pid),span=pid==='NX0009'?[150,290]:[2,Math.min(280,Math.round((now-p.joined)/DAY)-1)];
+  mk('NXR101','Admin NEXORA','ES','admin','VATSIM','LEMD','Active',400,{sys:true});mk('NXR102','Alex Demo','ES','piloto','VATSIM','LEMD','Active',150);mk('NXR103','Ana Ruiz','ES','ana','VATSIM','LEMD','Active',320);
+  mk('NXR104','Jorge Salas','MX','jorge','IVAO','LEBL','Active',280);mk('NXR105','Marta Ibáñez','ES','marta','IVAO','LEMD','Active',200);mk('NXR106','Luca Ferri','IT','luca','VATSIM','LEMD','Active',360);
+  mk('NXR107','Pablo Nieto','ES','pablo','VATSIM','LEBL','Active',40);mk('NXR108','Sofía Marín','AR','sofia','IVAO','LEMD','Active',260);mk('NXR109','Iván Costa','PT','ivan','VATSIM','LEMD','Active',120);
+  mk('NXR110','Nerea Gil','ES','nerea','IVAO','LEBL','Inactive',300);mk('NXR111','Hugo Lasa','ES','hugo','VATSIM','LEMD','Pending',2,{netOk:false});
+  mk('NXR112','Clara Méndez','ES','clara','IVAO','LEMD','Suspended',90,{susp:{reason:'Conducta inadecuada en frecuencia',until:now+10*DAY,ended:false}});mk('NXR113','Tomás Ortega','CL','tomas','VATSIM','LEBL','Active',60);
+  const N={NXR103:70,NXR104:34,NXR105:20,NXR106:90,NXR107:8,NXR108:50,NXR109:24,NXR110:5,NXR112:12,NXR113:16,NXR102:12};
+  Object.keys(N).forEach(pid=>{const p=pilot(pid),span=pid==='NXR110'?[150,290]:[2,Math.min(280,Math.round((now-p.joined)/DAY)-1)];
     for(let i=0;i<N[pid];i++){const f=S.flights[Math.floor(R()*S.flights.length)];let k=span[0]+Math.floor(R()*(span[1]-span[0]));let ts=dUTC(now)-k*DAY+fm(f)*MIN;if(ts>now-H)ts-=DAY;
       addEntry(R,pid,f,ts,R()<.85?p.platform:(p.platform==='VATSIM'?'IVAO':'VATSIM'))}});
   const tourFor=(pid,tid,ago)=>{const tr=TOURS.find(x=>x.id===tid);S.enroll[pid]=S.enroll[pid]||{};S.enroll[pid][tid]=D(ago);let ts=D(ago-2);
     tr.stages.forEach(s=>{const f=findF(s[0][0],s[0][1]);ts=dUTC(ts)+DAY*3+fm(f)*MIN;addEntry(R,pid,f,ts,pilot(pid).platform)})};
-  tourFor('NX0001','tra',60);tourFor('NX0005','isl',200);tourFor('NX0005','tra',120);tourFor('NX0002','isl',100);
-  S.enroll.NX0001.isl=D(100);{const f=findF('LEMD','GCLP');addEntry(R,'NX0001',f,dUTC(D(40))+fm(f)*MIN,'VATSIM')}
-  S.enroll.NX0003={eur:D(90)};S.enroll.NX0007={ibe:D(60)};
-  {const f=findF('LEMD','LEBL');addEntry(R,'NX0002',f,D(1),'VATSIM',{mins:7,arrTs:D(1)+7*MIN,status:'En revisión',an:['Duración anormalmente corta'],session:'S-R3V1EW'})}
+  tourFor('NXR102','tra',60);tourFor('NXR106','isl',200);tourFor('NXR106','tra',120);tourFor('NXR103','isl',100);
+  S.enroll.NXR102.isl=D(100);{const f=findF('LEMD','GCLP');addEntry(R,'NXR102',f,dUTC(D(40))+fm(f)*MIN,'VATSIM')}
+  S.enroll.NXR104={eur:D(90)};S.enroll.NXR108={ibe:D(60)};
+  {const f=findF('LEMD','LEBL');addEntry(R,'NXR103',f,D(1),'VATSIM',{mins:7,arrTs:D(1)+7*MIN,status:'En revisión',an:['Duración anormalmente corta'],session:'S-R3V1EW'})}
   S.docs&&['norm','terms','priv'].forEach(d=>S.pilots.filter(p=>p.status!=='Pending').forEach(p=>S.accept.push({pid:p.id,doc:d,v:'1.0',ts:p.joined+H})));
   const nx=instances().find(i=>i.ts>now+3*H&&i.ts<now+30*H&&i.free>0&&i.type!=='B789');
-  if(nx)S.res.push({id:uid('R'),pilot:'NX0001',kind:'official',no:nx.no,instId:nx.id,from:nx.from,to:nx.to,type:nx.type,depTs:nx.ts,mins:nx.mins,nm:nx.nm,platform:'VATSIM',status:'reserved',created:now-H,simbrief:null,checkin:null,session:'S-DEMO01',log:[{ts:now-H,text:'Reserva creada; caso operacional abierto'}]});
-  S.events=[{id:'ev1',n:'Cross the Pond',d:'Vuelos transatlánticos con los B787 de la flota.',s:dUTC(now)+3*DAY+18*H,e:dUTC(now)+3*DAY+22*H,x:150,badge:'Cruce del charco',part:{NX0005:[],NX0002:[]}},
+  if(nx)S.res.push({id:uid('R'),pilot:'NXR102',kind:'official',no:nx.no,instId:nx.id,from:nx.from,to:nx.to,type:nx.type,depTs:nx.ts,mins:nx.mins,nm:nx.nm,platform:'VATSIM',status:'reserved',created:now-H,simbrief:null,checkin:null,session:'S-DEMO01',log:[{ts:now-H,text:'Reserva creada; caso operacional abierto'}]});
+  S.events=[{id:'ev1',n:'Cross the Pond',d:'Vuelos transatlánticos con los B787 de la flota.',s:dUTC(now)+3*DAY+18*H,e:dUTC(now)+3*DAY+22*H,x:150,badge:'Cruce del charco',part:{NXR106:[],NXR103:[]}},
    {id:'ev2',n:'Fly-in Madrid–Barcelona',d:'Puente aéreo con ATC completo.',s:dUTC(now)+10*DAY+17*H,e:dUTC(now)+10*DAY+21*H,x:80,badge:'Puente aéreo',part:{}},
-   {id:'ev3',n:'Aniversario NEXORA',d:'Celebración de la comunidad (finalizado).',s:D(20),e:D(20)+4*H,x:100,badge:'Aniversario',part:{NX0001:[],NX0005:[]}}];
+   {id:'ev3',n:'Aniversario NEXORA',d:'Celebración de la comunidad (finalizado).',s:D(20),e:D(20)+4*H,x:100,badge:'Aniversario',part:{NXR102:[],NXR106:[]}}];
   S.cal=[{id:'c1',type:'staff',n:'Revisión de normativa',ts:now+5*DAY},{id:'c2',type:'maint',n:'Mantenimiento programado de la plataforma',ts:dUTC(now)+8*DAY+2*H},{id:'c3',type:'date',n:'Cierre de temporada '+Y,ts:Date.UTC(Y,11,31)}];
   S.news=[{id:'n1',n:'Bienvenida a la temporada '+Y,b:'Nuevos tours, desafíos mensuales y el ranking de temporada ya están activos.',aud:'public',ts:D(12),rel:1},{id:'n2',n:'Cross the Pond: inscripciones abiertas',b:'Evento abierto sin límite de plazas. Vincula tus vuelos transatlánticos para sumar puntos extra.',aud:'public',ts:D(3),rel:1},
    {id:'n3',n:'Cambios en la validación automática',b:'Los vuelos sin reserva se ignoran por completo. Reserva siempre antes de conectarte.',aud:'internal',ts:D(5),rel:1}];
-  S.tickets=[{id:'T-0001',pilot:'NX0002',subject:'No se importa mi OFP de SimBrief',st:'Open',last:D(2),msgs:[{from:'pilot',text:'Mi OFP no aparece en el caso operacional.',ts:D(2),files:[]}]}];
-  S.inc=[{id:'NXR-INC-'+Y+'-000001',pilot:'NX0005',subject:'Desconexión en ruta NXR801',detail:'Se detectó una desconexión de 12 minutos sobre el Atlántico. Indica qué ocurrió.',st:'Abierta',created:now-2*H,deadline:now+46*H,responded:false,msgs:[]}];S.incSeq[Y]=1;
+  S.tickets=[{id:'T-0001',pilot:'NXR103',subject:'No se importa mi OFP de SimBrief',st:'Open',last:D(2),msgs:[{from:'pilot',text:'Mi OFP no aparece en el caso operacional.',ts:D(2),files:[]}]}];
+  S.inc=[{id:'NXR-INC-'+Y+'-000001',pilot:'NXR106',subject:'Desconexión en ruta NXR801',detail:'Se detectó una desconexión de 12 minutos sobre el Atlántico. Indica qué ocurrió.',st:'Abierta',created:now-2*H,deadline:now+46*H,responded:false,msgs:[]}];S.incSeq[Y]=1;
   S.sec=[{ts:D(1),txt:'3 intentos fallidos de acceso para el usuario "marta"',sev:'media'}];
-  S.audit=[{ts:D(4),who:'Admin NEXORA',a:'Publicó la normativa v1.0',tg:''},{ts:D(2),who:'Admin NEXORA',a:'Aprobó la plataforma IVAO',tg:'NX0007'}];
+  S.audit=[{ts:D(4),who:'Admin NEXORA',a:'Publicó la normativa v1.0',tg:''},{ts:D(2),who:'Admin NEXORA',a:'Aprobó la plataforma IVAO',tg:'NXR108'}];
   settle(true);save()}
 function settle(silent){S.pilots.forEach(p=>{const L=lE(p.id),want={};
   TOURS.forEach(tr=>{if(tourProg(tr,p.id).done)want['tour:'+tr.id]={pts:tr.pts,xp:tr.xp,why:'Tour: '+tr.n}});

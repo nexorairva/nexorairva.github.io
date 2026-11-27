@@ -61,7 +61,7 @@ const ta=(f,n,l,v='',at='')=>`<label class="full">${l}<textarea id="${f}-${n}" n
 const head=(h,p,act='')=>`<div class="head"><div><h1>${h}</h1>${p?`<p>${p}</p>`:''}</div>${act}</div>`;
 const stPill=s=>pill({Active:t('Activo','Active'),Inactive:t('Inactivo','Inactive'),Suspended:t('Suspendido','Suspended'),Pending:t('Pendiente','Pending')}[s]||s,{Active:'good',Inactive:'warn',Suspended:'bad',Pending:'warn'}[s]);
 let tt;function toast(x){const e=$('#toast');e.textContent=x;e.hidden=false;clearTimeout(tt);tt=setTimeout(()=>e.hidden=true,3400)}
-function modal(h,b){$('#modal').innerHTML=b===undefined?'':`<div class="bg" data-a="xm"><div class="modal" role="dialog" aria-modal="true"><header><h2>${h}</h2><button class="btn sm" data-a="xm" type="button">${t('Cerrar','Close')}</button></header>${b}</div></div>`}
+function modal(h,b,w){$('#modal').innerHTML=b===undefined?'':`<div class="bg" data-a="xm"><div class="modal${w?' wide':''}" role="dialog" aria-modal="true"><header><h2>${h}</h2><button class="btn sm" data-a="xm" type="button">${t('Cerrar','Close')}</button></header>${b}</div></div>`}
 function go(n){if(location.hash.slice(1)===n)render();else location.hash=n}
 
 /* ===== routes (CSV) and airports ===== */
