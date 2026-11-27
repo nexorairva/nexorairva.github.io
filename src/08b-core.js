@@ -11,14 +11,32 @@ const SOC={discord:['Discord','#5865F2','D'],instagram:['Instagram','#D6249F','I
 const clone=o=>JSON.parse(JSON.stringify(o));
 const DEF_ROLES=[{id:'r-mod',n:'Moderador',perms:['pilotos','revision']},{id:'r-ops',n:'Operaciones',perms:['operaciones','flota']},{id:'r-com',n:'Comunicación',perms:['noticias','redes']}];
 const DEF_SOCIAL=[{id:'so1',k:'discord',n:'Discord oficial',url:'https://discord.com',d:'Comunidad, ATC y eventos en directo. (Ejemplo: sustituye por vuestra invitación)'},{id:'so2',k:'instagram',n:'Instagram',url:'https://www.instagram.com',d:'Fotos de las rutas y los tours de la flota.'},{id:'so3',k:'youtube',n:'YouTube',url:'https://www.youtube.com',d:'Vídeos, directos y tutoriales de procedimientos.'},{id:'so4',k:'x',n:'X',url:'https://x.com',d:'Avisos de eventos y novedades.'}];
+/* ===== ID de piloto: NXR + 3 cifras, desde 101, sin repetir ===== */
+const PID_RE=/^NXR\d{3,4}$/;
+const pidNum=id=>{const m=/^NXR(\d{3,4})$/.exec(id||'');return m?+m[1]:0};
+function nextPid(){const used=new Set(S.pilots.map(p=>p.id));let n=Math.max(100,+S.pidSeq||100)+1;while(used.has('NXR'+n))n++;S.pidSeq=n;return 'NXR'+n}
+function pidCheck(v,self){const id=(v||'').trim().toUpperCase();
+  if(!PID_RE.test(id))return{err:t('Formato: NXR y 3 o 4 cifras (por ejemplo NXR101).','Format: NXR plus 3 or 4 digits (for example NXR101).')};
+  if(S.pilots.some(p=>p.id===id&&p.id!==self))return{err:t('Ese ID ya lo usa otro piloto.','That ID is already used by another pilot.')};return{id}}
+/* cambia el ID de un piloto y todas las referencias a él */
+function renamePid(a,b){if(a===b)return;const ren=x=>x===a?b:x,rk=o=>{if(o&&Object.prototype.hasOwnProperty.call(o,a)){o[b]=o[a];delete o[a]}};
+  const p=S.pilots.find(x=>x.id===a);if(p)p.id=b;
+  ['log','tx','res','tickets','inc'].forEach(k=>(S[k]||[]).forEach(x=>{if(x.pilot===a)x.pilot=b}));
+  (S.notes||[]).forEach(x=>{if(x.to===a)x.to=b});(S.accept||[]).forEach(x=>{if(x.pid===a)x.pid=b});(S.live||[]).forEach(x=>{if(x.pid===a)x.pid=b});
+  (S.audit||[]).forEach(x=>{if(x.tg===a)x.tg=b});(S.groups||[]).forEach(g=>{g.m=(g.m||[]).map(ren)});
+  S.delReq=(S.delReq||[]).map(ren);S.revReq=(S.revReq||[]).map(ren);rk(S.enroll);rk(S.prefs);(S.events||[]).forEach(e=>rk(e.part));
+  if(S.session&&S.session.id===a)S.session.id=b}
 function ensure(){let ch=0;
+  if(!CL.on){const old=S.pilots.filter(p=>/^NX\d{4}$/.test(p.id));   /* migración: NX0001 → NXR102… */
+    old.forEach(p=>{if(p.id==='NX0000')p.sys=true;const n=101+parseInt(p.id.slice(2),10);renamePid(p.id,S.pilots.some(x=>x.id==='NXR'+n)?nextPid():'NXR'+n)});if(old.length)ch=1}
+  if(S.pidSeq===undefined){S.pidSeq=Math.max(100,...S.pilots.map(p=>pidNum(p.id)));ch=1}
   if(!S.roles&&!CL.on){S.roles=clone(DEF_ROLES);ch=1}
-  S.pilots.forEach(p=>{if(p.rol===undefined&&!CL.on){p.rol=p.id==='NX0000'?'admin':p.id==='NX0002'?'r-mod':null;ch=1}});
+  S.pilots.forEach(p=>{if(p.rol===undefined&&!CL.on){p.rol=p.id==='NXR101'?'admin':p.id==='NXR103'?'r-mod':null;ch=1}});
   if(S.session&&S.session.staff===undefined)S.session.staff=isStaff(pilot(S.session.id));
   if(!S.brand){S.brand={};ch=1}
   if(!S.social&&!CL.on){S.social=clone(DEF_SOCIAL);ch=1}
   if(!S.live&&!CL.on){const L=S.flights.map(f=>({f,nm:dist(f.from,f.to)||0})).filter(x=>x.nm>150).sort((a,b)=>b.nm-a.nm),seen=new Set(),pick=[];for(const x of L){const k=x.f.from+x.f.to;if(seen.has(k))continue;seen.add(k);pick.push(x.f);if(pick.length>=6)break}
-    const pl=['NX0002','NX0003','NX0005','NX0007','NX0008','NX0004'];S.live=pick.map((f,i)=>{const p=pilot(pl[i]);return{no:f.no,pid:pl[i],pl:p.platform||'VATSIM',off:i*47+13}});ch=1}
+    const pl=['NXR103','NXR104','NXR106','NXR108','NXR109','NXR105'];S.live=pick.map((f,i)=>{const p=pilot(pl[i]);return{no:f.no,pid:pl[i],pl:p.platform||'VATSIM',off:i*47+13}});ch=1}
   if(ch&&!CL.on)save()}
 /* ----- marca ----- */
 const BR=()=>S.brand||{};

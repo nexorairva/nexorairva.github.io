@@ -8,17 +8,28 @@ create extension if not exists pgcrypto;
 
 -- ---------- perfiles de piloto ----------
 -- 'public' guarda lo que ve cualquiera; 'private' solo el propio piloto y el staff de pilotos.
-create sequence if not exists public.pilot_seq start 1;
+create sequence if not exists public.pilot_seq start 101;
+-- Si la secuencia venía de una versión anterior (empezaba en 1), el siguiente ID será el 101.
+do $$ begin
+  if (select last_value from public.pilot_seq) < 100 then perform setval('public.pilot_seq', 100, true); end if;
+end $$;
 
 create table if not exists public.profiles (
   id        uuid primary key references auth.users(id) on delete cascade,
-  code      text unique not null,                 -- NX0001, NX0002…
+  code      text unique not null,                 -- ID de piloto: NXR101, NXR102…
   status    text not null default 'Pending',      -- Pending | Active | Inactive | Suspended
   rol       text,                                 -- null | 'admin' | id de un nivel de nx_docs(coll='roles')
   net_ok    boolean not null default false,       -- plataforma VATSIM/IVAO verificada por el staff
   joined    timestamptz not null default now(),
   data      jsonb not null default '{}'::jsonb    -- nombre, país, plataforma, hub, favoritos, logros…
 );
+-- El ID de piloto es NXR + 3 o 4 cifras. 'not valid': no revisa los perfiles antiguos (NX0001…);
+-- se migran con supabase/migrations/001_ids_nxr.sql.
+do $$ begin
+  if not exists (select 1 from pg_constraint where conname = 'profiles_code_fmt') then
+    alter table public.profiles add constraint profiles_code_fmt check (code ~ '^NXR[0-9]{3,4}$') not valid;
+  end if;
+end $$;
 create table if not exists public.profile_private (
   id   uuid primary key references public.profiles(id) on delete cascade,
   data jsonb not null default '{}'::jsonb         -- IDs de VATSIM/IVAO y de SimBrief
@@ -99,8 +110,13 @@ create or replace function public.profiles_guard() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
   if auth.uid() is null then return new; end if;                 -- consola SQL / service role
-  if new.code is distinct from old.code or new.joined is distinct from old.joined then
+  if new.joined is distinct from old.joined then
     raise exception 'campo protegido';
+  end if;
+  -- el ID de piloto solo lo cambia el staff de pilotos, con formato NXR + 3 o 4 cifras (único por la restricción UNIQUE)
+  if new.code is distinct from old.code then
+    if not public.has_perm('pilotos') then raise exception 'solo el staff de pilotos puede cambiar el ID'; end if;
+    if new.code !~ '^NXR[0-9]{3,4}$' then raise exception 'ID no válido: usa NXR y 3 o 4 cifras'; end if;
   end if;
   if (new.status is distinct from old.status or new.net_ok is distinct from old.net_ok)
      and not public.has_perm('pilotos') then
@@ -127,6 +143,18 @@ create policy pp_write on public.profile_private for all
   using (id = auth.uid() or public.has_perm('pilotos'))
   with check (id = auth.uid() or public.has_perm('pilotos'));
 
+-- Siguiente ID libre: NXR101, NXR102… cuenta siempre hacia arriba y salta los que ya estén en uso.
+create or replace function public.next_pilot_code() returns text
+language plpgsql security definer set search_path = public as $$
+declare c text;
+begin
+  loop
+    c := 'NXR' || lpad(nextval('public.pilot_seq')::text, 3, '0');
+    exit when not exists (select 1 from public.profiles where code = c);
+  end loop;
+  return c;
+end $$;
+
 -- Alta automática del perfil al registrarse. El PRIMER usuario es admin (propietario del VA).
 create or replace function public.handle_new_user() returns trigger
 language plpgsql security definer set search_path = public as $$
@@ -134,7 +162,7 @@ declare first_user boolean; md jsonb := coalesce(new.raw_user_meta_data, '{}'::j
 begin
   select not exists (select 1 from public.profiles) into first_user;
   insert into public.profiles(id, code, status, rol, net_ok, data)
-  values (new.id, 'NX' || lpad(nextval('public.pilot_seq')::text, 4, '0'),
+  values (new.id, public.next_pilot_code(),
           case when first_user then 'Active' else 'Pending' end,
           case when first_user then 'admin' end, first_user,
           jsonb_build_object('name', left(coalesce(md->>'name', split_part(new.email,'@',1)), 80),
