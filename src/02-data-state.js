@@ -74,8 +74,8 @@ const pilot=id=>S.pilots.find(p=>p.id===id)||{id,name:id,status:'?'};
 const me=()=>S.session&&pilot(S.session.id);
 const lE=(pid)=>S.log.filter(e=>e.pilot===pid&&e.status==='Completado');
 function rankOf(h){let i=0;RANKS.forEach((r,k)=>{if(h>=r[2])i=k});const nx=RANKS[i+1];return{i,n:t(RANKS[i][0],RANKS[i][1]),next:nx?{n:t(nx[0],nx[1]),min:nx[2]}:null,min:RANKS[i][2]}}
-function stats(pid){const L=lE(pid),h=metric(L,'hours');const tx=S.tx.filter(x=>x.pilot===pid);const xp=tx.reduce((a,x)=>a+x.xp,0);
-  return{L,h,fl:L.length,nm:metric(L,'miles'),pts:tx.reduce((a,x)=>a+x.pts,0),xp,lvl:Math.floor(Math.sqrt(xp/50))+1,rank:rankOf(h)}}
+function stats(pid){const L=lE(pid),hl=metric(L,'hours'),ad=+((S.pilots.find(p=>p.id===pid)||{}).hAdj)||0,h=Math.max(0,hl+ad);const tx=S.tx.filter(x=>x.pilot===pid);const xp=tx.reduce((a,x)=>a+x.xp,0);
+  return{L,h,hl,ad,fl:L.length,nm:metric(L,'miles'),pts:tx.reduce((a,x)=>a+x.pts,0),xp,lvl:Math.floor(Math.sqrt(xp/50))+1,rank:rankOf(h)}}
 function tourProg(tr,pid){const en=(S.enroll[pid]||{})[tr.id];if(!en)return{en:0,done:false,st:[]};
   const L=lE(pid).filter(e=>e.kind!=='free').sort((a,b)=>a.depTs-b.depTs);let after=en;const st=[];
   for(const s of tr.stages){const e=L.find(x=>x.depTs>after&&s.some(r=>r[0]===x.from&&r[1]===x.to)&&(!tr.ac||x.type===tr.ac));if(!e)break;st.push(e);after=e.depTs}

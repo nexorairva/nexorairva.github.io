@@ -265,8 +265,8 @@ const pilot=id=>S.pilots.find(p=>p.id===id)||{id,name:id,status:'?'};
 const me=()=>S.session&&pilot(S.session.id);
 const lE=(pid)=>S.log.filter(e=>e.pilot===pid&&e.status==='Completado');
 function rankOf(h){let i=0;RANKS.forEach((r,k)=>{if(h>=r[2])i=k});const nx=RANKS[i+1];return{i,n:t(RANKS[i][0],RANKS[i][1]),next:nx?{n:t(nx[0],nx[1]),min:nx[2]}:null,min:RANKS[i][2]}}
-function stats(pid){const L=lE(pid),h=metric(L,'hours');const tx=S.tx.filter(x=>x.pilot===pid);const xp=tx.reduce((a,x)=>a+x.xp,0);
-  return{L,h,fl:L.length,nm:metric(L,'miles'),pts:tx.reduce((a,x)=>a+x.pts,0),xp,lvl:Math.floor(Math.sqrt(xp/50))+1,rank:rankOf(h)}}
+function stats(pid){const L=lE(pid),hl=metric(L,'hours'),ad=+((S.pilots.find(p=>p.id===pid)||{}).hAdj)||0,h=Math.max(0,hl+ad);const tx=S.tx.filter(x=>x.pilot===pid);const xp=tx.reduce((a,x)=>a+x.xp,0);
+  return{L,h,hl,ad,fl:L.length,nm:metric(L,'miles'),pts:tx.reduce((a,x)=>a+x.pts,0),xp,lvl:Math.floor(Math.sqrt(xp/50))+1,rank:rankOf(h)}}
 function tourProg(tr,pid){const en=(S.enroll[pid]||{})[tr.id];if(!en)return{en:0,done:false,st:[]};
   const L=lE(pid).filter(e=>e.kind!=='free').sort((a,b)=>a.depTs-b.depTs);let after=en;const st=[];
   for(const s of tr.stages){const e=L.find(x=>x.depTs>after&&s.some(r=>r[0]===x.from&&r[1]===x.to)&&(!tr.ac||x.type===tr.ac));if(!e)break;st.push(e);after=e.depTs}
@@ -354,8 +354,8 @@ function docsOf(){const m=new Map(),add=(coll,id,owner,data)=>m.set(coll+'|'+id,
   Object.keys(S.enroll||{}).forEach(c=>add('enroll',c,pidUid(c),S.enroll[c]));
   (S.delReq||[]).forEach(c=>add('delReq',c,pidUid(c),{v:c}));(S.revReq||[]).forEach(c=>add('revReq',c,CL.uid,{v:c}));
   add('site','main',CL.uid,{maint:!!S.maint,incSeq:S.incSeq||{}});return m}
-const PSTRIP=['id','uid','pass','email','vatsim','ivao','simbrief','status','rol','netOk','joined'];
-function pilotRows(p){const data={};Object.keys(p).forEach(k=>{if(!PSTRIP.includes(k))data[k]=p[k]});return{cols:{status:p.status,rol:p.rol||null,net_ok:!!p.netOk},data,priv:{vatsim:p.vatsim||'',ivao:p.ivao||'',simbrief:p.simbrief||''}}}
+const PSTRIP=['id','uid','pass','email','vatsim','ivao','simbrief','status','rol','netOk','joined','hAdj'];
+function pilotRows(p){const data={};Object.keys(p).forEach(k=>{if(!PSTRIP.includes(k))data[k]=p[k]});return{cols:Object.assign({status:p.status,rol:p.rol||null,net_ok:!!p.netOk},isAdmin(me())?{h_adj:+p.hAdj||0}:{}),data,priv:{vatsim:p.vatsim||'',ivao:p.ivao||'',simbrief:p.simbrief||''}}}
 const sortTs=a=>{if(a.length&&a.every(x=>typeof x.ts==='number'))a.sort((x,y)=>x.ts-y.ts);else if(a.length&&a.every(x=>typeof x.created==='number'))a.sort((x,y)=>x.created-y.created)};
 async function fetchAll(q){const out=[];for(let f=0;;f+=1000){const r=await q().range(f,f+999);if(r.error)throw r.error;out.push(...r.data);if(r.data.length<1000)break}return out}
 async function cloudPull(){const sb=CL.sb;
@@ -366,7 +366,7 @@ async function cloudPull(){const sb=CL.sb;
   Object.keys(CAR).forEach(c=>{S[c]=[]});S.enroll={};S.delReq=[];S.revReq=[];
   rows.forEach(r=>{const c=r.coll;if(CAR[c])S[c].push(r.data);else if(COBJ.includes(c))S[c]=r.data;else if(c==='enroll')S.enroll[r.id]=r.data;else if(c==='delReq')S.delReq.push(r.id);else if(c==='revReq')S.revReq.push(r.id);else if(c==='site'){S.maint=!!r.data.maint;S.incSeq=r.data.incSeq||{}}});
   Object.keys(CAR).forEach(c=>sortTs(S[c]));
-  S.pilots=prof.map(r=>Object.assign({},r.data,pm[r.id]||{},{id:r.code,uid:r.id,status:r.status,rol:r.rol||null,netOk:!!r.net_ok,joined:Date.parse(r.joined)||0}));
+  S.pilots=prof.map(r=>Object.assign({},r.data,pm[r.id]||{},{id:r.code,uid:r.id,status:r.status,rol:r.rol||null,netOk:!!r.net_ok,hAdj:+r.h_adj||0,joined:Date.parse(r.joined)||0}));
   const mine=prof.find(r=>r.id===CL.uid);
   if(CL.uid&&mine){const meP=S.pilots.find(p=>p.uid===CL.uid);meP.email=CL.email||'';S.session={id:mine.code,uid:CL.uid,staff:isStaff(meP)}}else S.session=null;
   if(!rows.length&&mine&&mine.rol==='admin'&&CL.cat){CATS.forEach(k=>S[k]=JSON.parse(JSON.stringify(CL.cat[k])));ensure();CL.dirty=true}   /* primer arranque: catálogo inicial */
@@ -492,7 +492,7 @@ const sbLink=r=>{const o=S.ap[norm(r.from)]?norm(r.from):r.from,d=S.ap[norm(r.to
 
 /* ===== public views ===== */
 const LEGAL=()=>t('NEXORA AIR no está relacionada, afiliada ni vinculada con ninguna aerolínea real. Es una entidad sin ánimo de lucro y todo su material es exclusivamente virtual y de simulación; ninguna documentación es válida para vuelos reales.','NEXORA AIR is not related to, affiliated with or linked to any real airline. It is a non-profit entity and all material is strictly virtual and for simulation; no documentation is valid for real flights.');
-const gstats=()=>{const L=S.log.filter(e=>e.status==='Completado');return{pil:S.pilots.filter(p=>!['Pending'].includes(p.status)&&!p.sys).length,h:metric(L,'hours'),fl:L.length,nm:metric(L,'miles'),ap:Object.keys(S.ap).length,ac:S.fleet.length}};
+const gstats=()=>{const L=S.log.filter(e=>e.status==='Completado');return{pil:S.pilots.filter(p=>!['Pending'].includes(p.status)&&!p.sys).length,h:metric(L,'hours')+S.pilots.filter(p=>p.status!=='Pending'&&!p.sys).reduce((a,p)=>a+(+p.hAdj||0),0),fl:L.length,nm:metric(L,'miles'),ap:Object.keys(S.ap).length,ac:S.fleet.length}};
 const tiles=()=>{const g=gstats();return`<div class="card tiles"><div><b>${g.pil}</b><span>${t('pilotos','pilots')}</span></div><div><b>${nf(g.h)}</b><span>${t('horas','hours')}</span></div><div><b>${nf(g.fl)}</b><span>${t('vuelos','flights')}</span></div><div><b>${nf(g.nm)}</b><span>${t('millas','miles')}</span></div><div><b>${g.ap}</b><span>${t('aeropuertos','airports')}</span></div></div>`};
 const nextFlights=n=>instances().filter(i=>!i.blocked&&i.free>0).sort((a,b)=>a.ts-b.ts).slice(0,n);
 const flRows=(L,port)=>L.map(i=>{const soon=i.ts-Date.now()<3*H,tr=TOURS.filter(x=>x.stages.some(s=>s.some(r=>r[0]===i.from&&r[1]===i.to)));
@@ -760,6 +760,13 @@ function nextPid(){const used=new Set(S.pilots.map(p=>p.id));let n=Math.max(100,
 function pidCheck(v,self){const id=(v||'').trim().toUpperCase();
   if(!PID_RE.test(id))return{err:t('Formato: NXR y 3 o 4 cifras (por ejemplo NXR101).','Format: NXR plus 3 or 4 digits (for example NXR101).')};
   if(S.pilots.some(p=>p.id===id&&p.id!==self))return{err:t('Ese ID ya lo usa otro piloto.','That ID is already used by another pilot.')};return{id}}
+/* borra a un piloto y todo lo suyo (modo demo) */
+function purgePilot(id){S.pilots=S.pilots.filter(p=>p.id!==id);
+  ['log','tx','res','tickets','inc'].forEach(k=>S[k]=(S[k]||[]).filter(x=>x.pilot!==id));
+  S.accept=(S.accept||[]).filter(a=>a.pid!==id);S.live=(S.live||[]).filter(x=>x.pid!==id);
+  S.notes=(S.notes||[]).filter(n=>n.to!==id&&!(n.go==='s-pilotos'&&(n.text||'').includes('('+id+')')));
+  delete S.enroll[id];delete S.prefs[id];(S.events||[]).forEach(e=>{if(e.part)delete e.part[id]});(S.groups||[]).forEach(g=>{g.m=(g.m||[]).filter(x=>x!==id)});
+  S.delReq=S.delReq.filter(x=>x!==id);S.revReq=S.revReq.filter(x=>x!==id)}
 /* cambia el ID de un piloto y todas las referencias a él */
 function renamePid(a,b){if(a===b)return;const ren=x=>x===a?b:x,rk=o=>{if(o&&Object.prototype.hasOwnProperty.call(o,a)){o[b]=o[a];delete o[a]}};
   const p=S.pilots.find(x=>x.id===a);if(p)p.id=b;
@@ -902,6 +909,11 @@ const HUBS=['LEMD','LEBL'];
 function pilotFile(id){const p=P_(id);if(!p)return;const adm=isAdmin(me()),st=stats(p.id),mine=S.res.filter(r=>r.pilot===p.id),open=mine.filter(r=>ACTIVE.includes(r.status)),
     tks=S.tickets.filter(x=>x.pilot===p.id),inc=S.inc.filter(x=>x.pilot===p.id),en=Object.keys(S.enroll[p.id]||{}),bd=(p.badges||[]).map(b=>pill(typeof b==='string'?b:(b.n||b.id||'?'))).join(' ');
   const idForm=can('pilotos')?`<form data-f="pid" data-id="${esc(p.id)}" class="form"><h3 class="full">${t('ID de piloto','Pilot ID')}</h3>${fld('pid','nid',t('ID (NXR + 3 o 4 cifras)','ID (NXR + 3 or 4 digits)'),'text','required maxlength="7" pattern="[Nn][Xx][Rr][0-9]{3,4}" autocapitalize="characters"',p.id)}<div class="full muted">${t('Al cambiarlo se actualizan sus vuelos, reservas, tickets, tours y demás registros. El sistema no permite repetir un ID.','Changing it updates their flights, bookings, tickets, tours and other records. The system does not allow duplicate IDs.')}</div><div class="full err" id="pid-err" hidden></div><div class="full"><button class="btn pri sm" type="submit">${t('Guardar ID','Save ID')}</button></div></form>`:'';
+  const hrsForm=adm?`<form data-f="phrs" data-id="${esc(p.id)}" class="form psec"><h3 class="full">${t('Horas de vuelo (solo Admin)','Flight hours (Admin only)')}</h3>
+    <div class="full muted">${t('Horas en vuelos completados','Hours in completed flights')}: <b>${nd(st.hl)}</b> · ${t('Ajuste actual','Current adjustment')}: <b>${st.ad>0?'+':''}${nd(st.ad)}</b> · ${t('Total','Total')}: <b>${nd(st.h)}</b></div>
+    ${fld('phrs','h',t('Horas totales que debe tener','Total hours they should have'),'number','required min="0" max="99999" step="0.1"',String(Math.round(st.h*10)/10))}${fld('phrs','why',t('Motivo del ajuste (queda en la auditoría)','Reason (kept in the audit log)'),'text','required maxlength="120"')}
+    <div class="full muted">${t('Se guarda como un ajuste sobre las horas reales de sus vuelos, afecta a su rango y al total de horas, y se avisa al piloto. No toca los rankings por periodo.','It is saved as an adjustment on top of the real hours from their flights, affects their rank and the total hours, and the pilot is notified. Period rankings are not affected.')}</div>
+    <div class="full err" id="phrs-err" hidden></div><div class="full"><button class="btn pri sm" type="submit">${t('Guardar horas','Save hours')}</button></div></form>`:'';
   const roles=[['',t('Sin acceso de staff','No staff access')],['admin','Admin'],...S.roles.map(r=>[r.id,r.n])];
   const dataForm=adm?`<form data-f="pdata" data-id="${esc(p.id)}" class="form psec"><h3 class="full">${t('Datos del piloto (solo Admin)','Pilot data (Admin only)')}</h3>
     ${fld('pdata','name',t('Nombre y apellidos','Full name'),'text','required maxlength="60"',p.name)}${fld('pdata','country',t('País (código)','Country (code)'),'text','required maxlength="2" pattern="[A-Za-z]{2}"',p.country)}${fld('pdata','user',t('Usuario','Username'),'text','required pattern="[A-Za-z0-9_]{3,40}"',p.user)}
@@ -916,10 +928,10 @@ function pilotFile(id){const p=P_(id);if(!p)return;const adm=isAdmin(me()),st=st
    <dl class="kv">${kv('ID',`<span class="mono">${esc(p.id)}</span>`)}${kv(t('Nombre','Name'),esc(p.name))}${kv(t('Usuario','Username'),esc(p.user))}${kv('Email',esc(p.email||''))}${kv(t('País','Country'),esc(p.country||''))}${kv('Hub',esc(p.hub||''))}
    ${kv(t('Estado','Status'),stPill(p.status)+(p.susp&&p.status==='Suspended'?`<div class="muted">${esc(p.susp.reason)} · ${fd(p.susp.until)}</div>`:''))}${kv(t('Alta','Joined'),p.joined?fd(p.joined):'')}${kv(t('Nivel de staff','Staff level'),staffLabel(p)?esc(staffLabel(p)):'')}
    ${kv(t('Plataforma','Platform'),esc(p.platform||'')+' '+(p.netOk?pill(t('Verificada','Verified'),'good'):pill(t('Sin aprobar','Unapproved'),'warn')))}${kv('VATSIM ID',esc(p.vatsim||''))}${kv('IVAO ID',esc(p.ivao||''))}${kv('SimBrief ID',esc(p.simbrief||''))}</dl>
-   <dl class="kv psec">${kv(t('Rango','Rank'),esc(st.rank.n))}${kv(t('Horas','Hours'),nd(st.h))}${kv(t('Vuelos completados','Completed flights'),nf(st.fl))}${kv(t('Millas','Miles'),nf(st.nm))}${kv(t('Puntos','Points'),nf(st.pts))}${kv(t('Nivel','Level'),st.lvl)}
+   <dl class="kv psec">${kv(t('Rango','Rank'),esc(st.rank.n))}${kv(t('Horas','Hours'),nd(st.h)+(st.ad?` <span class="muted">(${nd(st.hl)} ${t('en vuelos','from flights')} ${st.ad>0?'+':'−'}${nd(Math.abs(st.ad))} ${t('de ajuste del staff','staff adjustment')})</span>`:''))}${kv(t('Vuelos completados','Completed flights'),nf(st.fl))}${kv(t('Millas','Miles'),nf(st.nm))}${kv(t('Puntos','Points'),nf(st.pts))}${kv(t('Nivel','Level'),st.lvl)}
    ${kv(t('Reservas activas','Active bookings'),open.length)}${kv(t('Tours inscritos','Enrolled tours'),en.length?esc(en.join(', ')):'')}${kv('Tickets',tks.length)}${kv(t('Incidentes','Incidents'),inc.length)}${kv(t('Logros','Badges'),bd)}
    ${kv(t('Solicitudes','Requests'),(S.delReq.includes(p.id)?pill(t('Eliminación','Deletion'),'bad')+' ':'')+(S.revReq.includes(p.id)?pill(t('Revisión','Review'),'warn'):''))}</dl>
-   <div class="psec">${idForm}</div>${dataForm}</div>`;
+   <div class="psec">${idForm}</div>${hrsForm}${dataForm}</div>`;
   return[`${esc(p.name)} · <span class="mono">${esc(p.id)}</span>`,body]}
 
 /* ===== router / layout ===== */
@@ -983,12 +995,12 @@ const A={
  bell:()=>{const p=me(),l=S.notes.filter(n=>n.to===p.id).slice().reverse().slice(0,20);l.forEach(n=>n.read=true);save();modal(t('Notificaciones','Notifications'),`<div class="list">${l.map(n=>`<div><span>${esc(S.lang==='en'&&n.en?n.en:n.text)}</span><span class="muted">${n.go&&can(SPERM[n.go])?btn(t('Revisar','Review'),'bgo',n.go,'sm')+' ':''}${fd(n.ts)}</span></div>`).join('')||`<div class="empty">—</div>`}</div><p class="muted pad">${t('Cada notificación también se envía al email verificado.','Each notification is also emailed to the verified address.')}</p>`);render()},
  pdf:()=>{const p=me(),s=stats(p.id),L=S.log.filter(e=>e.pilot===p.id&&e.status==='Completado').sort((a,b)=>a.depTs-b.depTs);modal(t('Historial global (vista previa del PDF)','Global history (PDF preview)'),`<div class="pad stack"><p class="mono">NEXORA AIR VA · ID DOC NXR-H-${(hs(p.id+L.length)%1e8).toString(36).toUpperCase()} · ${fdt(Date.now())}</p><p><b>${esc(p.name)}</b> · ${p.id} · ${s.rank.n}</p>${tbl([t('Fecha','Date'),t('Vuelo','Flight'),t('Ruta','Route'),t('Red','Net')],L.slice(-12).map(e=>[fd(e.depTs),e.no,e.from+'→'+e.to,e.platform]))}<p><b>${t('Totales','Totals')}:</b> ${s.fl} ${t('vuelos','flights')} · ${nd(s.h)} h · ${nf(s.nm)} nm</p><p class="muted">${t('La exportación real a PDF llegará con el backend.','Real PDF export arrives with the backend.')}</p></div>`)},
  ap:id=>{const p=P_(id);p.status=p.status==='Pending'?'Active':p.status;p.netOk=true;notify(id,t('Tu cuenta y plataforma han sido aprobadas.','Your account and platform were approved.'));aud('Aprobó alta/plataforma',id);done()},
- rj:id=>{S.pilots=S.pilots.filter(p=>p.id!==id);aud('Rechazó solicitud',id);done()},
+ rj:id=>{const p=P_(id);if(!p)return;modal(t('Rechazar solicitud','Reject request'),`<form data-f="drj" data-id="${esc(id)}" class="form pad"><p class="full">${t('Se eliminará la solicitud de','The request from')} <b>${esc(p.name)}</b> (${esc(p.id)}) ${t('y tendrá que volver a darse de alta si quiere entrar.','will be deleted and they will have to sign up again to join.')}</p><div class="full"><button class="btn bad" type="submit">${t('Rechazar y eliminar','Reject and delete')}</button> ${btn(t('Cancelar','Cancel'),'xm','','')}</div></form>`)},
  react:id=>{const p=P_(id);p.status='Active';delete p.susp;S.revReq=S.revReq.filter(x=>x!==id);notify(id,t('Tu suspensión ha finalizado y tu cuenta está reactivada.','Your suspension ended and your account is reactivated.'));aud('Reactivó cuenta',id);done()},
  susp:id=>modal(t('Suspender','Suspend'),`<form data-f="dsusp" data-id="${id}" class="form pad">${ta('dsusp','r',t('Motivo (obligatorio, visible para el piloto)','Reason (required, visible to pilot)'),'','required maxlength="200"')}${fld('dsusp','u',t('Fin de la suspensión','Suspension end'),'date','required')}<div class="full"><button class="btn bad" type="submit">${t('Suspender','Suspend')}</button></div></form>`),
  ptsm:id=>modal(t('Ajustar puntos','Adjust points'),`<form data-f="dpts" data-id="${id}" class="form pad">${fld('dpts','n',t('Puntos (negativo para retirar)','Points (negative to withdraw)'),'number','required min="-5000" max="5000"')}${fld('dpts','r',t('Motivo','Reason'),'text','required maxlength="100"')}<div class="full"><button class="btn pri" type="submit">${t('Aplicar','Apply')}</button></div></form>`),
  bdg:id=>modal(t('Conceder logro','Award badge'),`<form data-f="dbdg" data-id="${id}" class="form pad">${sel('dbdg','b',t('Logro','Badge'),STAFFB)}<div class="full"><button class="btn pri" type="submit">${t('Conceder','Award')}</button></div></form>`),
- deluser:id=>{S.pilots=S.pilots.filter(p=>p.id!==id);S.log=S.log.filter(e=>e.pilot!==id);S.tx=S.tx.filter(x=>x.pilot!==id);S.res=S.res.filter(r=>r.pilot!==id);S.tickets=S.tickets.filter(k=>k.pilot!==id);S.inc=S.inc.filter(i=>i.pilot!==id);S.accept=S.accept.filter(a=>a.pid!==id);S.notes=S.notes.filter(n=>n.to!==id);delete S.enroll[id];S.delReq=S.delReq.filter(x=>x!==id);done(t('Cuenta eliminada','Account deleted'))},
+ deluser:id=>{purgePilot(id);aud('Eliminó la cuenta',id);done(t('Cuenta eliminada','Account deleted'))},
  blk:id=>{const f=S.flights.find(x=>x.no===id);f.blocked=!f.blocked;aud(f.blocked?'Bloqueó vuelo':'Desbloqueó vuelo','NXR'+id);done()},
  vap:id=>{const e=S.log.find(x=>x.id===id),b=rankOf(stats(e.pilot).h).i;validated(S.res.find(r=>r.entryId===id),e,b);aud('Aprobó vuelo en revisión',e.no+' '+e.pilot);done(t('Vuelo validado','Flight validated'))},
  vrj:id=>{const e=S.log.find(x=>x.id===id);aud('Rechazó vuelo en revisión',e.no+' '+e.pilot);rejectEntry(e);done(t('Vuelo rechazado y efectos revertidos','Flight rejected, effects reverted'))},
@@ -1048,6 +1060,7 @@ const F={
  dpts:(d,f)=>{const p=P_(f.dataset.id);S.tx.push({id:uid('X'),pilot:p.id,pts:+d.get('n'),xp:0,why:t('Ajuste manual: ','Manual adjustment: ')+d.get('r'),ref:'manual',ts:Date.now()});notify(p.id,t('Ajuste de puntos: ','Points adjustment: ')+d.get('n'));aud('Ajustó puntos',p.id+' '+d.get('n'));done()},
  dbdg:(d,f)=>{const p=P_(f.dataset.id);if(!p.badges.includes(d.get('b')))p.badges.push(d.get('b'));notify(p.id,t('Logro concedido: ','Badge awarded: ')+d.get('b'));aud('Concedió logro',p.id);done()},
  dcode:(d,f)=>{S.routeCodes[f.dataset.id]=d.get('c');aud('Cambió código de ruta',f.dataset.id);done()}};
+F.drj=(d,f)=>{const id=f.dataset.id;purgePilot(id);aud('Rechazó solicitud',id);done(t('Solicitud rechazada. Tendrá que volver a registrarse.','Request rejected. They will have to sign up again.'))};
 document.addEventListener('submit',e=>{const f=e.target.closest('form[data-f]');if(!f)return;e.preventDefault();const h=F[f.dataset.f];if(h)h(new FormData(f),f)});
 document.addEventListener('change',e=>{const f=e.target.closest('form[data-f="flt"]');if(f)F.flt(new FormData(f),f)});
 
@@ -1123,7 +1136,7 @@ function cloudHook(){if(!CL.on)return;
   const afterAuth=async()=>{const u=(await CL.sb.auth.getUser()).data.user;CL.uid=u?u.id:null;CL.email=u?u.email:'';await cloudPull()};
   const old={logout:A.logout,del:F.del};
   F.login=async d=>{const r=await CL.sb.auth.signInWithPassword({email:d.get('user').trim().toLowerCase(),password:d.get('pass')});
-    if(r.error)return err('login-err',t('Correo o contraseña incorrectos.','Wrong email or password.'));
+    if(r.error)return err('login-err',t('Correo o contraseña incorrectos. Si tu solicitud fue rechazada, vuelve a registrarte.','Wrong email or password. If your request was rejected, sign up again.'));
     await afterAuth();const p=me();if(!p)return err('login-err',t('Tu perfil aún no existe. Inténtalo de nuevo.','Your profile does not exist yet. Try again.'));go(isStaff(p)?'s-dash':'portal')};
   F.reg=async d=>{const pl=d.get('platform'),id=pl==='VATSIM'?d.get('vatsim'):d.get('ivao');if(!id)return err('reg-err',t('Indica tu ID de ','Enter your ')+pl+t('.',' ID.'));
     if((d.get('pass')||'').length<8)return err('reg-err',t('La contraseña debe tener al menos 8 caracteres.','Password must be at least 8 characters.'));
@@ -1134,6 +1147,12 @@ function cloudHook(){if(!CL.on)return;
   A.logout=async()=>{await CL.sb.auth.signOut();CL.uid=null;CL.email='';await cloudPull();go('inicio')};
   F.pw=async d=>{const r=await CL.sb.auth.updateUser({password:d.get('new')});if(r.error)return err('pw-err',r.error.message);await CL.sb.auth.signOut();CL.uid=null;await cloudPull();go('login');toast(t('Contraseña cambiada. Vuelve a entrar.','Password changed. Log in again.'))};
   F.del=async d=>{const r=await CL.sb.auth.signInWithPassword({email:CL.email,password:d.get('pass')});if(r.error)return err('del-err',t('Contraseña incorrecta.','Wrong password.'));return old.del(d)};
+  /* rechazar una alta o eliminar una cuenta: se borra de verdad en Supabase (perfil, datos y usuario de acceso) */
+  const rm=async(id,msg,audTxt)=>{const p=P_(id);if(!p||!p.uid)return;const r=await CL.sb.rpc('remove_pilot',{p_uid:p.uid});
+    if(r.error){toast(t('No se pudo eliminar: ','Could not remove: ')+r.error.message);return}
+    await cloudPull();aud(audTxt,id);save();modal();render();toast(msg)};
+  F.drj=(d,f)=>rm(f.dataset.id,t('Solicitud rechazada. Tendrá que volver a registrarse.','Request rejected. They will have to sign up again.'),'Rechazó solicitud');
+  A.deluser=id=>rm(id,t('Cuenta eliminada','Account deleted'),'Eliminó la cuenta');
   A.demo=()=>toast(t('Las cuentas de demostración no existen en modo nube.','Demo accounts do not exist in cloud mode.'))}
 /* ===== acciones: ficha de piloto, cambio de ID, búsqueda ===== */
 Object.assign(A,{
@@ -1148,6 +1167,14 @@ Object.assign(F,{
      CL.psnap[c.id]=CL.psnap[old];delete CL.psnap[old]}
    renamePid(old,c.id);notify(c.id,t('Tu ID de piloto es ahora ','Your pilot ID is now ')+c.id);aud('Cambió el ID de piloto',old+' → '+c.id);
    save();render();toast(t('ID actualizado: ','ID updated: ')+c.id);A.pfile(c.id)},
+ phrs:(d,f)=>{if(!isAdmin(me()))return;const id=f.dataset.id,p=P_(id);if(!p)return;
+   const tot=parseFloat(String(d.get('h')).replace(',','.')),why=(d.get('why')||'').trim();
+   if(!isFinite(tot)||tot<0||tot>99999)return err('phrs-err',t('Indica unas horas entre 0 y 99999.','Enter hours between 0 and 99999.'));
+   if(!why)return err('phrs-err',t('Indica el motivo del ajuste.','Enter the reason for the adjustment.'));
+   const s0=stats(id),r0=rankOf(s0.h);p.hAdj=Math.round((tot-s0.hl)*100)/100;if(!p.hAdj)delete p.hAdj;const s1=stats(id);
+   if(Math.abs(s1.h-s0.h)<0.005){modal();return}
+   notify(id,t('El staff ha ajustado tus horas de vuelo: ','Staff adjusted your flight hours: ')+nd(s0.h)+' → '+nd(s1.h)+' h.');const r1=rankOf(s1.h);if(r1.i>r0.i)notify(id,t('¡Ascenso a ','Promoted to ')+r1.n+'!');
+   aud('Ajustó las horas de vuelo',id+': '+nd(s0.h)+' → '+nd(s1.h)+' h · '+why);save();render();toast(t('Horas actualizadas','Hours updated'));A.pfile(id)},
  pdata:(d,f)=>{if(!isAdmin(me()))return;const id=f.dataset.id,p=P_(id);if(!p)return;const g=k=>(d.get(k)||'').trim();
    const v={name:g('name'),country:g('country').toUpperCase(),user:g('user'),platform:g('platform')==='IVAO'?'IVAO':'VATSIM',vatsim:g('vatsim'),ivao:g('ivao'),simbrief:g('simbrief'),hub:g('hub')||p.hub,netOk:d.get('netOk')==='1'};
    if(!v.name)return err('pdata-err',t('Indica el nombre.','Enter the name.'));

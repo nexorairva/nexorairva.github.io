@@ -1,7 +1,7 @@
 
 /* ===== public views ===== */
 const LEGAL=()=>t('NEXORA AIR no está relacionada, afiliada ni vinculada con ninguna aerolínea real. Es una entidad sin ánimo de lucro y todo su material es exclusivamente virtual y de simulación; ninguna documentación es válida para vuelos reales.','NEXORA AIR is not related to, affiliated with or linked to any real airline. It is a non-profit entity and all material is strictly virtual and for simulation; no documentation is valid for real flights.');
-const gstats=()=>{const L=S.log.filter(e=>e.status==='Completado');return{pil:S.pilots.filter(p=>!['Pending'].includes(p.status)&&!p.sys).length,h:metric(L,'hours'),fl:L.length,nm:metric(L,'miles'),ap:Object.keys(S.ap).length,ac:S.fleet.length}};
+const gstats=()=>{const L=S.log.filter(e=>e.status==='Completado');return{pil:S.pilots.filter(p=>!['Pending'].includes(p.status)&&!p.sys).length,h:metric(L,'hours')+S.pilots.filter(p=>p.status!=='Pending'&&!p.sys).reduce((a,p)=>a+(+p.hAdj||0),0),fl:L.length,nm:metric(L,'miles'),ap:Object.keys(S.ap).length,ac:S.fleet.length}};
 const tiles=()=>{const g=gstats();return`<div class="card tiles"><div><b>${g.pil}</b><span>${t('pilotos','pilots')}</span></div><div><b>${nf(g.h)}</b><span>${t('horas','hours')}</span></div><div><b>${nf(g.fl)}</b><span>${t('vuelos','flights')}</span></div><div><b>${nf(g.nm)}</b><span>${t('millas','miles')}</span></div><div><b>${g.ap}</b><span>${t('aeropuertos','airports')}</span></div></div>`};
 const nextFlights=n=>instances().filter(i=>!i.blocked&&i.free>0).sort((a,b)=>a.ts-b.ts).slice(0,n);
 const flRows=(L,port)=>L.map(i=>{const soon=i.ts-Date.now()<3*H,tr=TOURS.filter(x=>x.stages.some(s=>s.some(r=>r[0]===i.from&&r[1]===i.to)));
