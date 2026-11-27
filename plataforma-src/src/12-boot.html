@@ -1,0 +1,8 @@
+/* ===== boot ===== */
+(async()=>{
+  const cloud=await cloudStart();
+  if(!cloud){S=load()||{};if(!S.v)seed()}
+  TOURS=S.tours;rebuildIx();ensure();cloudHook();
+  render();loadData();
+})();
+</script>
