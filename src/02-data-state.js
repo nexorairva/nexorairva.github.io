@@ -92,7 +92,7 @@ const fm=f=>{const[h,m]=f.m.split(':');return(+h)*60+(+m)};
 function instances(){const out=[],now=Date.now(),d0=dUTC(now);
   for(let k=0;k<=2;k++)for(const f of S.flights){const ts=d0+k*DAY+fm(f)*MIN;if(ts<now+15*MIN)continue;const id='NXR'+f.no+'-'+iso(ts);
     const nm=dist(f.from,f.to),used=S.res.filter(r=>r.instId===id&&r.status!=='cancelled').length;const sl=TYPES[f.type].seats,booked=used;
-    out.push({id,f,no:'NXR'+f.no,ts,from:f.from,to:f.to,type:f.type,nm,mins:cmins(nm,f.type),slots:sl,free:sl-booked,blocked:!!f.blocked})}
+    out.push({id,f,no:'NXR'+f.no,ts,from:f.from,to:f.to,type:f.type,nm,mins:cmins(nm,f.type),slots:sl,free:sl-booked,blocked:!!f.blocked,delay:!!f.delay})}
   return out}
 function seed(){
   const now=Date.now(),Y=new Date(now).getUTCFullYear(),R=mul(2026),D=n=>now-n*DAY;
