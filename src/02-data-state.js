@@ -70,7 +70,7 @@ const me=()=>S.session&&pilot(S.session.id);
 const lE=(pid)=>S.log.filter(e=>e.pilot===pid&&e.status==='Completado');
 function rankOf(h){let i=0;RANKS.forEach((r,k)=>{if(h>=r[2])i=k});const nx=RANKS[i+1];return{i,n:t(RANKS[i][0],RANKS[i][1]),next:nx?{n:t(nx[0],nx[1]),min:nx[2]}:null,min:RANKS[i][2]}}
 function stats(pid){const L=lE(pid),hl=metric(L,'hours'),ad=+((S.pilots.find(p=>p.id===pid)||{}).hAdj)||0,h=Math.max(0,hl+ad);const tx=S.tx.filter(x=>x.pilot===pid);const xp=tx.reduce((a,x)=>a+x.xp,0);
-  return{L,h,hl,ad,fl:L.length,nm:metric(L,'miles'),pts:tx.reduce((a,x)=>a+x.pts,0),xp,lvl:Math.floor(Math.sqrt(xp/50))+1,rank:rankOf(h)}}
+  return{L,h,hl,ad,fl:L.length,nm:metric(L,'miles'),pts:tx.reduce((a,x)=>a+x.pts,0)-(S.redeem||[]).filter(x=>x.pilot===pid&&x.st!=='Rechazado').reduce((a,x)=>a+x.cost,0),xp,lvl:Math.floor(Math.sqrt(xp/50))+1,rank:rankOf(h)}}
 function tourProg(tr,pid){const en=(S.enroll[pid]||{})[tr.id];if(!en)return{en:0,done:false,st:[]};
   const L=lE(pid).filter(e=>e.kind!=='free').sort((a,b)=>a.depTs-b.depTs);let after=en;const st=[];
   for(const s of tr.stages){const e=L.find(x=>x.depTs>after&&s.some(r=>r[0]===x.from&&r[1]===x.to)&&(!tr.ac||x.type===tr.ac));if(!e)break;st.push(e);after=e.depTs}
@@ -102,7 +102,7 @@ function seed(){
   S={v:3,lang:'es',session:null,seq:100,pidSeq:113,ap:JSON.parse(JSON.stringify(AP0)),flights:FL0.map(x=>({no:x[0],from:x[1],to:x[2],m:x[3],type:x[4],slots:x[5],blocked:x[0]==='431'})),
    fleet:[['EC-NXA','A20N','Alhambra'],['EC-NXB','A20N','Giralda'],['EC-NXC','A20N','Montjuïc'],['EC-NXD','A21N','Teide'],['EC-NXE','A21N','Sierra Nevada'],['EC-NXF','B738','Cibeles'],['EC-NXG','B738','Retiro'],['EC-NXJ','B789','Quijote'],['EC-NXK','B789','Atlántico'],['EC-NXL','E195','Duero']].map(x=>({reg:x[0],type:x[1],name:x[2],desc:DESC[x[1]],img:x[1]==='A20N'?GALL.slice():[]})),tours:JSON.parse(JSON.stringify(TOURS0)),
    pilots:[],log:[],tx:[],res:[],enroll:{},prefs:{},accept:[],notes:[],audit:[],tickets:[],inc:[],incSeq:{},news:[],groups:[],events:[],cal:[],sec:[],maint:false,delReq:[],revReq:[],att:{},routeCodes:{},
-   intg:[],
+   intg:[],notam:[],rew:[],redeem:[],guide:[],acal:[],
    remarks:{ff:'NEXORA AIR VA | FREE FLIGHT | NXR',flight:'NEXORA AIR VA | NXR | VUELO OFICIAL',tour:'NEXORA AIR VA | NXR | TOUR',event:'NEXORA AIR VA | NXR | EVENTO',special:'NEXORA AIR VA | NXR | ESPECIAL'},
    docs:{norm:{v:'1.0',ts:D(300),text:'Los pilotos vuelan con respeto a la red, a los controladores y a la comunidad. Una cuenta por persona. Los vuelos se reservan antes de realizarse y se completan con la plataforma elegida.'},
     terms:{v:'1.0',ts:D(300),text:'NEXORA AIR VA es un servicio de simulación sin ánimo de lucro. El uso de la plataforma implica aceptar estas condiciones y la normativa vigente.'},
