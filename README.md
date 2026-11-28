@@ -70,3 +70,8 @@ La pestaña **Integraciones** (permiso `sistema`) arranca vacía: no hay nada pr
 
 - Se han retirado los vuelos simulados del mapa, las cuentas de demostración y el tiempo de vuelo aleatorio. El mapa de **vuelos en directo** solo muestra pilotos que VATSIM/IVAO está viendo ahora, en su **posición real** (el servidor la guarda en la reserva cada minuto mientras vuela). Una reserva sin conexión en la red no aparece en el mapa ni avanza sola.
 - Datos de ejemplo solo con `?demo=1` (o `localStorage nx-demo=1`), pensado para pruebas.
+
+## Mapa ampliado y conectados en Discord
+
+- La portada muestra el mapa en vivo a todo el ancho, bajo el texto de bienvenida.
+- **Conectados en Discord**: en *Staff › Redes sociales*, edita la red Discord y rellena «ID del servidor». En Discord: *Ajustes del servidor › Widget › Activar widget del servidor*. La web consulta `discord.com/api/guilds/<ID>/widget.json` y muestra solo los miembros en línea cuyo apodo contiene su ID (p. ej. «Ana NXR103»), validado contra los pilotos reales. La web pública enseña solo el ID; el portal del piloto añade nombre y estado. Límites del widget: máximo 100 miembros y solo los conectados.
