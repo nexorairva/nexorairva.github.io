@@ -77,7 +77,8 @@ function tourProg(tr,pid){const en=(S.enroll[pid]||{})[tr.id];if(!en)return{en:0
   return{en,st,done:st.length===tr.stages.length}}
 
 /* ===== state ===== */
-function load(){try{const r=localStorage.getItem(KEY);if(r){const s=JSON.parse(r);if(s&&s.v===3)return s}}catch(e){}return null}
+function load(){try{const r=localStorage.getItem(KEY);if(r){const s=JSON.parse(r);if(s&&s.v===3){if(!DEMO&&(s.pilots||[]).some(p=>p.id==='NXR102'&&p.name==='Alex Demo'))return null;   /* datos de ejemplo guardados antes: se descartan */
+    return s}}}catch(e){}return null}
 function save(){if(CL.on){cloudSaveSoon();return}try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){if(!save.w){save.w=1;setTimeout(()=>toast('No hay espacio en el navegador: las imágenes grandes no se guardarán.'),0)}}}
 function notify(pid,text){S.notes.push({id:uid('N'),to:pid,text,ts:Date.now(),read:false})}
 /* avisa a todo el staff que tenga el permiso indicado; en=texto en inglés, go=sección a la que lleva el botón Revisar */
@@ -94,6 +95,8 @@ function instances(){const out=[],now=Date.now(),d0=dUTC(now);
     const nm=dist(f.from,f.to),used=S.res.filter(r=>r.instId===id&&r.status!=='cancelled').length;const sl=TYPES[f.type].seats,booked=used;
     out.push({id,f,no:'NXR'+f.no,ts,from:f.from,to:f.to,type:f.type,nm,mins:cmins(nm,f.type),slots:sl,free:sl-booked,blocked:!!f.blocked,delay:!!f.delay})}
   return out}
+/* El modo demostración (datos de ejemplo) ya no existe para los usuarios: solo se activa a propósito con ?demo=1 para pruebas. */
+const DEMO=(()=>{try{return /[?&]demo=1/.test(location.search)||localStorage.getItem('nx-demo')==='1'}catch(e){return false}})();
 function seed(){
   const now=Date.now(),Y=new Date(now).getUTCFullYear(),R=mul(2026),D=n=>now-n*DAY;
   S={v:3,lang:'es',session:null,seq:100,pidSeq:113,ap:JSON.parse(JSON.stringify(AP0)),flights:FL0.map(x=>({no:x[0],from:x[1],to:x[2],m:x[3],type:x[4],slots:x[5],blocked:x[0]==='431'})),
@@ -105,6 +108,7 @@ function seed(){
     terms:{v:'1.0',ts:D(300),text:'NEXORA AIR VA es un servicio de simulación sin ánimo de lucro. El uso de la plataforma implica aceptar estas condiciones y la normativa vigente.'},
     priv:{v:'1.0',ts:D(300),text:'Tratamos los datos necesarios para operar tu cuenta: identificación, plataformas de vuelo, actividad y comunicaciones. Puedes solicitar la eliminación de tu cuenta desde tu perfil.'}}};
   TOURS=S.tours;syncCh();rebuildIx();
+  if(!DEMO){S.events=[];S.cal=[];S.chall=[];S.partners=[];S.apo={};S.dl=[];S.news=[];syncCh();save();return}
   const mk=(id,name,k,user,plat,hub,status,ago,x)=>S.pilots.push(Object.assign({id,name,country:k,user,email:user+'@example.com',pass:null,platform:plat,vatsim:plat==='VATSIM'?String(1300000+hs(id)%90000):'',ivao:plat==='IVAO'?String(600000+hs(id)%90000):'',simbrief:String(100000+hs(id)%800000),netOk:true,hub,status,joined:D(ago),fav:[],favT:[],badges:[]},x||{}));
   mk('NXR101','Admin NEXORA','ES','admin','VATSIM','LEMD','Active',400,{sys:true});mk('NXR102','Alex Demo','ES','piloto','VATSIM','LEMD','Active',150);mk('NXR103','Ana Ruiz','ES','ana','VATSIM','LEMD','Active',320);
   mk('NXR104','Jorge Salas','MX','jorge','IVAO','LEBL','Active',280);mk('NXR105','Marta Ibáñez','ES','marta','IVAO','LEMD','Active',200);mk('NXR106','Luca Ferri','IT','luca','VATSIM','LEMD','Active',360);

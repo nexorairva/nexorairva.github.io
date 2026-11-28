@@ -444,6 +444,10 @@ begin
       end if;
       perform public.nx_note(v_code, 'Vuelo ' || r.cs || ' detectado en ' || p_plat || '.');
     end if;
+    -- posición real para el mapa de vuelos en directo (se guarda en la reserva mientras vuela)
+    update public.nx_docs set updated_at = now(),
+      data = data || jsonb_build_object('trk', jsonb_build_object('lat', r.lat, 'lon', r.lon, 'alt', r.alt, 'gs', r.gs, 'cs', r.cs, 'ts', public.nx_ms(v_now)))
+    where coll = 'res' and id = (select res_id from public.net_sessions where id = v_sid and state = 'live');
   end loop;
   -- sesiones de esta red que ya no aparecen: tres pasadas seguidas (~3 min) sin verlas = desconectado
   update public.net_sessions set miss = miss + 1 where state = 'live' and plat = p_plat and last_seen < v_now;

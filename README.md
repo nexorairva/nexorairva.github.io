@@ -53,13 +53,15 @@ Cada vez que alguien se registra, todo el staff con permiso **Pilotos** (Admin y
   3. cuando se desconecta (3 minutos sin verlo) escribe el vuelo en el Logbook y cierra la reserva. Si no cuadra (sin plan de vuelo, no aterrizó, otro destino, duración muy corta, avión fuera de la flota) queda **en revisión** del staff. Un vuelo sin reserva también se registra.
   4. avisa al piloto y la web le suma los puntos al abrirla (los vuelos del servidor llevan `src='net'`).
 - Para activarlo: ejecuta `supabase/schema.sql` y, si el script avisa, activa las extensiones **pg_cron** y **pg_net** en *Database → Extensions* y vuelve a ejecutarlo. Las direcciones de las redes están en la tabla `net_cfg` (se pueden cambiar o desactivar); las sesiones detectadas, en `net_sessions` (visibles para el staff).
-- **Modo demo (sin Supabase):** `src/11h-network.js` hace el mismo seguimiento en el navegador del piloto mientras tiene la web abierta.
+- **Sin Supabase:** la web arranca vacía (sin cuentas ni datos de ejemplo) y avisa de que no hay base de datos conectada. Solo para pruebas existe un interruptor oculto (`?demo=1`) que carga datos de ejemplo; `src/11h-network.js` hace entonces el seguimiento en el navegador.
 - Limitaciones: el listado de IVAO puede exigir clave (cabeceras en `net_cfg.headers`); sin coordenadas de aeropuertos en la base, el aterrizaje se deduce de la velocidad en la última posición y de que el destino del plan coincida con la reserva.
 
-- `src/11h-network.js` consulta el feed público de la red de la reserva (VATSIM: `https://data.vatsim.net/v3/vatsim-data.json`; IVAO: `https://api.ivao.aero/v2/tracker/whazzup`) cada 20 s mientras el piloto tiene la web abierta. Localiza al piloto por su **ID de VATSIM/IVAO** (Mi perfil), detecta la conexión con indicativo `NXR…`/`NEXO…` y salida igual a la reservada, hace el check-in, y al desconectarse cierra el vuelo con los datos reales (duración, llegada cerca del destino). Si no coincide, pasa a revisión del staff.
-- Limitación: el seguimiento ocurre en el navegador del piloto. Si cierra la web durante el vuelo, el cierre se hace al volver a abrirla y puede ir a revisión. Para seguimiento 24 h haría falta una función de servidor (p. ej. Supabase Edge Function programada).
-- El endpoint de IVAO puede exigir clave: se puede cambiar con `ivaoFeed` (y `vatsimFeed`) en `config.js`.
 
 ## Integraciones (staff)
 
 La pestaña **Integraciones** (permiso `sistema`) arranca vacía: no hay nada preintegrado. El administrador da de alta a mano los procesos o servicios que quiera (nombre, tipo, dirección, cabecera y credencial opcionales, notas y estado), los edita, los elimina y, si tienen dirección, pulsa **Comprobar** para consultarla de verdad desde el navegador (algunos servicios no admiten consultas desde el navegador y saldrán «con error»). La credencial no se muestra nunca. `supabase/migrations/003_limpiar_integraciones.sql` borra las integraciones de ejemplo de bases ya creadas (la web también las descarta al cargar).
+
+## Sin datos ni procesos simulados
+
+- Se han retirado los vuelos simulados del mapa, las cuentas de demostración y el tiempo de vuelo aleatorio. El mapa de **vuelos en directo** solo muestra pilotos que VATSIM/IVAO está viendo ahora, en su **posición real** (el servidor la guarda en la reserva cada minuto mientras vuela). Una reserva sin conexión en la red no aparece en el mapa ni avanza sola.
+- Datos de ejemplo solo con `?demo=1` (o `localStorage nx-demo=1`), pensado para pruebas.

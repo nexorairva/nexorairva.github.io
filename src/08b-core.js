@@ -42,8 +42,7 @@ function ensure(){let ch=0;
   if(S.session&&S.session.staff===undefined)S.session.staff=isStaff(pilot(S.session.id));
   if(!S.brand){S.brand={};ch=1}
   if(!S.social&&!CL.on){S.social=clone(DEF_SOCIAL);ch=1}
-  if(!S.live&&!CL.on){const L=S.flights.map(f=>({f,nm:dist(f.from,f.to)||0})).filter(x=>x.nm>150).sort((a,b)=>b.nm-a.nm),seen=new Set(),pick=[];for(const x of L){const k=x.f.from+x.f.to;if(seen.has(k))continue;seen.add(k);pick.push(x.f);if(pick.length>=6)break}
-    const pl=['NXR103','NXR104','NXR106','NXR108','NXR109','NXR105'];S.live=pick.map((f,i)=>{const p=pilot(pl[i]);return{no:f.no,pid:pl[i],pl:p.platform||'VATSIM',off:i*47+13}});ch=1}
+  if(S.live)S.live=null;   /* retirados los vuelos simulados del mapa */
   if(!CL.on&&!S.clean1){   /* retirada única de los tours, eventos, retos y avisos de ejemplo */
     S.tours=[];S.events=[];S.cal=[];S.chall=[];S.enroll={};S.news=(S.news||[]).filter(n=>!/^n[123]$/.test(n.id));S.clean1=1;ch=1}
   if(!S.chall){S.chall=[];if(!CL.on)ch=1}
@@ -71,16 +70,18 @@ function gcF(A,B){const r=Math.PI/180,a1=A[0]*r,o1=A[1]*r,a2=B[0]*r,o2=B[1]*r,d=
   return f=>{if(d<1e-6)return[A[0],A[1]];const a=Math.sin((1-f)*d)/Math.sin(d),b=Math.sin(f*d)/Math.sin(d),x=a*Math.cos(a1)*Math.cos(o1)+b*Math.cos(a2)*Math.cos(o2),y=a*Math.cos(a1)*Math.sin(o1)+b*Math.cos(a2)*Math.sin(o2),z=a*Math.sin(a1)+b*Math.sin(a2);return[Math.atan2(z,Math.hypot(x,y))/r,Math.atan2(y,x)/r]}}
 const px=(la,lo)=>[+(lo+180).toFixed(2),+(85-la).toFixed(2)];
 function arc(A,B,f0,f1){const g=gcF(A,B),n=Math.max(8,Math.round((f1-f0)*56));let s='',pl=null;for(let i=0;i<=n;i++){const q=g(f0+(f1-f0)*i/n),p=px(q[0],q[1]);s+=(pl===null||Math.abs(p[0]-pl)>180?'M':'L')+p[0]+' '+p[1];pl=p[0]}return s}
-function liveFlights(){const now=Date.now(),out=[];
-  S.res.forEach(r=>{if(r.status!=='flying')return;const st=r.flyTs||r.checkin||r.depTs,pr=Math.min(.98,Math.max(.03,(now-st)/(Math.max(10,r.mins)*MIN)));out.push({id:r.id,pid:r.pilot,cs:r.no,from:r.from,to:r.to,pl:r.platform,ty:r.type,pr,demo:false})});
-  (S.live||[]).forEach(d=>{const f=S.flights.find(x=>x.no===d.no);if(!f)return;const nm=dist(f.from,f.to);if(!nm)return;const mins=cmins(nm,f.type),pr=((now+d.off*MIN)%(mins*1.15*MIN))/(mins*MIN);if(pr>=1||pr<.03)return;out.push({id:'d'+d.no,pid:d.pid,cs:'NXR'+d.no,from:f.from,to:f.to,pl:d.pl,ty:f.type,pr,demo:true})});
+/* Vuelos en directo: solo los que la red real está viendo ahora (posición real recibida de VATSIM/IVAO). */
+function liveFlights(){const out=[];
+  S.res.forEach(r=>{if(r.status!=='flying'||!r.trk||r.trk.lat==null)return;const A=geo(r.from),B=geo(r.to);if(!A||!B)return;
+    const a=kmNm(A[0],A[1],r.trk.lat,r.trk.lon),b=kmNm(r.trk.lat,r.trk.lon,B[0],B[1]),pr=Math.min(.99,Math.max(.01,a+b?a/(a+b):0));
+    out.push({id:r.id,pid:r.pilot,cs:r.trk.cs||r.no,from:r.from,to:r.to,pl:r.platform,ty:r.type,pr,pos:[r.trk.lat,r.trk.lon],alt:r.trk.alt,gs:r.trk.gs})});
   return out}
 function mapInner(o){o=o||{};const F=liveFlights().filter(f=>!o.only||f.pid===o.only);let g='',pl='',ap={};
   if(o.trail){/* solo el vuelo en curso del piloto: al terminarlo el mapa se queda limpio */
     S.res.filter(r=>r.pilot===o.trail&&['reserved','checkedin','flying'].includes(r.status)).forEach(r=>{const A=geo(r.from),B=geo(r.to);if(A&&B){g+='<path d="'+arc(A,B,0,1)+'" class="tr"/>';ap[r.from]=A;ap[r.to]=B}})}
-  F.forEach(f=>{const A=geo(f.from),B=geo(f.to);if(!A||!B)return;const G=gcF(A,B),q=G(f.pr),q2=G(Math.min(1,f.pr+.012)),p=px(q[0],q[1]),p2=px(q2[0],q2[1]);ap[f.from]=A;ap[f.to]=B;
+  F.forEach(f=>{const A=geo(f.from),B=geo(f.to);if(!A||!B)return;const G=gcF(A,B),q=f.pos||G(f.pr),q2=gcF(q,B)(.02),p=px(q[0],q[1]),p2=px(q2[0],q2[1]);ap[f.from]=A;ap[f.to]=B;
     const rot=Math.abs(p2[0]-p[0])>180?0:Math.round(Math.atan2(p2[0]-p[0],-(p2[1]-p[1]))*180/Math.PI);
-    g+='<path d="'+arc(A,B,0,1)+'" class="rt"/><path d="'+arc(A,B,0,f.pr)+'" class="fl '+f.pl+'"/>';
+    g+='<path d="'+arc(A,B,0,1)+'" class="rt"/><path d="'+arc(A,q,0,1)+'" class="fl '+f.pl+'"/>';
     pl+='<g transform="translate('+p[0]+' '+p[1]+')" class="pl '+f.pl+'"><circle r="3.2" class="ring"/><g transform="rotate('+rot+') scale(.78)"><path d="'+PLANE+'"/></g><title>'+esc(f.cs+' · '+f.from+'→'+f.to+' · '+f.pl+' · '+Math.round(f.pr*100)+'%')+'</title></g>'});
   Object.keys(ap).forEach(k=>{const p=px(ap[k][0],ap[k][1]);g+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="1.1" class="ap"/>'});
   const v=F.filter(f=>f.pl==='VATSIM').length,i=F.filter(f=>f.pl==='IVAO').length;
