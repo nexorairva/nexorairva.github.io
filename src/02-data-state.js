@@ -15,7 +15,7 @@ const nd=n=>(Math.round(n*10)/10).toLocaleString(loc());
 const t=(es,en)=>S.lang==='en'?en:es;
 const hs=s=>{let h=7;for(const c of String(s))h=(h*31+c.charCodeAt(0))|0;return Math.abs(h)};
 const mul=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let x=Math.imul(a^a>>>15,1|a);x=x+Math.imul(x^x>>>7,61|x)^x;return((x^x>>>14)>>>0)/4294967296};
-const uid=p=>p+(++S.seq);
+const uid=p=>p+(++S.seq)+'-'+Date.now().toString(36).slice(-4)+Math.random().toString(36).slice(2,5);  /* único también entre navegadores/nube: nunca coincide con una reserva histórica */
 
 /* ===== static data ===== */
 const TYPES={A20N:{mf:'Airbus',n:'A320neo',r:3300,v:440,seats:180},A21N:{mf:'Airbus',n:'A321neo',r:3800,v:440,seats:220},B738:{mf:'Boeing',n:'737-800',r:2900,v:435,seats:189},B789:{mf:'Boeing',n:'787-9',r:7000,v:490,seats:296},E195:{mf:'Embraer',n:'E195',r:2300,v:420,seats:124}};

@@ -244,7 +244,7 @@ const nd=n=>(Math.round(n*10)/10).toLocaleString(loc());
 const t=(es,en)=>S.lang==='en'?en:es;
 const hs=s=>{let h=7;for(const c of String(s))h=(h*31+c.charCodeAt(0))|0;return Math.abs(h)};
 const mul=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let x=Math.imul(a^a>>>15,1|a);x=x+Math.imul(x^x>>>7,61|x)^x;return((x^x>>>14)>>>0)/4294967296};
-const uid=p=>p+(++S.seq);
+const uid=p=>p+(++S.seq)+'-'+Date.now().toString(36).slice(-4)+Math.random().toString(36).slice(2,5);  /* único también entre navegadores/nube: nunca coincide con una reserva histórica */
 
 /* ===== static data ===== */
 const TYPES={A20N:{mf:'Airbus',n:'A320neo',r:3300,v:440,seats:180},A21N:{mf:'Airbus',n:'A321neo',r:3800,v:440,seats:220},B738:{mf:'Boeing',n:'737-800',r:2900,v:435,seats:189},B789:{mf:'Boeing',n:'787-9',r:7000,v:490,seats:296},E195:{mf:'Embraer',n:'E195',r:2300,v:420,seats:124}};
@@ -1028,7 +1028,7 @@ function render(){tick();const n=location.hash.slice(1)||'inicio',se=S.session;l
 window.addEventListener('hashchange',()=>{modal();render();window.scrollTo(0,0)});
 
 /* ===== actions ===== */
-const R_=id=>S.res.find(r=>r.id===id),P_=id=>S.pilots.find(p=>p.id===id);
+const R_=id=>{const me_=S.session&&S.session.id;return S.res.find(r=>r.id===id&&r.pilot===me_)||S.res.find(r=>r.id===id)},P_=id=>S.pilots.find(p=>p.id===id);
 const done=(m,keep)=>{save();if(!keep)modal();render();if(m)toast(m)};
 async function hp(s){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('nexora:'+s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}catch(e){return'x:'+s.length}}
 const A={
@@ -1552,7 +1552,7 @@ function netCard(r){const p=pilot(r.pilot),id=netId(p,r.platform),n=r.net||{},cs
    error:t('No se pudo consultar la red ahora mismo. Se reintentará solo.','The network could not be queried right now. It will retry automatically.')}[n.state]||t('Pendiente de la primera comprobación…','Waiting for the first check…');
   return card(t('Seguimiento en '+r.platform,'Tracking on '+r.platform),`<div class="pad stack"><p><b>${r.platform}</b> · ID ${id?esc(String(id)):'—'}</p><p class="${n.state==='live'?'':'muted'}">${msg}</p><p class="muted">${t('NEXORA AIR sigue tu vuelo automáticamente en la red real mientras tienes esta web abierta: detecta tu conexión, hace el check-in y cierra el vuelo cuando te desconectas.','NEXORA AIR tracks your flight on the real network automatically while this site is open: it detects your connection, checks you in and closes the flight when you disconnect.')}</p><div>${btn(t('Comprobar ahora','Check now'),'netchk',r.id,'sm')}</div></div>`)}
 Object.assign(A,{netchk:async id=>{const r=R_(id);toast(t('Consultando la red…','Querying the network…'));await netCheck(r,true);render()},
- sbgen:id=>{const r=R_(id);r.sbGen=r.sbGen||Date.now();rlog(r,t('Briefing generado con SimBrief','Briefing generated with SimBrief'));save();window.open(sbLink(r),'_blank','noopener');render()}});
+ sbgen:id=>{const r=S.res.find(x=>x.id===id&&S.session&&x.pilot===S.session.id);if(!r){toast(t('No se encontró tu reserva. Vuelve a abrirla desde Mis reservas.','Your booking was not found. Reopen it from My bookings.'));return}r.sbGen=r.sbGen||Date.now();rlog(r,t('Briefing generado con SimBrief','Briefing generated with SimBrief'));save();window.open(sbLink(r),'_blank','noopener');render()}});
 /* ----- Staff → Integraciones: las da de alta el administrador a mano; nada viene preintegrado ----- */
 const INTK=[['api','API'],['webhook','Webhook'],['feed',['Feed de datos','Data feed']],['serv',['Servicio externo','External service']],['otro',['Otro','Other']]],INTS=['Sin comprobar','Operativa','Con error','Desactivada'];
 const intGet=id=>S.intg.find(x=>x.id===id),intKl=k=>{const a=(INTK.find(x=>x[0]===k)||INTK[4])[1];return Array.isArray(a)?t(...a):a},
