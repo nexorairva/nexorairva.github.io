@@ -32,3 +32,19 @@ Object.assign(A,{
  lmsel:(id,el)=>{const m=el.closest('.card')&&el.closest('.card').querySelector('.lmap');if(!m)return;lmSelect(m,id,true);m.scrollIntoView({block:'nearest',behavior:'smooth'})}
 });
 let lmRz=0;addEventListener('resize',()=>{clearTimeout(lmRz);lmRz=setTimeout(()=>document.querySelectorAll('.lmap').forEach(el=>{lmClamp(lmv(el.dataset.o));lmDraw(el)}),150)});
+
+/* ----- Países: fronteras y costas (Natural Earth 110m, formato TopoJSON de «world-atlas») -----
+   El archivo lo copia el despliegue a public/geo/countries-110m.json; si no está, se pide a jsDelivr. Mientras no llega (o si falla)
+   el mapa usa los puntos de siempre. */
+let GEO=null,GEO_P=null;
+function geoBuild(T){
+  const tr=T.transform,arcs=T.arcs.map(a=>{let x=0,y=0;return a.map(p=>{if(tr){x+=p[0];y+=p[1];return[x*tr.scale[0]+tr.translate[0],y*tr.scale[1]+tr.translate[1]]}return[p[0],p[1]]})});
+  const seg=(i,out)=>{const a=i<0?arcs[~i].slice().reverse():arcs[i];a.forEach((p,k)=>{if(out.length&&!k)return;out.push(p)})};
+  const pth=pts=>{let s='',pv=null;pts.forEach(p=>{const q=px(p[1],p[0]);s+=(pv===null||Math.abs(q[0]-pv)>180?'M':'L')+q[0]+' '+q[1];pv=q[0]});return s};
+  const G=(T.objects.countries||T.objects[Object.keys(T.objects)[0]]).geometries,cnt=new Array(arcs.length).fill(0);let fill='';
+  const polys=g=>g.type==='Polygon'?[g.arcs]:g.type==='MultiPolygon'?g.arcs:[];
+  G.forEach(g=>polys(g).forEach(P=>P.forEach(R=>{const pts=[];R.forEach(i=>{cnt[i<0?~i:i]++;seg(i,pts)});if(pts.length>2)fill+=pth(pts)+'Z'})));
+  let brd='',coast='';arcs.forEach((a,i)=>{if(a.length<2)return;if(cnt[i]>=2)brd+=pth(a);else if(cnt[i]===1)coast+=pth(a)});
+  if(!fill)throw new Error('geo');return{fill,brd,coast}}
+function geoLoad(){if(GEO_P)return;GEO_P=(async()=>{for(const u of ['geo/countries-110m.json','https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json']){
+  try{const r=await fetch(u);if(!r.ok)continue;GEO=geoBuild(await r.json());document.querySelectorAll('.lmap').forEach(el=>{if(!lmD)lmDraw(el)});return}catch(e){}}})()}

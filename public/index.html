@@ -191,6 +191,9 @@ body{background-image:radial-gradient(900px 420px at 85% -80px,color-mix(in srgb
 @media(max-width:559px){.lm-ctl{bottom:auto;top:48px}.lmap svg{aspect-ratio:360/201.6}.lm-info{position:static;width:auto;border-radius:0;border-width:1px 0 0;box-shadow:none;margin:0}.lm-leg{right:10px}}
 tr.clk{cursor:pointer}tr.clk:hover td{background:rgba(126,211,33,.07)}
 
+.lmap .cf{fill:rgba(126,211,33,.13);stroke:none;fill-rule:evenodd}
+.lmap .cb{fill:none;stroke:rgba(126,211,33,.34);stroke-width:.7px;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.lmap .cc{fill:none;stroke:rgba(150,230,70,.75);stroke-width:1.1px;vector-effect:non-scaling-stroke;stroke-linejoin:round;filter:drop-shadow(0 0 2px rgba(126,211,33,.35))}
 .lmap .dots{fill:none;stroke:rgba(126,211,33,.34);stroke-width:calc(1.15px*max(var(--k,1),.3));stroke-linecap:round}
 .lmap .rt{fill:none;stroke:rgba(255,255,255,.22);stroke-width:calc(.35px*var(--k,1));stroke-dasharray:calc(1.2px*var(--k,1)) calc(1.4px*var(--k,1))}.lmap .tr{fill:none;stroke:rgba(126,211,33,.35);stroke-width:calc(.4px*var(--k,1))}
 .lmap .fl{fill:none;stroke-width:calc(.7px*var(--k,1));stroke-linecap:round}.lmap .fl.VATSIM{stroke:#38BDF8}.lmap .fl.IVAO{stroke:#FB9F3C}
@@ -904,7 +907,7 @@ function mapInner(o){o=o||{};const key=JSON.stringify(o),V=lmv(key),F=liveFlight
       row(t('Progreso','Progress'),Math.round(sf.pr*100)+'%')+row(t('Distancia restante','Distance left'),rem!=null?nf(Math.round(rem))+' nm':'—')+row(t('Llegada en','Arrives in'),eta!=null?Math.floor(eta/60)+' h '+String(eta%60).padStart(2,'0')+' min':'—')+'</div>'}
   return '<div class="lm-leg"><span><i class="VATSIM"></i>VATSIM '+v+'</span><span><i class="IVAO"></i>IVAO '+i+'</span><b>'+F.length+' '+t('en vuelo','airborne')+'</b></div>'+
     '<div class="lm-ctl"><button data-a="lmz" data-id="in" aria-label="Zoom +" title="Zoom +">+</button><button data-a="lmz" data-id="out" aria-label="Zoom −" title="Zoom −">−</button><button data-a="lmz" data-id="reset" aria-label="'+t('Ver todo el mundo','Whole world')+'" title="'+t('Ver todo el mundo','Whole world')+'">⌂</button></div>'+
-    '<svg viewBox="'+V.x+' '+V.y+' '+V.w+' '+h+'" style="--k:'+(V.w/360)+'" class="'+(V.w<359?'zm':'')+'" role="img" aria-label="'+t('Mapa de vuelos en curso','Live flights map')+'" preserveAspectRatio="xMidYMid slice"><path d="'+land()+'" class="dots"/>'+g+pl+'</svg>'+info}
+    '<svg viewBox="'+V.x+' '+V.y+' '+V.w+' '+h+'" style="--k:'+(V.w/360)+'" class="'+(V.w<359?'zm':'')+'" role="img" aria-label="'+t('Mapa de vuelos en curso','Live flights map')+'" preserveAspectRatio="xMidYMid slice">'+(GEO?'<path d="'+GEO.fill+'" class="cf"/><path d="'+GEO.brd+'" class="cb"/><path d="'+GEO.coast+'" class="cc"/>':(geoLoad(),'<path d="'+land()+'" class="dots"/>'))+g+pl+'</svg>'+info}
 const liveMap=o=>'<div class="lmap" data-o="'+esc(JSON.stringify(o||{}))+'">'+mapInner(o)+'</div>';
 function liveList(o){o=o||{};const F=liveFlights().filter(f=>!o.only||f.pid===o.only).sort((a,b)=>b.pr-a.pr);
   return F.length?'<div class="scroll"><table><thead><tr><th>'+t('Vuelo','Flight')+'</th>'+(o.names?'<th>'+t('Piloto','Pilot')+'</th>':'')+'<th>'+t('Ruta','Route')+'</th><th>'+t('Red','Network')+'</th><th>'+t('Aeronave','Aircraft')+'</th><th style="min-width:120px">'+t('Progreso','Progress')+'</th></tr></thead><tbody>'+F.map(f=>'<tr class="clk" data-a="lmsel" data-id="'+esc(f.id)+'" title="'+t('Ver en el mapa','Show on map')+'"><td><span class="mono">'+esc(f.cs)+'</span></td>'+(o.names?'<td>'+esc(pilot(f.pid).name)+'</td>':'')+'<td>'+rt(f.from,f.to)+'</td><td><span class="pill net '+f.pl+'">'+f.pl+'</span></td><td>'+(TYPES[f.ty]?TYPES[f.ty].n:'')+'</td><td><div class="bar"><i style="width:'+Math.round(f.pr*100)+'%"></i></div></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">'+t('Ningún piloto está en vuelo ahora mismo.','No pilots airborne right now.')+'</div>'}
@@ -1638,6 +1641,22 @@ Object.assign(A,{
  lmsel:(id,el)=>{const m=el.closest('.card')&&el.closest('.card').querySelector('.lmap');if(!m)return;lmSelect(m,id,true);m.scrollIntoView({block:'nearest',behavior:'smooth'})}
 });
 let lmRz=0;addEventListener('resize',()=>{clearTimeout(lmRz);lmRz=setTimeout(()=>document.querySelectorAll('.lmap').forEach(el=>{lmClamp(lmv(el.dataset.o));lmDraw(el)}),150)});
+
+/* ----- Países: fronteras y costas (Natural Earth 110m, formato TopoJSON de «world-atlas») -----
+   El archivo lo copia el despliegue a public/geo/countries-110m.json; si no está, se pide a jsDelivr. Mientras no llega (o si falla)
+   el mapa usa los puntos de siempre. */
+let GEO=null,GEO_P=null;
+function geoBuild(T){
+  const tr=T.transform,arcs=T.arcs.map(a=>{let x=0,y=0;return a.map(p=>{if(tr){x+=p[0];y+=p[1];return[x*tr.scale[0]+tr.translate[0],y*tr.scale[1]+tr.translate[1]]}return[p[0],p[1]]})});
+  const seg=(i,out)=>{const a=i<0?arcs[~i].slice().reverse():arcs[i];a.forEach((p,k)=>{if(out.length&&!k)return;out.push(p)})};
+  const pth=pts=>{let s='',pv=null;pts.forEach(p=>{const q=px(p[1],p[0]);s+=(pv===null||Math.abs(q[0]-pv)>180?'M':'L')+q[0]+' '+q[1];pv=q[0]});return s};
+  const G=(T.objects.countries||T.objects[Object.keys(T.objects)[0]]).geometries,cnt=new Array(arcs.length).fill(0);let fill='';
+  const polys=g=>g.type==='Polygon'?[g.arcs]:g.type==='MultiPolygon'?g.arcs:[];
+  G.forEach(g=>polys(g).forEach(P=>P.forEach(R=>{const pts=[];R.forEach(i=>{cnt[i<0?~i:i]++;seg(i,pts)});if(pts.length>2)fill+=pth(pts)+'Z'})));
+  let brd='',coast='';arcs.forEach((a,i)=>{if(a.length<2)return;if(cnt[i]>=2)brd+=pth(a);else if(cnt[i]===1)coast+=pth(a)});
+  if(!fill)throw new Error('geo');return{fill,brd,coast}}
+function geoLoad(){if(GEO_P)return;GEO_P=(async()=>{for(const u of ['geo/countries-110m.json','https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json']){
+  try{const r=await fetch(u);if(!r.ok)continue;GEO=geoBuild(await r.json());document.querySelectorAll('.lmap').forEach(el=>{if(!lmD)lmDraw(el)});return}catch(e){}}})()}
 /* ===== boot ===== */
 (async()=>{
   const cloud=await cloudStart();
