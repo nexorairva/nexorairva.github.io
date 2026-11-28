@@ -16,6 +16,7 @@ const A={
  favr:id=>{const p=me();p.fav=p.fav.includes(id)?p.fav.filter(x=>x!==id):[...p.fav,id];done()},
  case:id=>{ui.case=id;go('p-caso')},
  checkin:id=>{const r=R_(id);r.status='checkedin';r.checkin=Date.now();rlog(r,t('Check-in completado','Check-in completed'));done()},
+ sbauto:id=>{const r=R_(id);if(!r)return;delete r.sbOpt;rlog(r,t('Opciones del briefing: todo en Auto','Briefing options: all Auto'));done()},
  plat:id=>{const r=R_(id);if(r.sbGen){toast(t('La red no se puede cambiar una vez generado el briefing de SimBrief.','The network cannot be changed once the SimBrief briefing has been generated.'));return}r.platform=r.platform==='VATSIM'?'IVAO':'VATSIM';rlog(r,t('Plataforma cambiada a ','Platform changed to ')+r.platform);done()},
  cancel:id=>{cancelRes(R_(id));ui.case=null;save();go('p-ops');toast(t('Reserva cancelada','Booking cancelled'))},
  copy:id=>{const f=()=>toast(t('Copia manualmente: ','Copy manually: ')+id);try{navigator.clipboard.writeText(id).then(()=>toast(t('Remark copiado','Remark copied')),f)}catch(e){f()}},
@@ -67,6 +68,10 @@ const F={
   const p=S.pilots.find(x=>x.user.toLowerCase()===u),h=await hp(d.get('pass'));
   if(!p||!p.pass||p.pass!==h){k.n++;if(k.n>=5){k.until=Date.now()+10*MIN;k.n=0;S.sec.push({ts:Date.now(),txt:t('Bloqueo temporal por intentos fallidos: ','Temporary lock after failed attempts: ')+u,sev:'alta'})}S.att[u]=k;save();return err('login-err',t('Usuario o contraseña incorrectos. Las cuentas de ejemplo entran con los botones de demo.','Wrong username or password. Sample accounts log in with the demo buttons.'))}
   S.att[u]={n:0,until:0};S.session={id:p.id,staff:isStaff(p)};save();go(isStaff(p)?'s-dash':'portal')},
+ sbopt:d=>{const r=R_(d.get('id'));if(!r||r.pilot!==S.session.id||!ACTIVE.includes(r.status))return;const seats=(TYPES[r.type]||{}).seats||999,o={},pax=sbNum(d.get('pax'),seats),fl=sbFl(d.get('fl')),al=String(d.get('altn')||'').toUpperCase().replace(/[^A-Z]/g,''),ci=String(d.get('ci')||'').toUpperCase().trim(),rt=sbRoute(d.get('route'));
+  const bad=[];if(String(d.get('pax')||'').trim()&&pax===null)bad.push(t('Pasajeros: entre 0 y '+seats,'Passengers: between 0 and '+seats));if(String(d.get('fl')||'').trim()&&!fl)bad.push(t('Nivel de vuelo: de FL100 a FL450','Flight level: FL100 to FL450'));if(al&&al.length!==4)bad.push(t('Alternativo: código ICAO de 4 letras','Alternate: 4-letter ICAO code'));if(ci&&ci!=='AUTO'&&!/^\d{1,3}$/.test(ci))bad.push(t('Índice de coste: AUTO o un número de 0 a 999','Cost index: AUTO or a number from 0 to 999'));
+  if(bad.length){toast(bad[0]);return}
+  if(pax!==null)o.pax=pax;if(fl)o.fl=fl;if(al)o.altn=al;if(rt)o.route=rt;if(ci)o.ci=ci;r.sbOpt=o;rlog(r,t('Opciones del briefing guardadas','Briefing options saved'));done()},
  rsv:(d,f)=>{const m=doReserve(f.dataset.id,d.get('platform'),!!d.get('imm'));if(typeof m==='string'){toast(m);return}modal();save();go('p-caso');setTimeout(()=>radioNotice(R_(ui.case)),60);toast(t('Reserva confirmada. Caso operacional abierto.','Booking confirmed. Operational case opened.'))},
  just:(d,f)=>{S.log.find(e=>e.id===f.dataset.id).just=d.get('t');done(t('Justificación enviada al staff','Explanation sent to staff'))},
  free:d=>{const a=d.get('from'),b=d.get('to'),ty=d.get('type');if(a===b)return err('free-err',t('Origen y destino deben ser distintos.','Origin and destination must differ.'));const nm=dist(a,b);
