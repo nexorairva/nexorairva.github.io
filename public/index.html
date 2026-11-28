@@ -175,10 +175,25 @@ body{background-image:radial-gradient(900px 420px at 85% -80px,color-mix(in srgb
 @media(max-width:900px){.h2-in{grid-template-columns:minmax(0,1fr);padding:26px 20px 18px}}
 /* ---- mapa en vivo ---- */
 .lmap{position:relative;border-radius:16px;overflow:hidden;background:radial-gradient(120% 100% at 50% 0,#0F3A27 0,#06150E 70%);border:1px solid rgba(126,211,33,.22);box-shadow:inset 0 0 60px rgba(0,0,0,.45)}
-.lmap svg{display:block;width:100%;height:auto;aspect-ratio:360/136}
-.lmap .dots{fill:none;stroke:rgba(126,211,33,.34);stroke-width:1.15;stroke-linecap:round}
-.lmap .rt{fill:none;stroke:rgba(255,255,255,.22);stroke-width:.35;stroke-dasharray:1.2 1.4}.lmap .tr{fill:none;stroke:rgba(126,211,33,.35);stroke-width:.4}
-.lmap .fl{fill:none;stroke-width:.7;stroke-linecap:round}.lmap .fl.VATSIM{stroke:#38BDF8}.lmap .fl.IVAO{stroke:#FB9F3C}
+.lmap svg{display:block;width:100%;height:auto;aspect-ratio:360/136;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none}
+.lmap svg.zm{touch-action:none}.lmap.drag svg{cursor:grabbing}
+.lmap .ks{transform:scale(var(--k,1))}.lmap .hit{fill:transparent;stroke:none;cursor:pointer}.lmap .pl{cursor:pointer;outline:none}
+.lmap .pl:focus-visible .hit{stroke:var(--lime);stroke-width:.6;fill:rgba(126,211,33,.12)}
+.lmap .pl.sel .ring{stroke-width:.9;opacity:1}.lmap .pl.sel path{fill:var(--lime)!important}.lmap .rt.sel{stroke:rgba(255,255,255,.7);stroke-width:calc(.5px*var(--k,1))}.lmap .fl.sel{stroke-width:calc(1.1px*var(--k,1))}
+.lm-ctl{position:absolute;right:10px;bottom:10px;z-index:2;display:flex;flex-direction:column;gap:6px}
+.lm-ctl button{width:32px;height:32px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:rgba(3,16,10,.78);color:#E4F2EA;font-size:1.05rem;line-height:1;cursor:pointer;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.lm-ctl button:hover{border-color:var(--lime);color:var(--lime)}
+.lm-info{position:absolute;left:10px;bottom:10px;z-index:3;width:min(240px,calc(100% - 64px));background:rgba(3,16,10,.9);border:1px solid rgba(126,211,33,.35);border-radius:14px;padding:10px 12px;color:#E4F2EA;font-size:.76rem;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.lm-info .lm-x{position:absolute;right:6px;top:4px;border:0;background:none;color:#E4F2EA;font-size:1.3rem;line-height:1;cursor:pointer;padding:4px 8px}
+.lm-info .lm-ih{display:flex;gap:8px;align-items:center;font-size:.95rem;padding-right:24px}.lm-info .lm-pn{opacity:.85;margin-top:2px}
+.lm-info .lm-rt{font-weight:700;font-size:1rem;margin-top:8px;letter-spacing:.03em}.lm-info .lm-nm{opacity:.7;font-size:.72rem;margin-bottom:6px}
+.lm-info>div:not(.lm-ih):not(.lm-pn):not(.lm-rt):not(.lm-nm){display:flex;justify-content:space-between;gap:10px;padding:2px 0;border-top:1px solid rgba(255,255,255,.08)}.lm-info>div>span{opacity:.7}
+@media(max-width:559px){.lm-ctl{bottom:auto;top:48px}.lmap svg{aspect-ratio:360/201.6}.lm-info{position:static;width:auto;border-radius:0;border-width:1px 0 0;box-shadow:none;margin:0}.lm-leg{right:10px}}
+tr.clk{cursor:pointer}tr.clk:hover td{background:rgba(126,211,33,.07)}
+
+.lmap .dots{fill:none;stroke:rgba(126,211,33,.34);stroke-width:calc(1.15px*max(var(--k,1),.3));stroke-linecap:round}
+.lmap .rt{fill:none;stroke:rgba(255,255,255,.22);stroke-width:calc(.35px*var(--k,1));stroke-dasharray:calc(1.2px*var(--k,1)) calc(1.4px*var(--k,1))}.lmap .tr{fill:none;stroke:rgba(126,211,33,.35);stroke-width:calc(.4px*var(--k,1))}
+.lmap .fl{fill:none;stroke-width:calc(.7px*var(--k,1));stroke-linecap:round}.lmap .fl.VATSIM{stroke:#38BDF8}.lmap .fl.IVAO{stroke:#FB9F3C}
 .lmap .ap{fill:#fff;opacity:.85}
 .lmap .pl path{fill:#fff}.lmap .pl.VATSIM{color:#38BDF8}.lmap .pl.IVAO{color:#FB9F3C}.lmap .pl.VATSIM path{fill:#B8E8FF}.lmap .pl.IVAO path{fill:#FFE0BD}
 .lmap .ring{fill:none;stroke:currentColor;stroke-width:.5;transform-box:fill-box;transform-origin:center;animation:ping 2.2s ease-out infinite}
@@ -866,19 +881,33 @@ function liveFlights(){const out=[];
     const a=kmNm(A[0],A[1],r.trk.lat,r.trk.lon),b=kmNm(r.trk.lat,r.trk.lon,B[0],B[1]),pr=Math.min(.99,Math.max(.01,a+b?a/(a+b):0));
     out.push({id:r.id,pid:r.pilot,cs:r.trk.cs||r.no,from:r.from,to:r.to,pl:r.platform,ty:r.type,pr,pos:[r.trk.lat,r.trk.lon],alt:r.trk.alt,gs:r.trk.gs})});
   return out}
-function mapInner(o){o=o||{};const F=liveFlights().filter(f=>!o.only||f.pid===o.only);let g='',pl='',ap={};
+/* Estado de zoom/selección de cada mapa (se conserva al refrescar los datos). Clave = opciones del mapa. */
+const LM={};
+const lmH=w=>w*(innerWidth<560?.56:136/360);   /* en móvil el mapa es más alto para que quepan los avisos */
+function lmClamp(V){V.w=Math.max(22,Math.min(360,V.w));const h=lmH(V.w);V.x=Math.max(0,Math.min(360-V.w,V.x));V.y=h>=136?6-(h-136)/2:Math.max(6,Math.min(142-h,V.y))}
+const lmv=k=>{if(!LM[k]){LM[k]={x:0,y:6,w:360,sel:null};lmClamp(LM[k])}return LM[k]};
+function mapInner(o){o=o||{};const key=JSON.stringify(o),V=lmv(key),F=liveFlights().filter(f=>!o.only||f.pid===o.only);let g='',pl='',ap={};
+  if(V.sel&&!F.some(f=>f.id===V.sel))V.sel=null;
   if(o.trail){/* solo el vuelo en curso del piloto: al terminarlo el mapa se queda limpio */
     S.res.filter(r=>r.pilot===o.trail&&['reserved','checkedin','flying'].includes(r.status)).forEach(r=>{const A=geo(r.from),B=geo(r.to);if(A&&B){g+='<path d="'+arc(A,B,0,1)+'" class="tr"/>';ap[r.from]=A;ap[r.to]=B}})}
-  F.forEach(f=>{const A=geo(f.from),B=geo(f.to);if(!A||!B)return;const G=gcF(A,B),q=f.pos||G(f.pr),q2=gcF(q,B)(.02),p=px(q[0],q[1]),p2=px(q2[0],q2[1]);ap[f.from]=A;ap[f.to]=B;
+  F.forEach(f=>{const A=geo(f.from),B=geo(f.to);if(!A||!B)return;const G=gcF(A,B),q=f.pos||G(f.pr),q2=gcF(q,B)(.02),p=px(q[0],q[1]),p2=px(q2[0],q2[1]),sel=V.sel===f.id;ap[f.from]=A;ap[f.to]=B;
     const rot=Math.abs(p2[0]-p[0])>180?0:Math.round(Math.atan2(p2[0]-p[0],-(p2[1]-p[1]))*180/Math.PI);
-    g+='<path d="'+arc(A,B,0,1)+'" class="rt"/><path d="'+arc(A,q,0,1)+'" class="fl '+f.pl+'"/>';
-    pl+='<g transform="translate('+p[0]+' '+p[1]+')" class="pl '+f.pl+'"><circle r="3.2" class="ring"/><g transform="rotate('+rot+') scale(.78)"><path d="'+PLANE+'"/></g><title>'+esc(f.cs+' · '+f.from+'→'+f.to+' · '+f.pl+' · '+Math.round(f.pr*100)+'%')+'</title></g>'});
-  Object.keys(ap).forEach(k=>{const p=px(ap[k][0],ap[k][1]);g+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="1.1" class="ap"/>'});
-  const v=F.filter(f=>f.pl==='VATSIM').length,i=F.filter(f=>f.pl==='IVAO').length;
-  return '<div class="lm-leg"><span><i class="VATSIM"></i>VATSIM '+v+'</span><span><i class="IVAO"></i>IVAO '+i+'</span><b>'+F.length+' '+t('en vuelo','airborne')+'</b></div><svg viewBox="0 6 360 136" role="img" aria-label="'+t('Mapa de vuelos en curso','Live flights map')+'" preserveAspectRatio="xMidYMid slice"><path d="'+land()+'" class="dots"/>'+g+pl+'</svg>'}
+    g+='<path d="'+arc(A,B,0,1)+'" class="rt'+(sel?' sel':'')+'"/><path d="'+arc(A,q,0,1)+'" class="fl '+f.pl+(sel?' sel':'')+'"/>';
+    pl+='<g transform="translate('+p[0]+' '+p[1]+')" class="pl '+f.pl+(sel?' sel':'')+'" data-id="'+esc(f.id)+'" tabindex="0" role="button" aria-label="'+esc(f.cs+' '+f.from+'→'+f.to)+'"><g class="ks"><circle r="6" class="hit"/><circle r="3.2" class="ring"/><g transform="rotate('+rot+') scale(.78)"><path d="'+PLANE+'"/></g></g><title>'+esc(f.cs+' · '+f.from+'→'+f.to+' · '+f.pl+' · '+Math.round(f.pr*100)+'%')+'</title></g>'});
+  Object.keys(ap).forEach(k=>{const p=px(ap[k][0],ap[k][1]);g+='<g transform="translate('+p[0]+' '+p[1]+')"><circle r="1.1" class="ap ks"/></g>'});
+  const v=F.filter(f=>f.pl==='VATSIM').length,i=F.filter(f=>f.pl==='IVAO').length,h=lmH(V.w);
+  const sf=F.find(f=>f.id===V.sel);let info='';
+  if(sf){const B=geo(sf.to),rem=B&&sf.pos?kmNm(sf.pos[0],sf.pos[1],B[0],B[1]):null,eta=rem!=null&&sf.gs>=60?Math.round(rem/sf.gs*60):null,pn=o.names&&pilot(sf.pid)?pilot(sf.pid).name:'',row=(a,b)=>'<div><span>'+a+'</span><b>'+b+'</b></div>';
+    info='<div class="lm-info" role="dialog" aria-label="'+esc(sf.cs)+'"><button class="lm-x" data-a="lmclose" aria-label="'+t('Cerrar','Close')+'">×</button><div class="lm-ih"><b class="mono">'+esc(sf.cs)+'</b> <span class="pill net '+sf.pl+'">'+sf.pl+'</span></div>'+(pn?'<div class="lm-pn">'+esc(pn)+'</div>':'')+
+      '<div class="lm-rt">'+esc(sf.from)+' → '+esc(sf.to)+'</div><div class="lm-nm">'+esc(apName(sf.from))+' → '+esc(apName(sf.to))+'</div>'+
+      row(t('Aeronave','Aircraft'),TYPES[sf.ty]?esc(TYPES[sf.ty].mf+' '+TYPES[sf.ty].n):'—')+row(t('Altitud','Altitude'),sf.alt!=null?nf(Math.round(sf.alt))+' ft':'—')+row(t('Velocidad','Ground speed'),sf.gs!=null?Math.round(sf.gs)+' kt':'—')+
+      row(t('Progreso','Progress'),Math.round(sf.pr*100)+'%')+row(t('Distancia restante','Distance left'),rem!=null?nf(Math.round(rem))+' nm':'—')+row(t('Llegada en','Arrives in'),eta!=null?Math.floor(eta/60)+' h '+String(eta%60).padStart(2,'0')+' min':'—')+'</div>'}
+  return '<div class="lm-leg"><span><i class="VATSIM"></i>VATSIM '+v+'</span><span><i class="IVAO"></i>IVAO '+i+'</span><b>'+F.length+' '+t('en vuelo','airborne')+'</b></div>'+
+    '<div class="lm-ctl"><button data-a="lmz" data-id="in" aria-label="Zoom +" title="Zoom +">+</button><button data-a="lmz" data-id="out" aria-label="Zoom −" title="Zoom −">−</button><button data-a="lmz" data-id="reset" aria-label="'+t('Ver todo el mundo','Whole world')+'" title="'+t('Ver todo el mundo','Whole world')+'">⌂</button></div>'+
+    '<svg viewBox="'+V.x+' '+V.y+' '+V.w+' '+h+'" style="--k:'+(V.w/360)+'" class="'+(V.w<359?'zm':'')+'" role="img" aria-label="'+t('Mapa de vuelos en curso','Live flights map')+'" preserveAspectRatio="xMidYMid slice"><path d="'+land()+'" class="dots"/>'+g+pl+'</svg>'+info}
 const liveMap=o=>'<div class="lmap" data-o="'+esc(JSON.stringify(o||{}))+'">'+mapInner(o)+'</div>';
 function liveList(o){o=o||{};const F=liveFlights().filter(f=>!o.only||f.pid===o.only).sort((a,b)=>b.pr-a.pr);
-  return F.length?'<div class="scroll"><table><thead><tr><th>'+t('Vuelo','Flight')+'</th>'+(o.names?'<th>'+t('Piloto','Pilot')+'</th>':'')+'<th>'+t('Ruta','Route')+'</th><th>'+t('Red','Network')+'</th><th>'+t('Aeronave','Aircraft')+'</th><th style="min-width:120px">'+t('Progreso','Progress')+'</th></tr></thead><tbody>'+F.map(f=>'<tr><td><span class="mono">'+esc(f.cs)+'</span></td>'+(o.names?'<td>'+esc(pilot(f.pid).name)+'</td>':'')+'<td>'+rt(f.from,f.to)+'</td><td><span class="pill net '+f.pl+'">'+f.pl+'</span></td><td>'+(TYPES[f.ty]?TYPES[f.ty].n:'')+'</td><td><div class="bar"><i style="width:'+Math.round(f.pr*100)+'%"></i></div></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">'+t('Ningún piloto está en vuelo ahora mismo.','No pilots airborne right now.')+'</div>'}
+  return F.length?'<div class="scroll"><table><thead><tr><th>'+t('Vuelo','Flight')+'</th>'+(o.names?'<th>'+t('Piloto','Pilot')+'</th>':'')+'<th>'+t('Ruta','Route')+'</th><th>'+t('Red','Network')+'</th><th>'+t('Aeronave','Aircraft')+'</th><th style="min-width:120px">'+t('Progreso','Progress')+'</th></tr></thead><tbody>'+F.map(f=>'<tr class="clk" data-a="lmsel" data-id="'+esc(f.id)+'" title="'+t('Ver en el mapa','Show on map')+'"><td><span class="mono">'+esc(f.cs)+'</span></td>'+(o.names?'<td>'+esc(pilot(f.pid).name)+'</td>':'')+'<td>'+rt(f.from,f.to)+'</td><td><span class="pill net '+f.pl+'">'+f.pl+'</span></td><td>'+(TYPES[f.ty]?TYPES[f.ty].n:'')+'</td><td><div class="bar"><i style="width:'+Math.round(f.pr*100)+'%"></i></div></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">'+t('Ningún piloto está en vuelo ahora mismo.','No pilots airborne right now.')+'</div>'}
 const liveCard=(o,act)=>card(t('Vuelos en directo','Live flights'),'<div class="pad" style="padding-bottom:0">'+liveMap(o)+'</div>'+liveList(o),act||'');
 /* ----- Solari, boarding pass, cuentas atrás ----- */
 const iata=c=>S.ap[c]?S.ap[c][0]:c;
@@ -892,7 +921,7 @@ function bpass(r){const p=pilot(r.pilot),ac=S.fleet.find(x=>x.reg===r.reg),tag=r
    '<div class="bpr"><div><b class="ia">'+esc(iata(r.from))+'</b><small>'+esc(apName(r.from))+'</small></div><div class="bpp"><svg viewBox="0 0 120 20" aria-hidden="true"><path d="M2 10H100" stroke="currentColor" stroke-dasharray="3 4"/><g transform="translate(108 10) rotate(90)"><path d="'+PLANE+'" fill="currentColor"/></g></svg><span class="mono">'+nf(r.nm)+' nm · '+fh(r.mins)+'</span></div><div style="text-align:right"><b class="ia">'+esc(iata(r.to))+'</b><small>'+esc(apName(r.to))+'</small></div></div>'+
    '<div class="bpf"><div><small>'+t('Vuelo','Flight')+'</small><b>'+esc(r.no)+'</b></div><div><small>'+t('Salida','Departure')+'</small><b>'+fdt(r.depTs)+'</b></div><div><small>'+t('Aeronave','Aircraft')+'</small><b>'+esc(r.reg||'—')+' · '+(TYPES[r.type]?TYPES[r.type].n:'')+'</b></div><div><small>'+t('Red','Network')+'</small><b>'+r.platform+'</b></div><div><small>'+t('Piloto','Pilot')+'</small><b>'+esc(p.name)+'</b></div></div></div>'+
    '<div class="bps"><span class="eyebrow">'+tag+'</span>'+barcode(r.id)+(r.expires?'<small>'+t('Caduca en','Expires in')+'</small><b data-cd="'+r.expires+'">'+cd(r.expires)+'</b>':'<small>'+t('Salida','Departure')+'</small><b>'+fz(r.depTs)+' UTC</b>')+btn(t('Abrir caso','Open case'),'case',r.id,'pri sm')+'</div></article>'}
-setInterval(()=>{document.querySelectorAll('[data-cd]').forEach(e=>e.textContent=cd(+e.dataset.cd));document.querySelectorAll('.lmap').forEach(e=>{try{e.innerHTML=mapInner(JSON.parse(e.dataset.o))}catch(x){}})},15000);
+setInterval(()=>{document.querySelectorAll('[data-cd]').forEach(e=>e.textContent=cd(+e.dataset.cd));if(!(typeof lmD!=='undefined'&&lmD))document.querySelectorAll('.lmap').forEach(e=>{try{e.innerHTML=mapInner(JSON.parse(e.dataset.o))}catch(x){}})},15000);
 /* ----- navegación por grupos y pestañas ----- */
 const SG=[['s-dash',t=>t('Resumen','Overview'),['s-dash']],['s-pilotos',t=>t('Pilotos','Pilots'),['s-pilotos']],['s-operaciones',t=>t('Operaciones','Operations'),['s-operaciones','s-rutas','s-contenido','s-charter','s-flota','s-aeropuertos']],['s-revision',t=>t('Revisión y soporte','Review and support'),['s-revision','s-incidentes','s-tickets']],['s-descargas',t=>t('Descargas','Downloads'),['s-descargas']],['s-noticias',t=>t('Noticias','News'),['s-noticias','s-normativa']],['s-redes',t=>t('Redes sociales','Social networks'),['s-redes']],['s-marca',t=>t('Administración','Administration'),['s-marca','s-roles','s-integraciones','s-seguridad','s-auditoria','s-config']]];
 const TABL={'s-operaciones':['Vuelos','Flights'],'s-rutas':['Rutas','Routes'],'s-contenido':['Tours, eventos y retos','Tours, events and challenges'],'s-charter':['Charter','Charter'],'s-flota':['Flota','Fleet'],'s-aeropuertos':['Aeropuertos','Airports'],'s-revision':['En revisión','Under review'],'s-incidentes':['Incidentes','Incidents'],'s-tickets':['Tickets','Tickets'],'s-noticias':['Noticias','News'],'s-normativa':['Normativa','Rules'],'s-marca':['Marca','Brand'],'s-roles':['Roles y permisos','Roles and permissions'],'s-integraciones':['Integraciones','Integrations'],'s-seguridad':['Seguridad','Security'],'s-auditoria':['Auditoría','Audit'],'s-config':['Configuración','Settings']};
@@ -1575,6 +1604,40 @@ Object.assign(F,{
   if(old){Object.assign(old,o);if(sec)old.sec=sec;aud('Editó una integración',n)}else{const x=Object.assign({id:uid('I'),ts:0},o);if(sec)x.sec=sec;S.intg.push(x);aud('Añadió una integración',n)}
   ui.intg=null;done(t('Integración guardada','Integration saved'))}
 });
+/* ----- Mapa de vuelos en directo: zoom, desplazamiento y ficha del avión ----- */
+/* Zoom: botones +/−/⌂, Ctrl + rueda (o pellizco del trackpad), pellizco en pantalla táctil y doble toque/clic. Arrastrar mueve el mapa.
+   Tocar un avión abre su ficha; tocar el fondo la cierra. Las filas de la tabla también seleccionan el avión. */
+let lmD=null,lmHintT=0;
+function lmApply(el){const V=lmv(el.dataset.o),s=el.querySelector('svg');if(!s)return;s.setAttribute('viewBox',V.x+' '+V.y+' '+V.w+' '+lmH(V.w));s.style.setProperty('--k',V.w/360);s.classList.toggle('zm',V.w<359)}
+function lmZoom(el,f,cx,cy){const V=lmv(el.dataset.o),r=el.getBoundingClientRect(),fx=r.width?(cx-r.left)/r.width:.5,fy=r.height?(cy-r.top)/r.height:.5,u=V.x+fx*V.w,v=V.y+fy*lmH(V.w);V.w=Math.max(22,Math.min(360,V.w*f));V.x=u-fx*V.w;V.y=v-fy*lmH(V.w);lmClamp(V);lmApply(el)}
+function lmDraw(el){try{el.innerHTML=mapInner(JSON.parse(el.dataset.o))}catch(e){}}
+function lmSelect(el,id,center){const V=lmv(el.dataset.o);V.sel=id||null;if(id&&center){const f=liveFlights().find(x=>x.id===id);if(f&&f.pos){const p=px(f.pos[0],f.pos[1]);V.w=Math.min(V.w,90);V.x=p[0]-V.w/2;V.y=p[1]-lmH(V.w)/2;lmClamp(V)}}lmDraw(el)}
+document.addEventListener('pointerdown',e=>{const el=e.target.closest&&e.target.closest('.lmap');if(!el||e.target.closest('.lm-leg,.lm-ctl,.lm-info'))return;
+  if(!lmD||lmD.el!==el)lmD={el,pts:new Map(),moved:false,hit:null,sx:e.clientX,sy:e.clientY};
+  if(lmD.pts.size===0){lmD.sx=e.clientX;lmD.sy=e.clientY;lmD.moved=false;const pl=e.target.closest('.pl');lmD.hit=pl?pl.dataset.id:null}else lmD.moved=true;
+  lmD.pts.set(e.pointerId,{x:e.clientX,y:e.clientY})});
+document.addEventListener('pointermove',e=>{if(!lmD||!lmD.pts.has(e.pointerId))return;const el=lmD.el,p=lmD.pts.get(e.pointerId),V=lmv(el.dataset.o),r=el.getBoundingClientRect();
+  if(lmD.pts.size===1){if(!lmD.moved&&Math.hypot(e.clientX-lmD.sx,e.clientY-lmD.sy)<5)return;lmD.moved=true;
+    V.x-=(e.clientX-p.x)*V.w/r.width;V.y-=(e.clientY-p.y)*lmH(V.w)/r.height;lmClamp(V);lmApply(el);el.classList.add('drag')}
+  else if(lmD.pts.size===2){const o=[...lmD.pts.entries()].find(([k])=>k!==e.pointerId)[1],d0=Math.hypot(p.x-o.x,p.y-o.y),d1=Math.hypot(e.clientX-o.x,e.clientY-o.y);if(d0>0&&d1>0)lmZoom(el,d0/d1,(e.clientX+o.x)/2,(e.clientY+o.y)/2)}
+  lmD.pts.set(e.pointerId,{x:e.clientX,y:e.clientY})});
+const lmEnd=e=>{if(!lmD||!lmD.pts.has(e.pointerId))return;const el=lmD.el;lmD.pts.delete(e.pointerId);
+  if(lmD.pts.size===0){const tap=e.type==='pointerup'&&!lmD.moved,hit=lmD.hit;el.classList.remove('drag');lmD=null;if(tap)lmSelect(el,hit)}};
+document.addEventListener('pointerup',lmEnd);document.addEventListener('pointercancel',lmEnd);
+document.addEventListener('wheel',e=>{const el=e.target.closest&&e.target.closest('.lmap');if(!el)return;
+  if(e.ctrlKey||e.metaKey){e.preventDefault();lmZoom(el,Math.exp(e.deltaY*.0025),e.clientX,e.clientY)}
+  else if(Date.now()-lmHintT>6000){lmHintT=Date.now();toast(t('Usa Ctrl + rueda para hacer zoom en el mapa, o los botones + y −.','Use Ctrl + scroll to zoom the map, or the + and − buttons.'))}},{passive:false});
+document.addEventListener('dblclick',e=>{const el=e.target.closest&&e.target.closest('.lmap');if(!el||e.target.closest('.lm-leg,.lm-ctl,.lm-info'))return;lmZoom(el,.5,e.clientX,e.clientY)});
+document.addEventListener('keydown',e=>{const pl=e.target.closest&&e.target.closest('.lmap .pl');
+  if(pl&&(e.key==='Enter'||e.key===' ')){e.preventDefault();lmSelect(pl.closest('.lmap'),pl.dataset.id,true)}
+  else if(e.key==='Escape'){document.querySelectorAll('.lmap').forEach(el=>{if(lmv(el.dataset.o).sel)lmSelect(el,null)})}});
+Object.assign(A,{
+ lmz:(id,el)=>{const m=el.closest('.lmap');if(!m)return;const V=lmv(m.dataset.o);
+   if(id==='reset'){V.x=0;V.y=6;V.w=360;lmClamp(V);lmApply(m)}else{const r=m.getBoundingClientRect();lmZoom(m,id==='in'?.5:2,r.left+r.width/2,r.top+r.height/2)}},
+ lmclose:(id,el)=>{const m=el.closest('.lmap');if(m)lmSelect(m,null)},
+ lmsel:(id,el)=>{const m=el.closest('.card')&&el.closest('.card').querySelector('.lmap');if(!m)return;lmSelect(m,id,true);m.scrollIntoView({block:'nearest',behavior:'smooth'})}
+});
+let lmRz=0;addEventListener('resize',()=>{clearTimeout(lmRz);lmRz=setTimeout(()=>document.querySelectorAll('.lmap').forEach(el=>{lmClamp(lmv(el.dataset.o));lmDraw(el)}),150)});
 /* ===== boot ===== */
 (async()=>{
   const cloud=await cloudStart();
