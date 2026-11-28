@@ -35,7 +35,7 @@ begin
            upper(case when p_plat = 'VATSIM' then e#>>'{flight_plan,aircraft_short}' else e#>>'{flightPlan,aircraftId}' end) as ac,
            (case when p_plat = 'VATSIM' then e->>'logon_time' else e->>'createdAt' end)::timestamptz as logon
     from jsonb_array_elements(pl) e
-    where (e->>'callsign') ~* '^(NXR|NEXO)'
+    where (e->>'callsign') ~* '^NXR'
   loop
     v_nxr := v_nxr + 1; v_code := null;
     select p.code into v_code from public.profiles p join public.profile_private q on q.id = p.id
