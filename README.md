@@ -32,3 +32,7 @@ Cada vez que alguien se registra, todo el staff con permiso **Pilotos** (Admin y
 - **Staff → Operaciones → Tours, eventos y retos:** una sola pestaña con sub-pestañas Tours / Eventos / Retos / Remarks. Cada tour y cada evento tiene su propio campo **Remark** (si se deja vacío se usa el general). El calendario se gestiona en Eventos.
 - **Staff → Operaciones → Aeropuertos:** pestañas *Catálogo* (los 6.737 aeropuertos, con buscador y paginación), *Red y hubs* y *Añadir / importar*. «Editar / Hub» permite cambiar nombre, ciudad, país, coordenadas y zona horaria, marcarlo como hub principal/secundario y meterlo o sacarlo de la red de NEXORA AIR. Las ediciones del catálogo se guardan en `apo` (reejecutar `schema.sql`). `public/airports.csv` ahora incluye nombre, ICAO y zona horaria (`tools/build_airports.py`).
 - **Presentación:** al entrar a la web (una vez por sesión del navegador, y solo en la portada) aparece una pantalla de bienvenida; al pulsar en cualquier parte (o Enter/Espacio) pasa al inicio.
+
+## Presentación animada y eslogan
+- La pantalla de bienvenida es dinámica: rutas aéreas animadas con aviones, palabras que aparecen una a una («Conecta. Vuela. Supera.»), eslogan escrito en directo («El piloto vuela, NEXORA AIR hace el resto.»), ticker de funciones y paralaje con el puntero. Respeta `prefers-reduced-motion`.
+- En las presentaciones (bienvenida y portada) se habla de «redes de vuelo» en vez de nombrar VATSIM/IVAO. La pestaña Compañía no se ha tocado.
