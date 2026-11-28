@@ -4,7 +4,7 @@ function flightsView(port){const f=ui.fl,p=port?me():null;let L=instances().filt
   if(f.from)L=L.filter(i=>i.from===f.from);if(f.to)L=L.filter(i=>i.to===f.to);if(f.type)L=L.filter(i=>i.type===f.type);
   if(f.hub)L=L.filter(i=>i.from===f.hub||i.to===f.hub);
   if(f.band)L=L.filter(i=>{const h=new Date(i.ts).getUTCHours();return f.band==='m'?h>=5&&h<12:f.band==='a'?h>=12&&h<18:h>=18||h<5});
-  if(f.dur)L=L.filter(i=>i.mins<=+f.dur);if(f.seats)L=L.filter(i=>i.free>=+f.seats);if(f.state==='soon')L=L.filter(i=>i.ts-Date.now()<3*H);
+  if(f.dur)L=L.filter(i=>i.mins<=+f.dur);if(f.state==='soon')L=L.filter(i=>i.ts-Date.now()<3*H);
   if(f.tour){const tr=TOURS.find(x=>x.id===f.tour);L=L.filter(i=>tr.stages.some(s=>s.some(r=>r[0]===i.from&&r[1]===i.to)))}
   const so=f.sort||(p?'rec':'dep');
   L.sort((a,b)=>so==='rec'?score(b,p)-score(a,p):so==='dur'?a.mins-b.mins:so==='free'?b.free-a.free:so==='nm'?b.nm-a.nm:so==='no'?a.no.localeCompare(b.no):a.ts-b.ts);
@@ -12,7 +12,7 @@ function flightsView(port){const f=ui.fl,p=port?me():null;let L=instances().filt
   return head(port?t('Vuelos','Flights'):t('Operaciones','Operations'),t('Los vuelos completos o bloqueados no aparecen. Reservas hasta 15 minutos antes de la salida.','Full or blocked flights are hidden. Booking closes 15 minutes before departure.'))+
   `<section class="card"><form data-f="flt" class="filters">${sel('flt','from',t('Origen','From'),ops,f.from)}${sel('flt','to',t('Destino','To'),ops,f.to)}${sel('flt','type',t('Aeronave','Aircraft'),[['',t('Todas','All')],...Object.keys(TYPES).map(k=>[k,TYPES[k].mf+' '+TYPES[k].n])],f.type)}
   ${sel('flt','hub','Hub',[['',t('Todos','All')],...Object.keys(S.ap).filter(k=>S.ap[k][6]).map(k=>[k,k])],f.hub)}${sel('flt','band',t('Horario','Time'),[['',t('Cualquiera','Any')],['m',t('Mañana','Morning')],['a',t('Tarde','Afternoon')],['n',t('Noche','Night')]],f.band)}
-  ${sel('flt','dur',t('Duración máx.','Max duration'),[['',t('Cualquiera','Any')],['90','1h 30m'],['180','3h'],['360','6h']],f.dur)}${sel('flt','tour','Tour',[['',t('Todos','All')],...TOURS.map(x=>[x.id,x.n])],f.tour)}${sel('flt','seats',t('Plazas','Seats'),[['',t('Cualquiera','Any')],['2','2+'],['4','4+']],f.seats)}
+  ${sel('flt','dur',t('Duración máx.','Max duration'),[['',t('Cualquiera','Any')],['90','1h 30m'],['180','3h'],['360','6h']],f.dur)}${sel('flt','tour','Tour',[['',t('Todos','All')],...TOURS.map(x=>[x.id,x.n])],f.tour)}
   ${sel('flt','state',t('Estado','Status'),[['',t('Todos','All')],['soon',t('Salida próxima','Departing soon')]],f.state)}${sel('flt','sort',t('Ordenar por','Sort by'),[['',p?t('Recomendación','Recommended'):t('Salida','Departure')],['dep',t('Salida','Departure')],['dur',t('Duración','Duration')],['free',t('Disponibilidad','Availability')],['nm',t('Distancia','Distance')],['no',t('Nº de vuelo','Flight no.')]],f.sort)}</form>
   ${tbl(FH(),flRows(L.slice(0,40),port),t('Ningún vuelo coincide con los filtros.','No flights match the filters.'))}</section>${L.length>40?`<p class="muted">${t('Mostrando 40 de ','Showing 40 of ')}${L.length}.</p>`:''}`}
 const stateLabel=r=>({reserved:r.simbrief?t('SimBrief listo','SimBrief ready'):t('Reservado','Booked'),checkedin:t('Check-in hecho','Checked in'),flying:t('En vuelo','Flying'),review:t('En revisión','Under review'),closed:t('Validado','Validated'),cancelled:t('Cancelado','Cancelled'),expired:t('Caducado','Expired'),rejected:t('Rechazado','Rejected')}[r.status]);

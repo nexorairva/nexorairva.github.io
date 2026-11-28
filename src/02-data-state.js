@@ -18,7 +18,7 @@ const mul=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let x=Math.imul(a^a>>>15,1|a);x=x+Math.i
 const uid=p=>p+(++S.seq);
 
 /* ===== static data ===== */
-const TYPES={A20N:{mf:'Airbus',n:'A320neo',r:3300,v:440},A21N:{mf:'Airbus',n:'A321neo',r:3800,v:440},B738:{mf:'Boeing',n:'737-800',r:2900,v:435},B789:{mf:'Boeing',n:'787-9',r:7000,v:490},E195:{mf:'Embraer',n:'E195',r:2300,v:420}};
+const TYPES={A20N:{mf:'Airbus',n:'A320neo',r:3300,v:440,seats:180},A21N:{mf:'Airbus',n:'A321neo',r:3800,v:440,seats:220},B738:{mf:'Boeing',n:'737-800',r:2900,v:435,seats:189},B789:{mf:'Boeing',n:'787-9',r:7000,v:490,seats:296},E195:{mf:'Embraer',n:'E195',r:2300,v:420,seats:124}};
 const RANKS=[['Cadete','Cadet',0],['Primer Oficial','First Officer',25],['Capitán','Captain',75],['Capitán Sénior','Senior Captain',150],['Comandante','Commander',300]];
 const AP0={LEMD:['MAD','Madrid','ES',40.4936,-3.5668,'Europe/Madrid','primary','Adolfo Suárez Madrid-Barajas'],LEBL:['BCN','Barcelona','ES',41.2971,2.0785,'Europe/Madrid','secondary','Josep Tarradellas Barcelona-El Prat'],
 LEPA:['PMI','Palma de Mallorca','ES',39.5517,2.7388,'Europe/Madrid','','Palma de Mallorca'],LEMG:['AGP','Málaga','ES',36.6749,-4.4991,'Europe/Madrid','','Málaga-Costa del Sol'],LEVC:['VLC','Valencia','ES',39.4893,-.4816,'Europe/Madrid','','Valencia'],
@@ -91,8 +91,8 @@ const findF=(a,b)=>S.flights.find(f=>f.from===a&&f.to===b);
 const fm=f=>{const[h,m]=f.m.split(':');return(+h)*60+(+m)};
 function instances(){const out=[],now=Date.now(),d0=dUTC(now);
   for(let k=0;k<=2;k++)for(const f of S.flights){const ts=d0+k*DAY+fm(f)*MIN;if(ts<now+15*MIN)continue;const id='NXR'+f.no+'-'+iso(ts);
-    const nm=dist(f.from,f.to),used=S.res.filter(r=>r.instId===id&&r.status!=='cancelled').length;const booked=Math.min(f.slots,hs(id)%(f.slots+1))+used;
-    out.push({id,f,no:'NXR'+f.no,ts,from:f.from,to:f.to,type:f.type,nm,mins:cmins(nm,f.type),slots:f.slots,free:f.slots-booked,blocked:!!f.blocked})}
+    const nm=dist(f.from,f.to),used=S.res.filter(r=>r.instId===id&&r.status!=='cancelled').length;const sl=TYPES[f.type].seats,booked=used;
+    out.push({id,f,no:'NXR'+f.no,ts,from:f.from,to:f.to,type:f.type,nm,mins:cmins(nm,f.type),slots:sl,free:sl-booked,blocked:!!f.blocked,delay:!!f.delay})}
   return out}
 function seed(){
   const now=Date.now(),Y=new Date(now).getUTCFullYear(),R=mul(2026),D=n=>now-n*DAY;
