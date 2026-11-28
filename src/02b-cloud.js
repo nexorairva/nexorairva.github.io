@@ -30,7 +30,7 @@ async function cloudPull(){const sb=CL.sb;
   const mine=prof.find(r=>r.id===CL.uid);
   if(CL.uid&&mine){const meP=S.pilots.find(p=>p.uid===CL.uid);meP.email=CL.email||'';S.session={id:mine.code,uid:CL.uid,staff:isStaff(meP)}}else S.session=null;
   if(!rows.length&&mine&&mine.rol==='admin'&&CL.cat){CATS.forEach(k=>S[k]=JSON.parse(JSON.stringify(CL.cat[k])));ensure();CL.dirty=true}   /* primer arranque: catálogo inicial */
-  TOURS=S.tours;syncCh();rebuildIx();applyApo();
+  S.intg=(S.intg||[]).filter(x=>x.id);TOURS=S.tours;syncCh();rebuildIx();applyApo();
   CL.snap=new Map();docsOf().forEach((d,k)=>{if(!(CL.dirty&&!rows.length))CL.snap.set(k,JSON.stringify(d.data))});
   CL.psnap={};S.pilots.forEach(p=>CL.psnap[p.id]=JSON.stringify(pilotRows(p)));
   if(CL.uid&&S.session){let k=0;S.log.forEach(e=>{if(e.src==='net'&&e.status==='Completado'&&(e.pilot===S.session.id||S.session.staff)&&!S.tx.some(x=>x.ref==='fl:'+e.id)){flightTx(e);k++}});if(k){settle();setTimeout(()=>cloudPush(),0)}}   /* puntos de los vuelos que cerró el servidor */

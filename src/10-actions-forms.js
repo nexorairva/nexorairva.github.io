@@ -48,7 +48,6 @@ const A={
  ires:id=>{const i=S.inc.find(x=>x.id===id);S.inc=S.inc.filter(x=>x.id!==id);notify(i.pilot,t('Incidente resuelto y eliminado.','Incident resolved and removed.'));aud('Resolvió incidente',id);done(t('Incidente resuelto','Incident resolved'))},
  tkc:id=>{const k=S.tickets.find(x=>x.id===id);k.st='Closed';k.msgs=[];notify(k.pilot,t('Ticket cerrado: ','Ticket closed: ')+id);done()},
  rcode:id=>modal(t('Código de ruta','Route code'),`<form data-f="dcode" data-id="${id}" class="form pad">${fld('dcode','c',t('Código','Code'),'text','required maxlength="14"',rcode(id.slice(0,4),id.slice(4)))}<div class="full"><button class="btn pri" type="submit">${t('Guardar','Save')}</button></div></form>`),
- chk:id=>{const x=S.intg.find(q=>q.n===id);x.ts=Date.now();x.st='Operativa';aud('Comprobó integración',id);done(t('Integración operativa','Integration operational'))},
  maint:()=>{S.maint=!S.maint;aud(S.maint?'Activó mantenimiento':'Desactivó mantenimiento');done()}};
 document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el)return;const a=el.dataset.a;if(!A[a])return;if(el.tagName==='A'&&a!=='xm')return;A[a](el.dataset.id,el,e)});
 
