@@ -13,3 +13,18 @@ function stoBar(){try{if(localStorage.getItem('nx-info')==='1')return}catch(e){}
   b.querySelector('button').onclick=()=>{try{localStorage.setItem('nx-info','1')}catch(e){}b.remove()};
   document.body.appendChild(b)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',stoBar);else stoBar();
+
+/* ----- Alta: el piloto elige su ID (NXR + 3 o 4 cifras); no puede enviar la solicitud hasta que sea válido y esté libre ----- */
+async function codeFree(num){num=String(num||'').trim();if(!/^[0-9]{3,4}$/.test(num))return false;const c='NXR'+num;
+  if(CL.on){try{const r=await CL.sb.rpc('nx_code_free',{p_code:c});if(r.error)throw r.error;return r.data===true}catch(e){return null}}
+  return !S.pilots.some(p=>p.id===c)}
+let regCodeT=0,regCodeN=0;
+document.addEventListener('input',e=>{const x=e.target;if(!x||x.id!=='reg-code')return;x.value=x.value.replace(/\D/g,'').slice(0,4);
+  const go=document.getElementById('reg-go'),msg=document.getElementById('reg-code-msg'),n=++regCodeN;if(go)go.disabled=true;clearTimeout(regCodeT);
+  const say=(txt,cls)=>{if(msg){msg.textContent=txt;msg.className=cls}};
+  if(x.value.length<3){say(t('3 o 4 cifras. Comprobaremos que esté libre.','3 or 4 digits. We will check it is free.'),'muted');return}
+  say(t('Comprobando…','Checking…'),'muted');
+  regCodeT=setTimeout(async()=>{const ok=await codeFree(x.value);if(n!==regCodeN)return;
+    if(ok===null){say(t('No se pudo comprobar ahora. Inténtalo de nuevo.','Could not check right now. Try again.'),'err')}
+    else if(ok){say('✔ NXR'+x.value+' '+t('está libre.','is available.'),'ok');if(go)go.disabled=false}
+    else say('✘ NXR'+x.value+' '+t('ya está en uso. Elige otro.','is already taken. Choose another one.'),'err')},350)});

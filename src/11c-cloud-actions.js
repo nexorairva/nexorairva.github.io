@@ -8,8 +8,9 @@ function cloudHook(){if(!CL.on)return;
     await afterAuth();const p=me();if(!p)return err('login-err',t('Tu perfil aún no existe. Inténtalo de nuevo.','Your profile does not exist yet. Try again.'));go(isStaff(p)?'s-dash':'portal')};
   F.reg=async d=>{const pl=d.get('platform'),id=pl==='VATSIM'?d.get('vatsim'):d.get('ivao');if(!id)return err('reg-err',t('Indica tu ID de ','Enter your ')+pl+t('.',' ID.'));
     if((d.get('pass')||'').length<8)return err('reg-err',t('La contraseña debe tener al menos 8 caracteres.','Password must be at least 8 characters.'));
-    const r=await CL.sb.auth.signUp({email:d.get('email').trim().toLowerCase(),password:d.get('pass'),options:{data:{name:d.get('name').trim(),country:(d.get('country')||'').toUpperCase(),user:d.get('user').trim(),platform:pl,vatsim:d.get('vatsim')||'',ivao:d.get('ivao')||'',simbrief:d.get('simbrief')||''}}});
-    if(r.error)return err('reg-err',r.error.message);
+    if(!(await codeFree(d.get('code'))))return err('reg-err',t('Ese ID de piloto ya está en uso. Elige otro.','That pilot ID is already taken. Choose another one.'));
+    const r=await CL.sb.auth.signUp({email:d.get('email').trim().toLowerCase(),password:d.get('pass'),options:{data:{code:'NXR'+d.get('code').trim(),name:d.get('name').trim(),country:(d.get('country')||'').toUpperCase(),user:d.get('user').trim(),platform:pl,vatsim:d.get('vatsim')||'',ivao:d.get('ivao')||'',simbrief:d.get('simbrief')||''}}});
+    if(r.error){if(!(await codeFree(d.get('code'))))return err('reg-err',t('Ese ID de piloto ya está en uso. Elige otro.','That pilot ID is already taken. Choose another one.'));return err('reg-err',r.error.message)}
     if(r.data.session){await afterAuth();go(isStaff(me())?'s-dash':'portal');toast(t('Cuenta creada. El staff revisará tu plataforma.','Account created. Staff will review your platform.'))}
     else{go('login');toast(t('Revisa tu correo para confirmar la cuenta.','Check your email to confirm the account.'))}};
   A.logout=async()=>{await CL.sb.auth.signOut();CL.uid=null;CL.email='';await cloudPull();go('inicio')};

@@ -91,3 +91,8 @@ El formulario de acceso (modo nube) tiene la casilla «Recordarme en este dispos
 - **Guía administrativa** y **Calendario administrativo** (Administración): manual interno y fechas del staff.
 
 Base de datos: ejecuta `supabase/schema.sql` (o `migrations/008`) para dar de alta las colecciones nuevas.
+
+## Alta: ID elegido y correos
+
+- En el registro el piloto elige su ID (NXR + 3 o 4 cifras). La pantalla lo comprueba en vivo y no deja enviar la solicitud hasta que sea válido y esté libre; el servidor lo vuelve a comprobar (`nx_code_free` y `handle_new_user`).
+- **Correos** (solicitud recibida en revisión y alta aprobada): se envían por Resend desde la base de datos. Pasos: crea una cuenta en resend.com, verifica tu dominio y crea una clave de API; en Staff › Integraciones añade una integración con dirección `https://api.resend.com/emails`, la clave como credencial y el remitente (por ejemplo `NEXORA AIR <avisos@tudominio.com>`). Sin esa integración no se envía nada y las altas funcionan igual. Ejecuta `supabase/schema.sql` (o `migrations/009`).

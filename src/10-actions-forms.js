@@ -60,8 +60,9 @@ const F={
  flt:d=>{ui.fl.off=0;['from','to','type','hub','band','dur','tour','seats','state','sort'].forEach(k=>ui.fl[k]=d.get(k)||'');render()},
  reg:async d=>{const u=d.get('user').trim(),pl=d.get('platform'),id=pl==='VATSIM'?d.get('vatsim'):d.get('ivao');
   if(S.pilots.some(p=>p.user.toLowerCase()===u.toLowerCase()))return err('reg-err',t('Ese usuario ya existe.','That username already exists.'));
+  if(!(await codeFree(d.get('code'))))return err('reg-err',t('Ese ID de piloto ya está en uso. Elige otro.','That pilot ID is already taken. Choose another one.'));
   if(!id)return err('reg-err',t('Indica tu ID de ','Enter your ')+pl+t('.',' ID.'));
-  const p={id:nextPid(),name:d.get('name').trim(),country:d.get('country').toUpperCase(),user:u,email:d.get('email'),pass:await hp(d.get('pass')),platform:pl,vatsim:d.get('vatsim')||'',ivao:d.get('ivao')||'',simbrief:d.get('simbrief'),netOk:false,hub:'LEMD',status:'Pending',joined:Date.now(),fav:[],favT:[],badges:[]};
+  const p={id:'NXR'+d.get('code').trim(),name:d.get('name').trim(),country:d.get('country').toUpperCase(),user:u,email:d.get('email'),pass:await hp(d.get('pass')),platform:pl,vatsim:d.get('vatsim')||'',ivao:d.get('ivao')||'',simbrief:d.get('simbrief'),netOk:false,hub:'LEMD',status:'Pending',joined:Date.now(),fav:[],favT:[],badges:[]};
   S.pilots.push(p);aud('Nueva solicitud de alta',p.id);notifyStaff('pilotos','Nueva alta pendiente de revisión: '+p.name+' ('+p.id+')','New sign-up pending review: '+p.name+' ('+p.id+')','s-pilotos');save();go('login');toast(t('Solicitud enviada. SimBrief verificado; el staff revisará tu plataforma.','Request sent. SimBrief verified; staff will review your platform.'))},
  login:async d=>{const u=d.get('user').trim().toLowerCase(),k=S.att[u]||{n:0,until:0};
   if(k.until>Date.now())return err('login-err',t('Acceso bloqueado temporalmente. Inténtalo más tarde.','Access temporarily locked. Try again later.'));
