@@ -6,6 +6,8 @@ async function hp(s){try{const b=await crypto.subtle.digest('SHA-256',new TextEn
 const A={
  xm:(id,el,ev)=>{if(ev.target.closest('.modal')&&!ev.target.closest('button[data-a="xm"]'))return;modal()},
  theme:()=>{const n=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';document.documentElement.setAttribute('data-theme',n);try{localStorage.setItem('nexora-theme',n)}catch(e){}render()},
+ findfl:()=>{ui.opsSearch=true;ui.fl.off=0;go('p-vuelos')},
+ more5:()=>{const n=instances().filter(i=>!i.blocked&&i.free>0).length;ui.fl.off=((ui.fl.off|0)+5)%Math.max(5,n);render()},
  lang:()=>{S.lang=S.lang==='es'?'en':'es';done()},
  logout:()=>{S.session=null;save();go('inicio')},
  demo:id=>{const st=isStaff(pilot(id));S.session={id,staff:st};save();go(st?'s-dash':'portal')},
@@ -57,7 +59,7 @@ const err=(id,m)=>{const e=$('#'+id);if(e){e.textContent=m;e.hidden=false}return
 const DANG=['exe','bat','cmd','com','scr','js','vbs','msi','ps1','jar','sh','dll'];
 const F={
  hero:d=>{ui.fl.from=d.get('from');ui.fl.to=d.get('to');go(S.session?'p-vuelos':'operaciones')},
- flt:d=>{['from','to','type','hub','band','dur','tour','seats','state','sort'].forEach(k=>ui.fl[k]=d.get(k)||'');render()},
+ flt:d=>{ui.fl.off=0;['from','to','type','hub','band','dur','tour','seats','state','sort'].forEach(k=>ui.fl[k]=d.get(k)||'');render()},
  reg:async d=>{const u=d.get('user').trim(),pl=d.get('platform'),id=pl==='VATSIM'?d.get('vatsim'):d.get('ivao');
   if(S.pilots.some(p=>p.user.toLowerCase()===u.toLowerCase()))return err('reg-err',t('Ese usuario ya existe.','That username already exists.'));
   if(!id)return err('reg-err',t('Indica tu ID de ','Enter your ')+pl+t('.',' ID.'));
@@ -68,7 +70,7 @@ const F={
   const p=S.pilots.find(x=>x.user.toLowerCase()===u),h=await hp(d.get('pass'));
   if(!p||!p.pass||p.pass!==h){k.n++;if(k.n>=5){k.until=Date.now()+10*MIN;k.n=0;S.sec.push({ts:Date.now(),txt:t('Bloqueo temporal por intentos fallidos: ','Temporary lock after failed attempts: ')+u,sev:'alta'})}S.att[u]=k;save();return err('login-err',t('Usuario o contraseña incorrectos. Las cuentas de ejemplo entran con los botones de demo.','Wrong username or password. Sample accounts log in with the demo buttons.'))}
   S.att[u]={n:0,until:0};S.session={id:p.id,staff:isStaff(p)};save();go(isStaff(p)?'s-dash':'portal')},
- rsv:(d,f)=>{const m=doReserve(f.dataset.id,d.get('platform'),!!d.get('imm'));if(typeof m==='string'){toast(m);return}modal();save();go('p-caso');toast(t('Reserva confirmada. Caso operacional abierto.','Booking confirmed. Operational case opened.'))},
+ rsv:(d,f)=>{const m=doReserve(f.dataset.id,d.get('platform'),!!d.get('imm'));if(typeof m==='string'){toast(m);return}modal();save();go('p-caso');setTimeout(()=>radioNotice(R_(ui.case)),60);toast(t('Reserva confirmada. Caso operacional abierto.','Booking confirmed. Operational case opened.'))},
  fin:(d,f)=>{const r=R_(f.dataset.id),e=finalize(r,d.get('plat'),d.get('out'));done(e.status==='Completado'?t('Vuelo validado y añadido al Logbook','Flight validated and added to Logbook'):t('Vuelo en revisión','Flight under review'))},
  just:(d,f)=>{S.log.find(e=>e.id===f.dataset.id).just=d.get('t');done(t('Justificación enviada al staff','Explanation sent to staff'))},
  free:d=>{const a=d.get('from'),b=d.get('to'),ty=d.get('type');if(a===b)return err('free-err',t('Origen y destino deben ser distintos.','Origin and destination must differ.'));const nm=dist(a,b);

@@ -23,12 +23,12 @@ Object.assign(A,{
 Object.assign(F,{
  rtf:d=>{['a','b','type','hub','max','sort'].forEach(k=>ui.rt[k]=d.get(k)||'');ui.rt.ok=d.get('ok')?'1':'';ui.rt.pg=0;render()},
  rte:(d,f)=>{const[a,b]=f.dataset.id.split('|'),p=me();if(holds(p.id).length>=3)return toast(t('Máximo 3 rutas reservadas a la vez.','Maximum 3 held routes at a time.'));
-  mkRes(p,'route',a,b,d.get('reg'),d.get('platform'),24);save();modal();go('p-caso');toast(t('Ruta reservada durante 24 horas.','Route booked for 24 hours.'))},
+  const rr=mkRes(p,'route',a,b,d.get('reg'),d.get('platform'),24);save();modal();go('p-caso');setTimeout(()=>radioNotice(rr),60);toast(t('Ruta reservada durante 24 horas.','Route booked for 24 hours.'))},
  cht:d=>{const a=norm(d.get('from')),b=norm(d.get('to')),ac=S.fleet.find(x=>x.reg===d.get('reg'));
   if(!apKnown(a)||!apKnown(b))return err('cht-err',t('No conozco las coordenadas de ','I do not know the coordinates of ')+(!apKnown(a)?a:b)+t('. Un administrador puede importar airports.dat.','. An admin can import airports.dat.'));
   if(a===b)return err('cht-err',t('Salida y destino deben ser distintos.','Departure and destination must differ.'));const nm=dist(a,b);
   if(nm>TYPES[ac.type].r*.9)return err('cht-err',t('Ese avión no alcanza ','That aircraft cannot fly ')+nf(nm)+' nm.');
-  mkRes(me(),'free',a,b,ac.reg,d.get('plat'),0);save();go('p-caso');toast(t('Charter creado. Genera ahora el briefing en SimBrief.','Charter created. Generate the briefing in SimBrief now.'))},
+  {const rr=mkRes(me(),'free',a,b,ac.reg,d.get('plat'),0);save();go('p-caso');setTimeout(()=>radioNotice(rr),60)}toast(t('Charter creado. Genera ahora el briefing en SimBrief.','Charter created. Generate the briefing in SimBrief now.'))},
  dfleet:d=>{const D=ui.fd,name=d.get('name').trim(),desc=d.get('desc').trim();
   if(D.isNew){const reg=d.get('reg').toUpperCase();if(S.fleet.some(x=>x.reg===reg))return err('dfleet-err',t('Esa matrícula ya existe.','That registration already exists.'));S.fleet.push({reg,type:d.get('type'),name,desc,img:D.img.slice()});aud('Añadió aeronave',reg)}
   else{const a=S.fleet.find(x=>x.reg===D.reg);a.name=name;a.desc=desc;a.img=D.img.slice();aud('Actualizó aeronave',D.reg)}

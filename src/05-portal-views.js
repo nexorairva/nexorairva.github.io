@@ -1,6 +1,6 @@
 
 /* ===== portal views ===== */
-function flightsView(port){const f=ui.fl,p=port?me():null;let L=instances().filter(i=>!i.blocked&&i.free>0);
+function flightsView(port){const f=ui.fl,p=port?me():null;if(port)ui.opsSearch=true;let L=instances().filter(i=>!i.blocked&&i.free>0);
   if(f.from)L=L.filter(i=>i.from===f.from);if(f.to)L=L.filter(i=>i.to===f.to);if(f.type)L=L.filter(i=>i.type===f.type);
   if(f.hub)L=L.filter(i=>i.from===f.hub||i.to===f.hub);
   if(f.band)L=L.filter(i=>{const h=new Date(i.ts).getUTCHours();return f.band==='m'?h>=5&&h<12:f.band==='a'?h>=12&&h<18:h>=18||h<5});
@@ -8,13 +8,14 @@ function flightsView(port){const f=ui.fl,p=port?me():null;let L=instances().filt
   if(f.tour){const tr=TOURS.find(x=>x.id===f.tour);L=L.filter(i=>tr.stages.some(s=>s.some(r=>r[0]===i.from&&r[1]===i.to)))}
   const so=f.sort||(p?'rec':'dep');
   L.sort((a,b)=>so==='rec'?score(b,p)-score(a,p):so==='dur'?a.mins-b.mins:so==='free'?b.free-a.free:so==='nm'?b.nm-a.nm:so==='no'?a.no.localeCompare(b.no):a.ts-b.ts);
+  if((f.off|0)>=L.length)f.off=0;
   const ops=[['',t('Todos','All')],...Object.keys(S.ap).map(k=>[k,k])];
   return head(port?t('Vuelos','Flights'):t('Operaciones','Operations'),t('Los vuelos completos o bloqueados no aparecen. Reservas hasta 15 minutos antes de la salida.','Full or blocked flights are hidden. Booking closes 15 minutes before departure.'))+
   `<section class="card"><form data-f="flt" class="filters">${sel('flt','from',t('Origen','From'),ops,f.from)}${sel('flt','to',t('Destino','To'),ops,f.to)}${sel('flt','type',t('Aeronave','Aircraft'),[['',t('Todas','All')],...Object.keys(TYPES).map(k=>[k,TYPES[k].mf+' '+TYPES[k].n])],f.type)}
   ${sel('flt','hub','Hub',[['',t('Todos','All')],...Object.keys(S.ap).filter(k=>S.ap[k][6]).map(k=>[k,k])],f.hub)}${sel('flt','band',t('Horario','Time'),[['',t('Cualquiera','Any')],['m',t('Mañana','Morning')],['a',t('Tarde','Afternoon')],['n',t('Noche','Night')]],f.band)}
   ${sel('flt','dur',t('Duración máx.','Max duration'),[['',t('Cualquiera','Any')],['90','1h 30m'],['180','3h'],['360','6h']],f.dur)}${sel('flt','tour','Tour',[['',t('Todos','All')],...TOURS.map(x=>[x.id,x.n])],f.tour)}
   ${sel('flt','state',t('Estado','Status'),[['',t('Todos','All')],['soon',t('Salida próxima','Departing soon')]],f.state)}${sel('flt','sort',t('Ordenar por','Sort by'),[['',p?t('Recomendación','Recommended'):t('Salida','Departure')],['dep',t('Salida','Departure')],['dur',t('Duración','Duration')],['free',t('Disponibilidad','Availability')],['nm',t('Distancia','Distance')],['no',t('Nº de vuelo','Flight no.')]],f.sort)}</form>
-  ${tbl(FH(),flRows(L.slice(0,40),port),t('Ningún vuelo coincide con los filtros.','No flights match the filters.'))}</section>${L.length>40?`<p class="muted">${t('Mostrando 40 de ','Showing 40 of ')}${L.length}.</p>`:''}`}
+  ${tbl(FH(),flRows(port?L.slice(f.off|0,(f.off|0)+5):L.slice(0,40),port),t('Ningún vuelo coincide con los filtros.','No flights match the filters.'))}</section>${port?(L.length>5?`<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><p class="muted">${t('Te recomendamos 5 vuelos. Hay ','We recommend 5 flights. There are ')}${L.length}${t(' en total.',' in total.')}</p>${btn(t('Recomiéndame otros 5','Recommend 5 more'),'more5','','sm pri')}</div>`:''):(L.length>40?`<p class="muted">${t('Mostrando 40 de ','Showing 40 of ')}${L.length}.</p>`:'')}`}
 const stateLabel=r=>({reserved:r.simbrief?t('SimBrief listo','SimBrief ready'):t('Reservado','Booked'),checkedin:t('Check-in hecho','Checked in'),flying:t('En vuelo','Flying'),review:t('En revisión','Under review'),closed:t('Validado','Validated'),cancelled:t('Cancelado','Cancelled'),expired:t('Caducado','Expired'),rejected:t('Rechazado','Rejected')}[r.status]);
 const resRow=r=>[`<span class="mono">${r.no}</span>`,rt(r.from,r.to),`<span class="nw">${r.expires?t('Caduca en ','Expires in ')+cd(r.expires):fdt(r.depTs)}</span>`,r.platform,pill(stateLabel(r),r.status==='review'?'warn':'acc'),btn(t('Abrir','Open'),'case',r.id,'sm')];
 function pending(p){const a=[],r=myRes(p.id)[0];if(!accepted(p))a.push([t('Aceptar la normativa vigente','Accept the current rules'),'p-normativa']);
@@ -56,7 +57,7 @@ function vRankings(){const tabs=[['gen',t('General','Overall')],['mon',t('Mensua
 function vCaso(){const r=S.res.find(x=>x.id===ui.case&&x.pilot===S.session.id);if(!r)return head(t('Caso operacional','Operational case'))+`<div class="card empty">${t('Selecciona una reserva.','Select a booking.')} <a href="#p-reservas">${t('Reservas','Bookings')}</a></div>`;
   const e=r.entryId&&S.log.find(x=>x.id===r.entryId),st=r.status,act=ACTIVE.includes(st),fin=st==='review'||st==='closed';
   const stp=[[t('Reserva','Booking'),1],['SimBrief',!!r.simbrief],['Check-in',!!r.checkin],[t('En vuelo','Flying'),['flying','review','closed'].includes(st)],[t('Finalización','Finish'),fin],[t('Validación','Validation'),st==='closed']];
-  const first=stp.findIndex(x=>!x[1]);const trr=TOURS.find(tr=>(S.enroll[r.pilot]||{})[tr.id]&&tr.stages.some(s=>s.some(q=>q[0]===r.from&&q[1]===r.to)));const rem=r.kind==='free'?S.remarks.ff:(trr?(trr.remark||S.remarks.tour):S.remarks.flight);
+  const first=stp.findIndex(x=>!x[1]);const trr=TOURS.find(tr=>(S.enroll[r.pilot]||{})[tr.id]&&tr.stages.some(s=>s.some(q=>q[0]===r.from&&q[1]===r.to)));const rem=remOf(r);
   const sbUrl=sbLink(r);
   return head(r.no+' · '+r.from+' → '+r.to,fdt(r.depTs)+' · '+nf(r.nm)+' nm · '+TYPES[r.type].mf+' '+TYPES[r.type].n+' · '+t('Sesión ','Session ')+r.session,pill(stateLabel(r),st==='review'?'warn':'acc')+(r.expires&&act?' '+pill(t('Caduca en ','Expires in ')+cd(r.expires),'warn'):''))+
   `<div class="card pad"><div class="steps">${stp.map((x,i)=>`<span class="${x[1]?(i===5&&st==='review'?'rev':'done'):(i===first&&act?'now':'')}">${x[0]}</span>`).join('')}</div></div>
