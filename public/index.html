@@ -33,22 +33,38 @@ a{color:var(--brand)}.mono{font-family:var(--mono);font-size:.92em}.muted{color:
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--fg)}
 .brand .wm{font-family:var(--display);font-weight:700;font-size:1.2rem;letter-spacing:.01em;line-height:1}.brand .wm i{font-style:normal;color:var(--lime-ink)}
 .brand small{font-family:var(--mono);font-size:.64rem;color:var(--muted);letter-spacing:.06em;border-left:1px solid var(--line);padding-left:10px}
-.in-box{position:relative;max-width:760px;padding:0 24px;display:flex;flex-direction:column;align-items:flex-start;gap:18px}
-#intro{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;background:linear-gradient(100deg,#020b07 24%,rgba(2,11,7,.25) 100%),url(img/hero-x.jpg) right center/cover,#020b07;transition:opacity .45s ease,transform .45s ease;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-#intro.out{opacity:0;transform:scale(1.03);pointer-events:none}
-#intro .in-box{align-items:flex-start;justify-self:flex-start}
+#intro{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;background:#020b07;overflow:hidden;transition:opacity .6s ease,transform .6s ease;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+#intro.out{opacity:0;transform:scale(1.06);pointer-events:none}
+#intro .in-bg{position:absolute;inset:-4%;background:linear-gradient(100deg,#020b07 18%,rgba(2,11,7,.2) 100%),url(img/hero-x.jpg) right center/cover;animation:inkb 22s ease-in-out infinite alternate}
+@keyframes inkb{from{transform:scale(1) translate(0,0)}to{transform:scale(1.12) translate(-1.5%,1%)}}
+#intro .in-cv{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen}
+#intro .in-glow{position:absolute;width:60vmax;height:60vmax;left:-15vmax;top:50%;margin-top:-30vmax;background:radial-gradient(circle,rgba(126,211,33,.16),transparent 62%);animation:ingl 6s ease-in-out infinite alternate;pointer-events:none}
+@keyframes ingl{from{opacity:.5;transform:scale(.9)}to{opacity:1;transform:scale(1.1)}}
+#intro .in-box{position:relative;z-index:2;max-width:780px;padding:0 24px;display:flex;flex-direction:column;align-items:flex-start;gap:16px;transition:transform .25s ease-out}
 @media (min-width:900px){#intro{justify-content:flex-start;padding-left:9vw}}
-#intro .in-logo{height:84px;width:auto;max-width:100%}
-#intro h1{font-family:var(--display);font-weight:700;font-size:clamp(2.4rem,7vw,4.6rem);line-height:1.02;margin:0;letter-spacing:-.01em}
-#intro h1 em{font-style:normal;color:#7ED321}
-#intro .in-sub{font-size:clamp(1rem,2.2vw,1.2rem);line-height:1.5;color:#cfe3d6;max-width:56ch;margin:0}
-#intro .in-facts{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);font-size:.78rem;color:#9fc3ad;letter-spacing:.04em}
-#intro .in-facts b{color:#7ED321}
-#intro .in-cta{display:inline-flex;align-items:center;gap:10px;margin-top:10px;padding:12px 20px;border:1px solid rgba(126,211,33,.55);border-radius:99px;background:rgba(126,211,33,.1);font-weight:600}
-#intro .in-dot{width:10px;height:10px;border-radius:50%;background:#7ED321;animation:inp 1.6s ease-in-out infinite}
-@keyframes inp{0%,100%{box-shadow:0 0 0 0 rgba(126,211,33,.6)}50%{box-shadow:0 0 0 10px rgba(126,211,33,0)}}
-#intro .in-legal{font-size:.72rem;color:#7d9a8a;margin:6px 0 0;max-width:60ch}
-@media (prefers-reduced-motion:reduce){#intro .in-dot{animation:none}#intro,#intro.out{transition:none}}
+#intro .in-logo{height:84px;width:auto;max-width:100%;animation:inup .9s cubic-bezier(.2,.8,.2,1) both,infl 5s ease-in-out 1s infinite}
+@keyframes infl{0%,100%{filter:drop-shadow(0 0 0 rgba(126,211,33,0))}50%{filter:drop-shadow(0 0 18px rgba(126,211,33,.45))}}
+@keyframes inup{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+#intro .in-chip{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;color:#9fc3ad;border:1px solid rgba(126,211,33,.35);padding:5px 12px;border-radius:99px;animation:inup .8s .15s cubic-bezier(.2,.8,.2,1) both}
+#intro h1{font-family:var(--display);font-weight:800;font-size:clamp(2.7rem,8.4vw,5.6rem);line-height:1;margin:0;letter-spacing:-.02em}
+#intro .in-w{display:inline-block;opacity:0;animation:inw .9s var(--d) cubic-bezier(.2,.9,.2,1) forwards}
+#intro .in-w.w1{color:#7ED321;text-shadow:0 0 28px rgba(126,211,33,.55)}
+#intro .in-w.w2{background:linear-gradient(90deg,#fff,#9EEB3C);-webkit-background-clip:text;background-clip:text;color:transparent}
+@keyframes inw{from{opacity:0;transform:translateY(.55em) skewY(5deg);filter:blur(10px)}to{opacity:1;transform:none;filter:none}}
+#intro .in-tag{font-size:clamp(1.1rem,2.8vw,1.55rem);font-weight:500;color:#e6f3ea;margin:0;min-height:1.6em;display:flex;align-items:center}
+#intro .in-caret{display:inline-block;width:2px;height:1.2em;background:#7ED321;margin-left:3px;animation:inbl .8s steps(1) infinite}
+#intro.typed .in-caret{animation:inbl 1.1s steps(1) infinite}
+@keyframes inbl{50%{opacity:0}}
+#intro .in-tick{font-size:.95rem;color:#9fc3ad;display:flex;gap:8px;flex-wrap:wrap;animation:inup .8s 2.6s both}
+#intro .in-tk{color:#7ED321;transition:opacity .26s,transform .26s;display:inline-block}
+#intro .in-tk.sw{opacity:0;transform:translateY(8px)}
+#intro .in-cta{display:inline-flex;align-items:center;gap:10px;margin-top:8px;padding:13px 22px;border:1px solid rgba(126,211,33,.6);border-radius:99px;background:rgba(126,211,33,.12);font-weight:700;animation:inup .8s 3s both,incta 2.4s 3.8s ease-in-out infinite;backdrop-filter:blur(4px)}
+@keyframes incta{0%,100%{box-shadow:0 0 0 0 rgba(126,211,33,.45)}50%{box-shadow:0 0 0 14px rgba(126,211,33,0)}}
+#intro .in-dot{width:10px;height:10px;border-radius:50%;background:#7ED321}
+#intro .in-arr{display:inline-block;animation:inar 1.2s ease-in-out infinite}
+@keyframes inar{50%{transform:translateX(6px)}}
+#intro .in-legal{font-size:.72rem;color:#7d9a8a;margin:6px 0 0;max-width:60ch;animation:inup .8s 3.2s both}
+@media (prefers-reduced-motion:reduce){#intro *{animation:none!important;transition:none!important}#intro .in-w,#intro .in-tick,#intro .in-cta,#intro .in-legal{opacity:1}}
 .btn.dis{opacity:.4;pointer-events:none}.doctext{white-space:pre-wrap;line-height:1.65;max-width:78ch}.docpdf{width:100%;height:70vh;min-height:420px;border:1px solid var(--line);border-radius:10px}
 .nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;max-width:100%}
 .nav a{white-space:nowrap;padding:7px 12px;border-radius:99px;color:var(--muted);text-decoration:none;font-weight:500}
@@ -869,8 +885,8 @@ function tabsBar(G,n,ok,P){const cur=G.find(g=>g[2].includes(n)||(n==='p-caso'&&
 const permName=k=>{const p=PERMS.find(x=>x[0]===k);return p?t(p[1][0],p[1][1]):k};
 const countUp=()=>{try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return}catch(e){}document.querySelectorAll('[data-count]').forEach(el=>{const v=+el.dataset.count,t0=performance.now(),d=1000;const st=n=>{const k=Math.min(1,(n-t0)/d),e=1-Math.pow(1-k,3);el.textContent=nf(v*e);if(k<1)requestAnimationFrame(st);else el.textContent=nf(v)};requestAnimationFrame(st)})};
 function vInicio(){const ops=Object.keys(S.ap),g=gstats(),fl=liveFlights();
-  return `<section class="hero2"><div class="h2-in"><div class="h2-txt">${logoLight(44)}<span class="eyebrow">NEXO · NXR · VATSIM · IVAO</span><h1>${t('Vuela. ','Fly. ')}<span class="lime">${t('Conecta. Supera.','Connect. Rise.')}</span></h1>
-  <p>${t('El piloto vuela. NEXORA AIR registra, comprueba, organiza y reconoce cada vuelo en VATSIM e IVAO.','The pilot flies. NEXORA AIR records, checks, organises and recognises every flight on VATSIM and IVAO.')}</p>
+  return `<section class="hero2"><div class="h2-in"><div class="h2-txt">${logoLight(44)}<span class="eyebrow">NEXO · NXR · ${t('REDES DE VUELO','FLIGHT NETWORKS')}</span><h1>${t('Conecta. ','Connect. ')}<span class="lime">${t('Vuela. Supera.','Fly. Rise.')}</span></h1>
+  <p>${t('El piloto vuela, NEXORA AIR hace el resto.','The pilot flies, NEXORA AIR does the rest.')}</p>
   <form data-f="hero" class="search">${sel('hero','from',t('Origen','From'),[['',t('Cualquiera','Any')],...ops.map(k=>[k,k+' · '+S.ap[k][1]])])}${sel('hero','to',t('Destino','To'),[['',t('Cualquiera','Any')],...ops.map(k=>[k,k+' · '+S.ap[k][1]])])}<button class="btn lime" type="submit">${t('Buscar vuelo','Search flight')}</button>${S.session?'':`<a class="btn ghost" href="#registro">${t('Únete','Join')}</a>`}</form></div>
   <div class="h2-map">${liveMap({})}</div></div>
   <div class="h2-stats"><div><b data-count="${g.pil}">${g.pil}</b><span>${t('pilotos','pilots')}</span></div><div><b data-count="${Math.round(g.h)}">${nf(g.h)}</b><span>${t('horas','hours')}</span></div><div><b data-count="${g.fl}">${g.fl}</b><span>${t('vuelos','flights')}</span></div><div><b data-count="${Math.round(g.nm)}">${nf(g.nm)}</b><span>${t('millas','miles')}</span></div><div><b data-count="${fl.length}">${fl.length}</b><span>${t('en vuelo ahora','airborne now')}</span></div></div></section>
@@ -1342,20 +1358,58 @@ Object.assign(F,{
    }
    aud('Editó aeropuerto',(wasNet?k:key.slice(2))+(hub?' · hub '+hub:''));done(t('Aeropuerto guardado','Airport saved'))}
 });
-/* ----- pantalla de presentación (antes del inicio) ----- */
+/* ----- pantalla de presentación animada (antes del inicio) ----- */
 function introSeen(){try{return sessionStorage.getItem('nx-intro')==='1'}catch(e){return false}}
 function showIntro(){
   const h=location.hash;if(introSeen()||(h&&h!=='#'&&h!=='#inicio'))return;
+  const still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   const el=document.createElement('div');el.id='intro';el.setAttribute('role','button');el.tabIndex=0;el.setAttribute('aria-label',t('Entrar a NEXORA AIR','Enter NEXORA AIR'));
-  el.innerHTML=`<div class="in-box"><img class="in-logo" src="${brandLogo(true)}" alt="NEXORA AIR"><h1>${t('Vuela. ','Fly. ')}<em>${t('Conecta. ','Connect. ')}</em>${t('Supera.','Excel.')}</h1>
-  <p class="in-sub">${t('Aerolínea virtual para pilotos de simulación en VATSIM e IVAO. Sin ánimo de lucro, con vuelos, tours, retos y comunidad.','Virtual airline for flight simulation pilots on VATSIM and IVAO. Non-profit, with flights, tours, challenges and community.')}</p>
-  <div class="in-facts"><span>ICAO <b>NXR</b></span><span>${t('Indicativo','Callsign')} <b>NEXO</b></span><span>VATSIM · IVAO · SimBrief</span></div>
-  <div class="in-cta"><span class="in-dot"></span>${t('Pulsa en cualquier parte para entrar','Tap anywhere to enter')}</div>
+  const words=[t('Conecta.','Connect.'),t('Vuela.','Fly.'),t('Supera.','Rise.')],
+    tag=t('El piloto vuela, NEXORA AIR hace el resto.','The pilot flies, NEXORA AIR does the rest.'),
+    tick=[t('Vuelos','Flights'),t('Tours','Tours'),t('Retos','Challenges'),t('Rankings','Rankings'),t('Comunidad','Community'),t('Redes de vuelo','Flight networks')];
+  el.innerHTML=`<div class="in-bg"></div><canvas class="in-cv"></canvas><div class="in-glow"></div>
+  <div class="in-box"><img class="in-logo" src="${brandLogo(true)}" alt="NEXORA AIR"><span class="in-chip">NEXO · NXR · ${t('REDES DE VUELO','FLIGHT NETWORKS')}</span>
+  <h1>${words.map((w,i)=>`<span class="in-w w${i}" style="--d:${.35+i*.38}s">${w}</span>`).join(' ')}</h1>
+  <p class="in-tag" aria-label="${esc(tag)}"><span class="in-ty"></span><i class="in-caret"></i></p>
+  <div class="in-tick"><span>${t('Todo para tu aerolínea virtual:','Everything for your virtual airline:')}</span><b class="in-tk">${tick[0]}</b></div>
+  <div class="in-cta"><span class="in-dot"></span>${t('Pulsa en cualquier parte para entrar','Tap anywhere to enter')}<span class="in-arr">→</span></div>
   <p class="in-legal">${t('Solo simulación. NEXORA AIR no está afiliada a ninguna aerolínea real.','Simulation only. NEXORA AIR is not affiliated with any real airline.')}</p></div>`;
-  const go=()=>{try{sessionStorage.setItem('nx-intro','1')}catch(e){}document.removeEventListener('keydown',key);el.classList.add('out');setTimeout(()=>el.remove(),450);if(location.hash!=='#inicio')location.hash='#inicio';else render()},
+  document.body.appendChild(el);
+  const cv=el.querySelector('canvas'),cx=cv.getContext('2d'),tk=el.querySelector('.in-tk'),ty=el.querySelector('.in-ty'),box=el.querySelector('.in-box');
+  let raf=0,W=0,H=0,dpr=1,mx=0,my=0,timers=[],alive=true;
+  /* ciudades de la red (lat, lon) */
+  const C=[[40.5,-3.6],[41.3,2.1],[38.8,-9.1],[49,2.5],[51.5,-.5],[50,8.6],[41.8,12.2],[40.6,-73.8],[25.8,-80.3],[-23.4,-46.5],[19.4,-99.1],[4.7,-74.1],[25.3,55.4],[35.5,139.8],[1.4,104],[-33.9,151.2],[-26.1,28.2],[33.9,-118.4],[43.7,-79.6],[-34.8,-58.5],[28.1,-15.4],[39.9,116.4],[19.1,72.9],[55.4,37.4]];
+  const P=c=>{const x=(c[1]+180)/360*W*1.08-W*.04+mx*14,la=Math.max(-58,Math.min(76,c[0])),y=(76-la)/134*H*.84+H*.08+my*10;return[x,y]};
+  const flights=[];
+  const spawn=()=>{let a=Math.floor(Math.random()*C.length),b=Math.floor(Math.random()*C.length);if(a===b)b=(b+7)%C.length;flights.push({a,b,t:0,v:.0035+Math.random()*.004,life:1})};
+  const arc=(A,B,u)=>{const mxp=(A[0]+B[0])/2,myp=(A[1]+B[1])/2,d=Math.hypot(B[0]-A[0],B[1]-A[1]),cxp=mxp,cyp=myp-d*.28,v=1-u;return[v*v*A[0]+2*v*u*cxp+u*u*B[0],v*v*A[1]+2*v*u*cyp+u*u*B[1],cxp,cyp]};
+  const size=()=>{dpr=Math.min(2,window.devicePixelRatio||1);W=el.clientWidth;H=el.clientHeight;cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';cx.setTransform(dpr,0,0,dpr,0,0)};
+  const draw=()=>{if(!alive)return;cx.clearRect(0,0,W,H);const pts=C.map(P);
+    /* rutas tenues de fondo */
+    cx.lineWidth=1;pts.forEach((A,i)=>{const B=pts[(i*5+3)%pts.length];const m=arc(A,B,.5);cx.strokeStyle='rgba(126,211,33,.07)';cx.beginPath();cx.moveTo(A[0],A[1]);cx.quadraticCurveTo(m[2]*1,m[3]*1+0,B[0],B[1]);cx.stroke()});
+    /* nodos */
+    const now=performance.now()/1000;pts.forEach((p,i)=>{const r=2+Math.sin(now*2+i)*.8;cx.fillStyle='rgba(158,235,60,.85)';cx.beginPath();cx.arc(p[0],p[1],r,0,7);cx.fill();cx.strokeStyle='rgba(126,211,33,'+(.25+.2*Math.sin(now*2+i))+')';cx.beginPath();cx.arc(p[0],p[1],r+6+3*Math.sin(now*2+i),0,7);cx.stroke()});
+    /* vuelos activos */
+    for(let i=flights.length-1;i>=0;i--){const f=flights[i];f.t+=f.v;if(f.t>=1)f.life-=.02;if(f.life<=0){flights.splice(i,1);continue}
+      const A=pts[f.a],B=pts[f.b],u=Math.min(1,f.t),m=arc(A,B,u),segs=28;
+      for(let s=0;s<segs;s++){const u0=Math.max(0,u-.55)+(s/segs)*Math.min(.55,u),u1=Math.max(0,u-.55)+((s+1)/segs)*Math.min(.55,u),p0=arc(A,B,u0),p1=arc(A,B,u1);cx.strokeStyle='rgba(158,235,60,'+((s+1)/segs*.9*f.life)+')';cx.lineWidth=1+((s+1)/segs)*1.8;cx.beginPath();cx.moveTo(p0[0],p0[1]);cx.lineTo(p1[0],p1[1]);cx.stroke()}
+      const pb=arc(A,B,Math.max(0,u-.01)),ang=Math.atan2(m[1]-pb[1],m[0]-pb[0]);
+      cx.save();cx.translate(m[0],m[1]);cx.rotate(ang);cx.shadowColor='#9EEB3C';cx.shadowBlur=14;cx.fillStyle='rgba(255,255,255,'+f.life+')';cx.beginPath();cx.moveTo(7,0);cx.lineTo(-5,-4.5);cx.lineTo(-2.5,0);cx.lineTo(-5,4.5);cx.closePath();cx.fill();cx.restore()}
+    if(flights.length<8&&Math.random()<.035)spawn();
+    raf=requestAnimationFrame(draw)};
+  size();window.addEventListener('resize',size);
+  if(still){for(let i=0;i<5;i++){spawn();flights[i].t=.7}draw();cancelAnimationFrame(raf)}else{for(let i=0;i<4;i++){spawn();flights[i].t=Math.random()*.6}draw()}
+  /* parallax con el puntero */
+  const mv=e=>{const p=e.touches?e.touches[0]:e;mx=(p.clientX/W-.5)*2;my=(p.clientY/H-.5)*2;box.style.transform='translate('+(-mx*8)+'px,'+(-my*6)+'px)'};
+  el.addEventListener('mousemove',mv);
+  /* máquina de escribir + ticker */
+  if(still){ty.textContent=tag;el.classList.add('typed')}else{let i=0;const type=()=>{if(!alive)return;ty.textContent=tag.slice(0,++i);if(i<tag.length)timers.push(setTimeout(type,36));else el.classList.add('typed')};timers.push(setTimeout(type,1500));
+    let k=0;timers.push(setInterval(()=>{if(!alive)return;tk.classList.add('sw');timers.push(setTimeout(()=>{k=(k+1)%tick.length;tk.textContent=tick[k];tk.classList.remove('sw')},260))},1700))}
+  const go=()=>{if(!alive)return;alive=false;cancelAnimationFrame(raf);timers.forEach(x=>{clearTimeout(x);clearInterval(x)});window.removeEventListener('resize',size);document.removeEventListener('keydown',key);
+    try{sessionStorage.setItem('nx-intro','1')}catch(e){}el.classList.add('out');setTimeout(()=>el.remove(),600);if(location.hash!=='#inicio')location.hash='#inicio';else render()},
     key=e=>{if(['Enter',' ','Escape','ArrowRight','ArrowDown'].includes(e.key)){e.preventDefault();go()}};
   el.addEventListener('click',go);el.addEventListener('touchend',e=>{e.preventDefault();go()},{passive:false});document.addEventListener('keydown',key);
-  document.body.appendChild(el);try{el.focus()}catch(e){}}
+  try{el.focus()}catch(e){}}
 /* ===== boot ===== */
 (async()=>{
   const cloud=await cloudStart();
