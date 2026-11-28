@@ -79,3 +79,15 @@ La pestaña **Integraciones** (permiso `sistema`) arranca vacía: no hay nada pr
 ## Recordarme al iniciar sesión
 
 El formulario de acceso (modo nube) tiene la casilla «Recordarme en este dispositivo». Marcada (por defecto), la sesión se guarda en el dispositivo y el correo se rellena solo la próxima vez; sin marcar, la sesión se cierra al cerrar el navegador. La contraseña nunca se guarda en la web: el campo mantiene `autocomplete="current-password"` para que el gestor de contraseñas del navegador ofrezca guardarla.
+
+## Secciones nuevas del staff
+
+- **NOTAM** (Noticias): avisos operativos con inicio y fin; se muestran en la portada y en el portal mientras están vigentes.
+- **Transferir horas** (Pilotos, solo administradores): ajuste directo o traspaso entre pilotos, con motivo, aviso al piloto y registro en auditoría.
+- **Exportar** (Pilotos): CSV de usuarios (sin correos ni contraseñas) y de vuelos.
+- **Actividad** (Pilotos): último vuelo, días sin volar y horas de los últimos 30 días; botón «Recordar».
+- **Reportes** (Revisión y soporte): historial de vuelos con filtros y CSV.
+- **Recompensas** (Operaciones): catálogo canjeable con puntos; el piloto canjea desde Estadísticas › Recompensas y el staff entrega o rechaza (el rechazo devuelve los puntos).
+- **Guía administrativa** y **Calendario administrativo** (Administración): manual interno y fechas del staff.
+
+Base de datos: ejecuta `supabase/schema.sql` (o `migrations/008`) para dar de alta las colecciones nuevas.

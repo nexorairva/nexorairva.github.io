@@ -49,6 +49,7 @@ function ensure(){let ch=0;
   if(!S.partners)S.partners=[];
   if(!S.apo)S.apo={};
   if(!S.dl)S.dl=[];S.intg=(S.intg||[]).filter(x=>x.id);
+  ['notam','rew','redeem','guide','acal'].forEach(k=>{if(!S[k])S[k]=[]});
   TOURS=S.tours;syncCh();
   if(ch&&!CL.on)save()}
 /* ----- marca ----- */
