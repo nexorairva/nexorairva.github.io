@@ -169,6 +169,7 @@ body{background-image:radial-gradient(900px 420px at 85% -80px,color-mix(in srgb
 .h2-free{max-width:46ch;opacity:.9;line-height:1.5}.h2-free b{color:var(--lime,#7ED321)}
 .hero2 h1{font-size:clamp(2.3rem,5vw,3.8rem);line-height:1;max-width:14ch}.hero2 h1 .lime{color:var(--lime)}.hero2 p{color:#D1E6DA;max-width:46ch;font-size:1.02rem}.hero2 .eyebrow{color:var(--lime)}
 .h2-map{min-width:0}
+.chk{display:flex!important;flex-direction:row!important;align-items:center;gap:8px;font-size:.92rem;color:var(--muted)}.chk input{width:auto;margin:0}
 .dc-l{display:flex;flex-wrap:wrap;gap:8px}.dc-c{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;background:var(--surface2)}.dc-c i{width:9px;height:9px;border-radius:50%;background:#3BA55D}.dc-c.idle i{background:#FAA61A}.dc-c.dnd i{background:#ED4245}.dc-c em{font-style:normal;color:var(--muted);font-size:.85em}
 .h2-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));border-top:1px solid rgba(255,255,255,.14);background:rgba(3,16,10,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .h2-stats>div{padding:16px 22px;border-right:1px solid rgba(255,255,255,.1)}.h2-stats>div:last-child{border:0}
@@ -435,9 +436,16 @@ async function cloudPush(){if(!CL.on||!CL.uid||!CL.loaded)return;if(CL.busy){CL.
     cur.forEach((d,k)=>CL.snap.set(k,JSON.stringify(d.data)));CL.snap.forEach((_,k)=>{if(!cur.has(k))CL.snap.delete(k)});S.pilots.forEach(p=>CL.psnap[p.id]=JSON.stringify(pilotRows(p)));
   }catch(e){const m=(e&&e.message)||String(e);toast(t('No se pudo guardar en la base de datos: ','Could not save to the database: ')+m);try{await cloudPull();render()}catch(x){}}
   finally{CL.busy=false;if(CL.dirty)cloudSaveSoon()}}
+/* «Recordarme»: con la casilla marcada la sesión se guarda en el dispositivo; sin marcar, solo hasta cerrar el navegador */
+const remGet=()=>{try{return localStorage.getItem('nx-rem')!=='0'}catch(e){return true}};
+const remEmail=()=>{try{return remGet()&&localStorage.getItem('nx-rem-email')||''}catch(e){return ''}};
+const remSet=(on,em)=>{try{localStorage.setItem('nx-rem',on?'1':'0');if(on&&em)localStorage.setItem('nx-rem-email',em);else localStorage.removeItem('nx-rem-email')}catch(e){}};
+const remStore={getItem:k=>{try{return sessionStorage.getItem(k)??localStorage.getItem(k)}catch(e){return null}},
+  setItem:(k,v)=>{try{const on=remGet();(on?localStorage:sessionStorage).setItem(k,v);(on?sessionStorage:localStorage).removeItem(k)}catch(e){}},
+  removeItem:k=>{try{sessionStorage.removeItem(k);localStorage.removeItem(k)}catch(e){}}};
 function cloudSaveSoon(){clearTimeout(CL.timer);CL.timer=setTimeout(cloudPush,500)}
 async function cloudStart(){const c=window.NX_CFG||{};if(!(c.supabaseUrl&&c.anonKey))return false;
-  try{await loadSB();CL.sb=window.supabase.createClient(c.supabaseUrl,c.anonKey,{auth:{persistSession:true,autoRefreshToken:true}});CL.on=true;
+  try{await loadSB();CL.sb=window.supabase.createClient(c.supabaseUrl,c.anonKey,{auth:{persistSession:true,autoRefreshToken:true,storage:remStore}});CL.on=true;
     const r=await CL.sb.auth.getSession();const u=r.data&&r.data.session&&r.data.session.user;CL.uid=u?u.id:null;CL.email=u?u.email:'';
     cloudBlank();await cloudPull();
     setInterval(async()=>{if(CL.busy||CL.dirty||document.hidden)return;const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return;try{if(await cloudPull())render()}catch(e){}},45000);
@@ -576,7 +584,7 @@ const vContacto=()=>head(t('Contacto','Contact'))+`<div class="card pad stack"><
 function vRegistro(){return head(t('Únete a NEXORA AIR','Join NEXORA AIR'),t('Una cuenta por persona. VATSIM e IVAO requieren aprobación del staff; SimBrief se verifica automáticamente.','One account per person. VATSIM and IVAO require staff approval; SimBrief is verified automatically.'))+
   `<form data-f="reg" class="card form pad">${fld('reg','name',t('Nombre y apellidos','Full name'),'text','required maxlength="60"')}${fld('reg','country',t('País (código)','Country (code)'),'text','required maxlength="2" placeholder="ES"')}${fld('reg','email','Email','email','required')}${fld('reg','user',t('Usuario','Username'),'text','required pattern="[A-Za-z0-9_]{3,20}"')}${fld('reg','pass',t('Contraseña (mín. 8)','Password (min. 8)'),'password','required minlength="8"')}${sel('reg','platform',t('Plataforma preferida','Preferred platform'),['VATSIM','IVAO'])}${fld('reg','vatsim','VATSIM ID','text','inputmode="numeric" pattern="[0-9]{5,8}"')}${fld('reg','ivao','IVAO ID','text','inputmode="numeric" pattern="[0-9]{5,8}"')}${fld('reg','simbrief','SimBrief ID','text','required inputmode="numeric" pattern="[0-9]{5,8}"')}
   <div class="full err" id="reg-err" hidden></div><div class="full"><button class="btn pri" type="submit">${t('Enviar solicitud','Submit request')}</button></div></form>`}
-function vLogin(){return head(t('Acceder','Log in'))+`<div class="grid"><form data-f="login" class="card form pad">${fld('login','user',CL.on?t('Correo electrónico','Email'):t('Usuario','Username'),CL.on?'email':'text','required autocomplete="username"')}${fld('login','pass',t('Contraseña','Password'),'password','required autocomplete="current-password"')}<div class="full err" id="login-err" hidden></div><div class="full"><button class="btn pri" type="submit">${t('Entrar','Log in')}</button></div></form>
+function vLogin(){return head(t('Acceder','Log in'))+`<div class="grid"><form data-f="login" class="card form pad">${fld('login','user',CL.on?t('Correo electrónico','Email'):t('Usuario','Username'),CL.on?'email':'text','required autocomplete="username"',remEmail())}${fld('login','pass',t('Contraseña','Password'),'password','required autocomplete="current-password"')}${CL.on?`<label class="full chk"><input type="checkbox" name="rem" ${remGet()?'checked':''}> ${t('Recordarme en este dispositivo (mantener la sesión iniciada)','Remember me on this device (stay signed in)')}</label>`:''}<div class="full err" id="login-err" hidden></div><div class="full"><button class="btn pri" type="submit">${t('Entrar','Log in')}</button></div></form>
   ${CL.on||DEMO?'':`<div class="card pad stack"><h3>${t('Sin base de datos conectada','No database connected')}</h3><p class="muted">${t('Esta copia de la web no está conectada a Supabase, así que no hay cuentas ni datos. Configura public/config.js para usarla.','This copy of the site is not connected to Supabase, so there are no accounts or data. Configure public/config.js to use it.')}</p></div>`}</div>`}
 
 /* ===== portal views ===== */
@@ -1313,7 +1321,7 @@ document.addEventListener('change',async e=>{const x=e.target;if(x.id!=='ptimg'|
 function cloudHook(){if(!CL.on)return;
   const afterAuth=async()=>{const u=(await CL.sb.auth.getUser()).data.user;CL.uid=u?u.id:null;CL.email=u?u.email:'';await cloudPull()};
   const old={logout:A.logout,del:F.del};
-  F.login=async d=>{const r=await CL.sb.auth.signInWithPassword({email:d.get('user').trim().toLowerCase(),password:d.get('pass')});
+  F.login=async d=>{remSet(!!d.get('rem'),d.get('user').trim().toLowerCase());const r=await CL.sb.auth.signInWithPassword({email:d.get('user').trim().toLowerCase(),password:d.get('pass')});
     if(r.error)return err('login-err',t('Correo o contraseña incorrectos. Si tu solicitud fue rechazada, vuelve a registrarte.','Wrong email or password. If your request was rejected, sign up again.'));
     await afterAuth();const p=me();if(!p)return err('login-err',t('Tu perfil aún no existe. Inténtalo de nuevo.','Your profile does not exist yet. Try again.'));go(isStaff(p)?'s-dash':'portal')};
   F.reg=async d=>{const pl=d.get('platform'),id=pl==='VATSIM'?d.get('vatsim'):d.get('ivao');if(!id)return err('reg-err',t('Indica tu ID de ','Enter your ')+pl+t('.',' ID.'));

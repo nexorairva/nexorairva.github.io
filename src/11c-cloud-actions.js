@@ -2,7 +2,7 @@
 function cloudHook(){if(!CL.on)return;
   const afterAuth=async()=>{const u=(await CL.sb.auth.getUser()).data.user;CL.uid=u?u.id:null;CL.email=u?u.email:'';await cloudPull()};
   const old={logout:A.logout,del:F.del};
-  F.login=async d=>{const r=await CL.sb.auth.signInWithPassword({email:d.get('user').trim().toLowerCase(),password:d.get('pass')});
+  F.login=async d=>{remSet(!!d.get('rem'),d.get('user').trim().toLowerCase());const r=await CL.sb.auth.signInWithPassword({email:d.get('user').trim().toLowerCase(),password:d.get('pass')});
     if(r.error)return err('login-err',t('Correo o contraseña incorrectos. Si tu solicitud fue rechazada, vuelve a registrarte.','Wrong email or password. If your request was rejected, sign up again.'));
     await afterAuth();const p=me();if(!p)return err('login-err',t('Tu perfil aún no existe. Inténtalo de nuevo.','Your profile does not exist yet. Try again.'));go(isStaff(p)?'s-dash':'portal')};
   F.reg=async d=>{const pl=d.get('platform'),id=pl==='VATSIM'?d.get('vatsim'):d.get('ivao');if(!id)return err('reg-err',t('Indica tu ID de ','Enter your ')+pl+t('.',' ID.'));
