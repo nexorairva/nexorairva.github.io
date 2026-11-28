@@ -16,7 +16,7 @@ const A={
  favr:id=>{const p=me();p.fav=p.fav.includes(id)?p.fav.filter(x=>x!==id):[...p.fav,id];done()},
  case:id=>{ui.case=id;go('p-caso')},
  checkin:id=>{const r=R_(id);r.status='checkedin';r.checkin=Date.now();rlog(r,t('Check-in completado','Check-in completed'));done()},
- plat:id=>{const r=R_(id);r.platform=r.platform==='VATSIM'?'IVAO':'VATSIM';rlog(r,t('Plataforma cambiada a ','Platform changed to ')+r.platform);done()},
+ plat:id=>{const r=R_(id);if(r.sbGen){toast(t('La red no se puede cambiar una vez generado el briefing de SimBrief.','The network cannot be changed once the SimBrief briefing has been generated.'));return}r.platform=r.platform==='VATSIM'?'IVAO':'VATSIM';rlog(r,t('Plataforma cambiada a ','Platform changed to ')+r.platform);done()},
  cancel:id=>{cancelRes(R_(id));ui.case=null;save();go('p-ops');toast(t('Reserva cancelada','Booking cancelled'))},
  copy:id=>{const f=()=>toast(t('Copia manualmente: ','Copy manually: ')+id);try{navigator.clipboard.writeText(id).then(()=>toast(t('Remark copiado','Remark copied')),f)}catch(e){f()}},
  edit:()=>{ui.edit=!ui.edit;render()},
