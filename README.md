@@ -105,3 +105,7 @@ Base de datos: ejecuta `supabase/schema.sql` (o `migrations/008`) para dar de al
 4. Ejecuta `supabase/schema.sql` (o `migrations/010`). Comprueba en cPanel › Email Deliverability que SPF y DKIM del dominio estén correctos para que no caiga en spam.
 
 La integración de correo es la que tiene el campo «Remitente» relleno; sirve cualquier dirección que acepte el mismo JSON (Resend, este script, Apps Script…).
+
+## Espacio de la base de datos (pg_net)
+
+`net._http_response` (la guarda pg_net) puede llegar a ocupar cientos de MB porque cada minuto se descarga el listado completo de VATSIM e IVAO. `nx_net_poll` borra cada respuesta en cuanto la procesa y las huérfanas a los 10 minutos (`migrations/011`). Para vaciarla a mano: `truncate table net._http_response;`.
