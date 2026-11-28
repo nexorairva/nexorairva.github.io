@@ -163,15 +163,16 @@ body{background-image:radial-gradient(900px 420px at 85% -80px,color-mix(in srgb
 /* ---- portada ---- */
 .hero2{position:relative;overflow:hidden;border-radius:26px;margin-top:16px;color:#fff;background:linear-gradient(105deg,#03100A 30%,rgba(3,16,10,.55) 100%),url(img/hero-x.jpg) right center/cover,#03100A;isolation:isolate}
 .hero2::before{content:"";position:absolute;inset:0;z-index:-1;background-image:radial-gradient(rgba(126,211,33,.16) 1px,transparent 1.4px);background-size:18px 18px;mask-image:linear-gradient(90deg,#000,transparent 70%);-webkit-mask-image:linear-gradient(90deg,#000,transparent 70%)}
-.h2-in{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:28px;padding:40px 36px 26px;align-items:center}
+.h2-in{display:grid;grid-template-columns:minmax(0,1fr);gap:26px;padding:40px 36px 26px}
 .h2-txt{display:flex;flex-direction:column;gap:16px;align-items:flex-start;min-width:0}.h2-txt .search{width:100%}
 .h2-free{max-width:46ch;opacity:.9;line-height:1.5}.h2-free b{color:var(--lime,#7ED321)}
 .hero2 h1{font-size:clamp(2.3rem,5vw,3.8rem);line-height:1;max-width:14ch}.hero2 h1 .lime{color:var(--lime)}.hero2 p{color:#D1E6DA;max-width:46ch;font-size:1.02rem}.hero2 .eyebrow{color:var(--lime)}
 .h2-map{min-width:0}
+.dc-l{display:flex;flex-wrap:wrap;gap:8px}.dc-c{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;background:var(--surface2)}.dc-c i{width:9px;height:9px;border-radius:50%;background:#3BA55D}.dc-c.idle i{background:#FAA61A}.dc-c.dnd i{background:#ED4245}.dc-c em{font-style:normal;color:var(--muted);font-size:.85em}
 .h2-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));border-top:1px solid rgba(255,255,255,.14);background:rgba(3,16,10,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .h2-stats>div{padding:16px 22px;border-right:1px solid rgba(255,255,255,.1)}.h2-stats>div:last-child{border:0}
 .h2-stats b{display:block;font-family:var(--display);font-size:1.8rem;line-height:1.1;font-variant-numeric:tabular-nums}.h2-stats span{font-size:.74rem;color:#B5CFC2}
-@media(max-width:900px){.h2-in{grid-template-columns:minmax(0,1fr);padding:26px 20px 18px}}
+@media(max-width:900px){.h2-in{padding:26px 20px 18px}}
 /* ---- mapa en vivo ---- */
 .lmap{position:relative;border-radius:16px;overflow:hidden;background:radial-gradient(120% 100% at 50% 0,#0F3A27 0,#06150E 70%);border:1px solid rgba(126,211,33,.22);box-shadow:inset 0 0 60px rgba(0,0,0,.45)}
 .lmap svg{display:block;width:100%;height:auto;aspect-ratio:360/136;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none}
