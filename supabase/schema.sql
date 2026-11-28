@@ -374,7 +374,17 @@ begin
   select * into s from public.net_sessions where id = p_sid and state = 'live';
   if not found then return; end if;
   if s.max_gs < 100 then   -- se conectó pero nunca llegó a volar
-    update public.net_sessions set state = 'skipped' where id = p_sid; return;
+    -- se desconectó sin llegar a volar: la reserva vuelve a «check-in hecho» para que pueda reconectar, y se avisa al piloto
+    if s.res_id is null then s.res_id := public.nx_find_res(s.pilot, s.dep, s.arr, s.plat); end if;
+    if s.res_id is not null then
+      select data into res from public.nx_docs where coll = 'res' and id = s.res_id;
+      if res->>'status' = 'flying' then
+        perform public.nx_res_touch(s.res_id, jsonb_build_object('status', 'checkedin'),
+          'Desconexión de ' || s.plat || ' sin haber despegado: la reserva sigue activa, puedes volver a conectarte');
+        perform public.nx_note(s.pilot, 'Te desconectaste de ' || s.plat || ' sin despegar. Tu reserva ' || coalesce(s.cs,'') || ' sigue activa: puedes volver a conectarte y volar.');
+      end if;
+    end if;
+    update public.net_sessions set state = 'skipped', res_id = s.res_id where id = p_sid; return;
   end if;
   mins := greatest(1, round(extract(epoch from (s.last_seen - coalesce(s.dep_ts, s.first_seen))) / 60));
   select id into v_uid from public.profiles where code = s.pilot;
