@@ -511,6 +511,8 @@ begin
         end if;
       end if;
     end loop;
+    -- IVAO solo admite una descarga del listado cada 15 s (si no, bloquea la IP): nunca pedimos una red más de una vez cada 20 s
+    continue when exists (select 1 from public.net_reqs where plat = c.plat and ts > now() - interval '20 seconds');
     -- dirección y credencial: la integración que el staff dio de alta en Staff › Integraciones (si hay una de esta red); si no, net_cfg
     v_url := c.url; v_hd := c.headers; v_src := 'net_cfg';
     select d.data into i from public.nx_docs d
