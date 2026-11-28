@@ -27,14 +27,6 @@ function doReserve(id,plat,imm){const p=me(),i=instances().find(x=>x.id===id);if
   const r={id:uid('R'),pilot:p.id,kind:'official',no:p.id,sched:i.no,instId:id,from:i.from,to:i.to,type:i.type,depTs:i.ts,mins:i.mins,nm:i.nm,platform:plat,status:'reserved',created:Date.now(),simbrief:null,checkin:null,session:'S-'+(hs(id+p.id)%1e6).toString(36).toUpperCase(),log:[{ts:Date.now(),text:t('Reserva creada; caso operacional abierto','Booking created; operational case opened')}]};
   S.res.push(r);ui.case=r.id;save();return r}
 function rlog(r,tx){r.log.push({ts:Date.now(),text:tx})}
-function finalize(r,plat,out,real){const p=pilot(r.pilot);let mins=Math.max(1,real&&real.mins||1);const an=[];
-  if(out==='short'){an.push(t('Duración anormalmente corta','Abnormally short duration'))}
-  if(out==='route')an.push(t('Aeropuerto de llegada distinto al reservado','Arrival airport differs from booking'));
-  const now=Date.now(),before=rankOf(stats(p.id).h).i;
-  const e={id:uid('L'),pilot:p.id,no:r.no,kind:r.kind,from:r.from,to:r.to,type:r.type,platform:plat,depTs:now-mins*MIN,arrTs:now,mins,nm:r.nm,status:an.length?'En revisión':'Completado',session:r.session,sb:r.sbGen?'ok':'none',an,pn:plat!==r.platform?t('Plataforma distinta a la reservada','Platform differs from booking'):''};
-  S.log.push(e);r.entryId=e.id;rlog(r,t('Vuelo finalizado; datos recopilados','Flight ended; data collected'));
-  if(an.length){r.status='review';rlog(r,t('En revisión: ','Under review: ')+an.join(', '));notify(p.id,t('Tu vuelo ','Your flight ')+e.no+t(' está en revisión.',' is under review.'))}
-  else validated(r,e,before);save();return e}
 function validated(r,e,before){const p=pilot(e.pilot);if(r)r.status='closed';rlog&&r&&rlog(r,t('Validado automáticamente','Automatically validated'));
   e.status='Completado';flightTx(e);if(p.status==='Inactive'){p.status='Active';notify(p.id,t('Cuenta reactivada.','Account reactivated.'))}
   settle();const a=rankOf(stats(p.id).h);if(a.i>before)notify(p.id,t('¡Ascenso a ','Promoted to ')+a.n+'!');
