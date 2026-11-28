@@ -10,7 +10,7 @@ const A={
  more5:()=>{const n=instances().filter(i=>!i.blocked&&i.free>0).length;ui.fl.off=((ui.fl.off|0)+5)%Math.max(5,n);render()},
  lang:()=>{S.lang=S.lang==='es'?'en':'es';done()},
  logout:()=>{S.session=null;save();go('inicio')},
- demo:id=>{const st=isStaff(pilot(id));S.session={id,staff:st};save();go(st?'s-dash':'portal')},
+ demo:id=>{if(!DEMO||!pilot(id))return;const st=isStaff(pilot(id));S.session={id,staff:st};save();go(st?'s-dash':'portal')},
  reset:()=>{const l=S.lang;try{localStorage.removeItem(KEY)}catch(e){}seed();S.lang=l;done(t('Datos restablecidos','Data reset'))},
  rsv:id=>openReserve(id),
  favr:id=>{const p=me();p.fav=p.fav.includes(id)?p.fav.filter(x=>x!==id):[...p.fav,id];done()},

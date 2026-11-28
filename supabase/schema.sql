@@ -291,3 +291,202 @@ begin
       using (bucket_id = 'downloads' and public.has_perm('operaciones'));
   end if;
 end $$;
+
+-- =====================================================================
+-- Seguimiento de vuelos en VATSIM / IVAO desde el servidor (sin depender de ninguna web abierta)
+-- Cada minuto, pg_cron pide el listado público de la red con pg_net y esta lógica:
+--   1. reconoce los pilotos conectados con indicativo NXR… o NEXO… cuyo ID de VATSIM/IVAO pertenece a un piloto activo,
+--   2. los sigue (despegue, millas, última posición) y, si tienen reserva coincidente, la pasa a «en vuelo»,
+--   3. al desconectarse, escribe el vuelo en el Logbook (nx_docs coll='log') y cierra la reserva. Si algo no cuadra, va a revisión.
+-- Los puntos del vuelo los genera la web al cargar (log con src='net').
+-- =====================================================================
+create table if not exists public.net_cfg (
+  plat text primary key, url text not null, headers jsonb not null default '{}'::jsonb, enabled boolean not null default true
+);
+insert into public.net_cfg(plat,url) values
+  ('VATSIM','https://data.vatsim.net/v3/vatsim-data.json'),
+  ('IVAO','https://api.ivao.aero/v2/tracker/whazzup')
+on conflict (plat) do nothing;
+create table if not exists public.net_reqs (
+  id bigint primary key, plat text not null, ts timestamptz not null default now(), done boolean not null default false
+);
+create table if not exists public.net_sessions (
+  id text primary key, plat text not null, cid text not null, pilot text not null,
+  cs text, dep text, arr text, ac text, logon timestamptz,
+  first_seen timestamptz not null default now(), last_seen timestamptz not null default now(), dep_ts timestamptz,
+  lat double precision, lon double precision, alt int, gs int, max_gs int not null default 0, nm numeric not null default 0,
+  miss int not null default 0, state text not null default 'live',      -- live | done | skipped
+  res_id text, log_id text
+);
+alter table public.net_cfg enable row level security;
+alter table public.net_reqs enable row level security;
+alter table public.net_sessions enable row level security;
+drop policy if exists net_sessions_staff on public.net_sessions;
+create policy net_sessions_staff on public.net_sessions for select using (public.is_staff());
+
+create or replace function public.nx_nm(a1 double precision, o1 double precision, a2 double precision, o2 double precision)
+returns double precision language sql immutable as $$
+  select 2*3440.065*asin(least(1, sqrt(power(sin(radians(a2-a1)/2),2) + cos(radians(a1))*cos(radians(a2))*power(sin(radians(o2-o1)/2),2))))
+$$;
+create or replace function public.nx_ms(t timestamptz) returns bigint language sql immutable as $$ select (extract(epoch from t)*1000)::bigint $$;
+
+-- Añade una línea al registro de la reserva y cambia campos de su documento.
+create or replace function public.nx_res_touch(p_id text, p_patch jsonb, p_text text) returns void
+language sql security definer set search_path = public as $$
+  update public.nx_docs set updated_at = now(),
+    data = (data || p_patch) || jsonb_build_object('log', coalesce(data->'log','[]'::jsonb) || jsonb_build_array(jsonb_build_object('ts', public.nx_ms(now()), 'text', p_text)))
+  where coll = 'res' and id = p_id
+$$;
+create or replace function public.nx_note(p_code text, p_text text) returns void
+language plpgsql security definer set search_path = public as $$
+declare v_uid uuid; v_id text := 'N' || substr(md5(random()::text || p_code), 1, 10);
+begin
+  select id into v_uid from public.profiles where code = p_code;
+  insert into public.nx_docs(coll,id,owner,data) values ('notes', v_id, v_uid,
+    jsonb_build_object('id', v_id, 'to', p_code, 'text', p_text, 'ts', public.nx_ms(now()), 'read', false))
+  on conflict do nothing;
+end $$;
+
+-- Reserva activa del piloto que coincide con la salida y la llegada del plan de vuelo.
+create or replace function public.nx_find_res(p_pilot text, p_dep text, p_arr text) returns text
+language sql stable security definer set search_path = public as $$
+  select id from public.nx_docs
+  where coll = 'res' and data->>'pilot' = p_pilot and data->>'status' in ('reserved','checkedin','flying')
+    and upper(data->>'from') = upper(coalesce(p_dep,'')) and upper(data->>'to') = upper(coalesce(p_arr,''))
+  order by coalesce((data->>'created')::bigint, 0) desc limit 1
+$$;
+
+create or replace function public.nx_net_finish(p_sid text) returns void
+language plpgsql security definer set search_path = public as $$
+declare s public.net_sessions; res jsonb; v_uid uuid; mins int; an text[] := '{}'; v_type text; v_lid text;
+        v_status text; e jsonb; types text[];
+begin
+  select * into s from public.net_sessions where id = p_sid and state = 'live';
+  if not found then return; end if;
+  if s.max_gs < 100 then   -- se conectó pero nunca llegó a volar
+    update public.net_sessions set state = 'skipped' where id = p_sid; return;
+  end if;
+  mins := greatest(1, round(extract(epoch from (s.last_seen - coalesce(s.dep_ts, s.first_seen))) / 60));
+  select id into v_uid from public.profiles where code = s.pilot;
+  if s.res_id is null then s.res_id := public.nx_find_res(s.pilot, s.dep, s.arr); end if;
+  if s.res_id is not null then select data into res from public.nx_docs where coll = 'res' and id = s.res_id; end if;
+  select array_agg(distinct data->>'type') into types from public.nx_docs where coll = 'fleet';
+  if res is not null then v_type := res->>'type';
+  elsif s.ac is not null and s.ac = any(coalesce(types,'{}')) then v_type := s.ac;
+  else v_type := coalesce(types[1], 'A20N'); an := array_append(an, 'Aeronave fuera de la flota: ' || coalesce(nullif(s.ac,''),'sin dato'));
+  end if;
+  if coalesce(s.gs,0) >= 80 then an := array_append(an, 'Desconexión en vuelo: no se detectó el aterrizaje'::text); end if;
+  if coalesce(s.arr,'') = '' then an := array_append(an, 'Sin plan de vuelo con aeropuerto de llegada'::text); end if;
+  if res is not null and upper(res->>'to') <> upper(coalesce(s.arr,'')) then an := array_append(an, 'Aeropuerto de llegada distinto al reservado'::text); end if;
+  if mins < 10 or (res is not null and mins < greatest(5, 0.4 * coalesce((res->>'mins')::numeric, 0))) then an := array_append(an, 'Duración anormalmente corta'::text); end if;
+  v_status := case when cardinality(an) = 0 then 'Completado' else 'En revisión' end;
+  v_lid := 'L' || substr(md5(p_sid), 1, 10);
+  e := jsonb_build_object('id', v_lid, 'pilot', s.pilot, 'no', s.pilot, 'kind', coalesce(res->>'kind', 'official'),
+        'from', upper(coalesce(nullif(s.dep,''), res->>'from', '----')), 'to', upper(coalesce(nullif(s.arr,''), res->>'to', '----')),
+        'type', v_type, 'platform', s.plat, 'depTs', public.nx_ms(coalesce(s.dep_ts, s.first_seen)), 'arrTs', public.nx_ms(s.last_seen),
+        'mins', mins, 'nm', case when res is not null then coalesce((res->>'nm')::numeric, round(s.nm)) else round(s.nm) end,
+        'status', v_status, 'session', 'S-' || upper(substr(md5(p_sid), 1, 6)),
+        'sb', case when res is not null and (res->>'sbGen') is not null then 'ok' else 'none' end,
+        'an', to_jsonb(an), 'pn', '', 'src', 'net', 'cs', s.cs);
+  insert into public.nx_docs(coll,id,owner,data) values ('log', v_lid, v_uid, e) on conflict do nothing;
+  if res is not null then
+    perform public.nx_res_touch(s.res_id, jsonb_build_object('status', case when v_status = 'Completado' then 'closed' else 'review' end, 'entryId', v_lid),
+      case when v_status = 'Completado' then 'Vuelo detectado en la red, finalizado y validado automáticamente' else 'Vuelo finalizado en la red; en revisión: ' || array_to_string(an, ', ') end);
+  end if;
+  perform public.nx_note(s.pilot, case when v_status = 'Completado'
+    then 'Tu vuelo ' || s.cs || ' ' || (e->>'from') || '→' || (e->>'to') || ' se ha detectado en ' || s.plat || ' y está validado. ¡Añadido a tu Logbook!'
+    else 'Tu vuelo ' || s.cs || ' ' || (e->>'from') || '→' || (e->>'to') || ' está en revisión: ' || array_to_string(an, ', ') end);
+  update public.net_sessions set state = 'done', log_id = v_lid, res_id = s.res_id where id = p_sid;
+end $$;
+
+-- Procesa un listado completo de la red (jsonb tal como lo devuelve VATSIM o IVAO).
+create or replace function public.nx_net_ingest(p_plat text, p_feed jsonb) returns int
+language plpgsql security definer set search_path = public as $$
+declare pl jsonb; r record; v_now timestamptz := now(); v_sid text; v_ins boolean; n int := 0; v_code text; v_rid text; s record;
+begin
+  pl := case when p_plat = 'VATSIM' then p_feed->'pilots' else coalesce(p_feed->'clients'->'pilots', p_feed->'pilots') end;
+  if pl is null or jsonb_typeof(pl) <> 'array' or jsonb_array_length(pl) = 0 then return 0; end if;   -- listado vacío o con error: no tocar nada
+  for r in
+    select case when p_plat = 'VATSIM' then e->>'cid' else e->>'userId' end as cid,
+           e->>'callsign' as cs,
+           (case when p_plat = 'VATSIM' then e->>'latitude' else e#>>'{lastTrack,latitude}' end)::double precision as lat,
+           (case when p_plat = 'VATSIM' then e->>'longitude' else e#>>'{lastTrack,longitude}' end)::double precision as lon,
+           (case when p_plat = 'VATSIM' then e->>'altitude' else e#>>'{lastTrack,altitude}' end)::numeric::int as alt,
+           (case when p_plat = 'VATSIM' then e->>'groundspeed' else e#>>'{lastTrack,groundSpeed}' end)::numeric::int as gs,
+           upper(case when p_plat = 'VATSIM' then e#>>'{flight_plan,departure}' else e#>>'{flightPlan,departureId}' end) as dep,
+           upper(case when p_plat = 'VATSIM' then e#>>'{flight_plan,arrival}' else e#>>'{flightPlan,arrivalId}' end) as arr,
+           upper(case when p_plat = 'VATSIM' then e#>>'{flight_plan,aircraft_short}' else e#>>'{flightPlan,aircraftId}' end) as ac,
+           (case when p_plat = 'VATSIM' then e->>'logon_time' else e->>'createdAt' end)::timestamptz as logon
+    from jsonb_array_elements(pl) e
+    where (e->>'callsign') ~* '^(NXR|NEXO)'
+  loop
+    select p.code into v_code from public.profiles p join public.profile_private q on q.id = p.id
+     where p.status = 'Active' and (case when p_plat = 'VATSIM' then q.data->>'vatsim' else q.data->>'ivao' end) = r.cid limit 1;
+    continue when v_code is null;        -- indicativo de la aerolínea, pero el ID no es de ningún piloto activo
+    v_sid := p_plat || ':' || r.cid || ':' || coalesce(extract(epoch from r.logon)::bigint::text, 'x');
+    insert into public.net_sessions as ns(id,plat,cid,pilot,cs,dep,arr,ac,logon,first_seen,last_seen,dep_ts,lat,lon,alt,gs,max_gs)
+      values (v_sid,p_plat,r.cid,v_code,r.cs,r.dep,r.arr,r.ac,r.logon,v_now,v_now, case when coalesce(r.gs,0) >= 40 then v_now end, r.lat,r.lon,r.alt,r.gs,coalesce(r.gs,0))
+    on conflict (id) do update set
+      cs = excluded.cs, dep = coalesce(nullif(excluded.dep,''), ns.dep), arr = coalesce(nullif(excluded.arr,''), ns.arr), ac = coalesce(nullif(excluded.ac,''), ns.ac),
+      nm = ns.nm + case when ns.lat is not null and excluded.lat is not null and coalesce(excluded.gs,0) >= 40 then public.nx_nm(ns.lat, ns.lon, excluded.lat, excluded.lon) else 0 end,
+      dep_ts = coalesce(ns.dep_ts, case when coalesce(excluded.gs,0) >= 40 then v_now end),
+      lat = excluded.lat, lon = excluded.lon, alt = excluded.alt, gs = excluded.gs, max_gs = greatest(ns.max_gs, coalesce(excluded.gs,0)),
+      last_seen = v_now, miss = 0
+      where ns.state = 'live'
+    returning (xmax = 0) into v_ins;
+    if v_ins then
+      n := n + 1;
+      v_rid := public.nx_find_res(v_code, r.dep, r.arr);
+      if v_rid is not null then
+        update public.net_sessions set res_id = v_rid where id = v_sid;
+        perform public.nx_res_touch(v_rid, jsonb_build_object('status', 'flying', 'flyTs', public.nx_ms(v_now), 'checkin', public.nx_ms(v_now), 'platform', p_plat),
+          'Conexión detectada en ' || p_plat || ' (' || r.cs || '): auto check-in y seguimiento iniciado');
+      end if;
+      perform public.nx_note(v_code, 'Vuelo ' || r.cs || ' detectado en ' || p_plat || '.');
+    end if;
+    -- posición real para el mapa de vuelos en directo (se guarda en la reserva mientras vuela)
+    update public.nx_docs set updated_at = now(),
+      data = data || jsonb_build_object('trk', jsonb_build_object('lat', r.lat, 'lon', r.lon, 'alt', r.alt, 'gs', r.gs, 'cs', r.cs, 'ts', public.nx_ms(v_now)))
+    where coll = 'res' and id = (select res_id from public.net_sessions where id = v_sid and state = 'live');
+  end loop;
+  -- sesiones de esta red que ya no aparecen: tres pasadas seguidas (~3 min) sin verlas = desconectado
+  update public.net_sessions set miss = miss + 1 where state = 'live' and plat = p_plat and last_seen < v_now;
+  for s in select id from public.net_sessions where state = 'live' and plat = p_plat and miss >= 3 loop
+    perform public.nx_net_finish(s.id);
+  end loop;
+  return n;
+end $$;
+
+-- Pide el listado de cada red y procesa las respuestas pendientes (la llama pg_cron cada minuto).
+create or replace function public.nx_net_poll() returns void
+language plpgsql security definer set search_path = public as $$
+declare c record; q record; v_status int; v_body text; v_rid bigint;
+begin
+  for c in select * from public.net_cfg where enabled loop
+    for q in select * from public.net_reqs where plat = c.plat and not done order by id loop
+      select status_code, content into v_status, v_body from net._http_response where id = q.id;
+      if found then
+        update public.net_reqs set done = true where id = q.id;
+        if v_status = 200 then
+          begin perform public.nx_net_ingest(c.plat, v_body::jsonb);
+          exception when others then raise warning 'nx_net_ingest %: %', c.plat, sqlerrm; end;
+        end if;
+      end if;
+    end loop;
+    select net.http_get(url := c.url, headers := c.headers, timeout_milliseconds := 25000) into v_rid;
+    insert into public.net_reqs(id, plat) values (v_rid, c.plat) on conflict do nothing;
+  end loop;
+  delete from public.net_reqs where ts < now() - interval '1 day';
+end $$;
+revoke all on function public.nx_net_poll(), public.nx_net_ingest(text,jsonb), public.nx_net_finish(text),
+  public.nx_res_touch(text,jsonb,text), public.nx_note(text,text), public.nx_find_res(text,text,text) from public, anon, authenticated;
+
+-- Activa las extensiones y la tarea de cada minuto (en Supabase: pg_cron y pg_net).
+do $$
+begin
+  begin create extension if not exists pg_net; exception when others then raise notice 'pg_net: activa la extensión en Database → Extensions'; end;
+  begin create extension if not exists pg_cron; exception when others then raise notice 'pg_cron: activa la extensión en Database → Extensions'; end;
+  if to_regnamespace('cron') is not null and to_regnamespace('net') is not null then
+    perform cron.schedule('nx-net-poll', '* * * * *', 'select public.nx_net_poll()');
+  end if;
+end $$;

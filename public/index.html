@@ -306,7 +306,8 @@ function tourProg(tr,pid){const en=(S.enroll[pid]||{})[tr.id];if(!en)return{en:0
   return{en,st,done:st.length===tr.stages.length}}
 
 /* ===== state ===== */
-function load(){try{const r=localStorage.getItem(KEY);if(r){const s=JSON.parse(r);if(s&&s.v===3)return s}}catch(e){}return null}
+function load(){try{const r=localStorage.getItem(KEY);if(r){const s=JSON.parse(r);if(s&&s.v===3){if(!DEMO&&(s.pilots||[]).some(p=>p.id==='NXR102'&&p.name==='Alex Demo'))return null;   /* datos de ejemplo guardados antes: se descartan */
+    return s}}}catch(e){}return null}
 function save(){if(CL.on){cloudSaveSoon();return}try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){if(!save.w){save.w=1;setTimeout(()=>toast('No hay espacio en el navegador: las imágenes grandes no se guardarán.'),0)}}}
 function notify(pid,text){S.notes.push({id:uid('N'),to:pid,text,ts:Date.now(),read:false})}
 /* avisa a todo el staff que tenga el permiso indicado; en=texto en inglés, go=sección a la que lleva el botón Revisar */
@@ -323,6 +324,8 @@ function instances(){const out=[],now=Date.now(),d0=dUTC(now);
     const nm=dist(f.from,f.to),used=S.res.filter(r=>r.instId===id&&r.status!=='cancelled').length;const sl=TYPES[f.type].seats,booked=used;
     out.push({id,f,no:'NXR'+f.no,ts,from:f.from,to:f.to,type:f.type,nm,mins:cmins(nm,f.type),slots:sl,free:sl-booked,blocked:!!f.blocked,delay:!!f.delay})}
   return out}
+/* El modo demostración (datos de ejemplo) ya no existe para los usuarios: solo se activa a propósito con ?demo=1 para pruebas. */
+const DEMO=(()=>{try{return /[?&]demo=1/.test(location.search)||localStorage.getItem('nx-demo')==='1'}catch(e){return false}})();
 function seed(){
   const now=Date.now(),Y=new Date(now).getUTCFullYear(),R=mul(2026),D=n=>now-n*DAY;
   S={v:3,lang:'es',session:null,seq:100,pidSeq:113,ap:JSON.parse(JSON.stringify(AP0)),flights:FL0.map(x=>({no:x[0],from:x[1],to:x[2],m:x[3],type:x[4],slots:x[5],blocked:x[0]==='431'})),
@@ -334,6 +337,7 @@ function seed(){
     terms:{v:'1.0',ts:D(300),text:'NEXORA AIR VA es un servicio de simulación sin ánimo de lucro. El uso de la plataforma implica aceptar estas condiciones y la normativa vigente.'},
     priv:{v:'1.0',ts:D(300),text:'Tratamos los datos necesarios para operar tu cuenta: identificación, plataformas de vuelo, actividad y comunicaciones. Puedes solicitar la eliminación de tu cuenta desde tu perfil.'}}};
   TOURS=S.tours;syncCh();rebuildIx();
+  if(!DEMO){S.events=[];S.cal=[];S.chall=[];S.partners=[];S.apo={};S.dl=[];S.news=[];syncCh();save();return}
   const mk=(id,name,k,user,plat,hub,status,ago,x)=>S.pilots.push(Object.assign({id,name,country:k,user,email:user+'@example.com',pass:null,platform:plat,vatsim:plat==='VATSIM'?String(1300000+hs(id)%90000):'',ivao:plat==='IVAO'?String(600000+hs(id)%90000):'',simbrief:String(100000+hs(id)%800000),netOk:true,hub,status,joined:D(ago),fav:[],favT:[],badges:[]},x||{}));
   mk('NXR101','Admin NEXORA','ES','admin','VATSIM','LEMD','Active',400,{sys:true});mk('NXR102','Alex Demo','ES','piloto','VATSIM','LEMD','Active',150);mk('NXR103','Ana Ruiz','ES','ana','VATSIM','LEMD','Active',320);
   mk('NXR104','Jorge Salas','MX','jorge','IVAO','LEBL','Active',280);mk('NXR105','Marta Ibáñez','ES','marta','IVAO','LEMD','Active',200);mk('NXR106','Luca Ferri','IT','luca','VATSIM','LEMD','Active',360);
@@ -398,6 +402,7 @@ async function cloudPull(){const sb=CL.sb;
   S.intg=(S.intg||[]).filter(x=>x.id);TOURS=S.tours;syncCh();rebuildIx();applyApo();
   CL.snap=new Map();docsOf().forEach((d,k)=>{if(!(CL.dirty&&!rows.length))CL.snap.set(k,JSON.stringify(d.data))});
   CL.psnap={};S.pilots.forEach(p=>CL.psnap[p.id]=JSON.stringify(pilotRows(p)));
+  if(CL.uid&&S.session){let k=0;S.log.forEach(e=>{if(e.src==='net'&&e.status==='Completado'&&(e.pilot===S.session.id||S.session.staff)&&!S.tx.some(x=>x.ref==='fl:'+e.id)){flightTx(e);k++}});if(k){settle();setTimeout(()=>cloudPush(),0)}}   /* puntos de los vuelos que cerró el servidor */
   const sig=JSON.stringify([rows.length,rows.map(r=>r.id).join().length,S.pilots.length,rows.reduce((a,r)=>a+JSON.stringify(r.data).length,0)]);const ch=sig!==CL.sig;CL.sig=sig;CL.loaded=true;return ch}
 async function cloudPush(){if(!CL.on||!CL.uid||!CL.loaded)return;if(CL.busy){CL.dirty=true;return}CL.busy=true;CL.dirty=false;const sb=CL.sb;
   try{const cur=docsOf(),up=[],del={};
@@ -447,8 +452,8 @@ function doReserve(id,plat,imm){const p=me(),i=instances().find(x=>x.id===id);if
   const r={id:uid('R'),pilot:p.id,kind:'official',no:p.id,sched:i.no,instId:id,from:i.from,to:i.to,type:i.type,depTs:i.ts,mins:i.mins,nm:i.nm,platform:plat,status:'reserved',created:Date.now(),simbrief:null,checkin:null,session:'S-'+(hs(id+p.id)%1e6).toString(36).toUpperCase(),log:[{ts:Date.now(),text:t('Reserva creada; caso operacional abierto','Booking created; operational case opened')}]};
   S.res.push(r);ui.case=r.id;save();return r}
 function rlog(r,tx){r.log.push({ts:Date.now(),text:tx})}
-function finalize(r,plat,out,real){const p=pilot(r.pilot);let mins=real?Math.max(1,real.mins):Math.max(10,r.mins+Math.round((Math.random()-.5)*8));const an=[];
-  if(out==='short'){if(!real)mins=6;an.push(t('Duración anormalmente corta','Abnormally short duration'))}
+function finalize(r,plat,out,real){const p=pilot(r.pilot);let mins=Math.max(1,real&&real.mins||1);const an=[];
+  if(out==='short'){an.push(t('Duración anormalmente corta','Abnormally short duration'))}
   if(out==='route')an.push(t('Aeropuerto de llegada distinto al reservado','Arrival airport differs from booking'));
   const now=Date.now(),before=rankOf(stats(p.id).h).i;
   const e={id:uid('L'),pilot:p.id,no:r.no,kind:r.kind,from:r.from,to:r.to,type:r.type,platform:plat,depTs:now-mins*MIN,arrTs:now,mins,nm:r.nm,status:an.length?'En revisión':'Completado',session:r.session,sb:r.sbGen?'ok':'none',an,pn:plat!==r.platform?t('Plataforma distinta a la reservada','Platform differs from booking'):''};
@@ -548,7 +553,7 @@ function vRegistro(){return head(t('Únete a NEXORA AIR','Join NEXORA AIR'),t('U
   `<form data-f="reg" class="card form pad">${fld('reg','name',t('Nombre y apellidos','Full name'),'text','required maxlength="60"')}${fld('reg','country',t('País (código)','Country (code)'),'text','required maxlength="2" placeholder="ES"')}${fld('reg','email','Email','email','required')}${fld('reg','user',t('Usuario','Username'),'text','required pattern="[A-Za-z0-9_]{3,20}"')}${fld('reg','pass',t('Contraseña (mín. 8)','Password (min. 8)'),'password','required minlength="8"')}${sel('reg','platform',t('Plataforma preferida','Preferred platform'),['VATSIM','IVAO'])}${fld('reg','vatsim','VATSIM ID','text','inputmode="numeric" pattern="[0-9]{5,8}"')}${fld('reg','ivao','IVAO ID','text','inputmode="numeric" pattern="[0-9]{5,8}"')}${fld('reg','simbrief','SimBrief ID','text','required inputmode="numeric" pattern="[0-9]{5,8}"')}
   <div class="full err" id="reg-err" hidden></div><div class="full"><button class="btn pri" type="submit">${t('Enviar solicitud','Submit request')}</button></div></form>`}
 function vLogin(){return head(t('Acceder','Log in'))+`<div class="grid"><form data-f="login" class="card form pad">${fld('login','user',CL.on?t('Correo electrónico','Email'):t('Usuario','Username'),CL.on?'email':'text','required autocomplete="username"')}${fld('login','pass',t('Contraseña','Password'),'password','required autocomplete="current-password"')}<div class="full err" id="login-err" hidden></div><div class="full"><button class="btn pri" type="submit">${t('Entrar','Log in')}</button></div></form>
-  ${CL.on?'':`<div class="card pad stack"><h3>${t('Cuentas de demostración','Demo accounts')}</h3><p class="muted">${t('Entra sin contraseña para recorrer la plataforma con datos de ejemplo.','Enter without a password to explore the platform with sample data.')}</p>${btn(t('Entrar como piloto','Log in as pilot'),'demo','NXR102','lime')}${btn(t('Entrar como staff (Main Admin)','Log in as staff (Main Admin)'),'demo','NXR101','pri')}${btn(t('Entrar como staff (nivel Moderador)','Log in as staff (Moderator level)'),'demo','NXR103','')}</div>`}</div>`}
+  ${CL.on||DEMO?'':`<div class="card pad stack"><h3>${t('Sin base de datos conectada','No database connected')}</h3><p class="muted">${t('Esta copia de la web no está conectada a Supabase, así que no hay cuentas ni datos. Configura public/config.js para usarla.','This copy of the site is not connected to Supabase, so there are no accounts or data. Configure public/config.js to use it.')}</p></div>`}</div>`}
 
 /* ===== portal views ===== */
 function flightsView(port){const f=ui.fl,p=port?me():null;if(port)ui.opsSearch=true;let L=instances().filter(i=>!i.blocked&&i.free>0);
@@ -815,8 +820,7 @@ function ensure(){let ch=0;
   if(S.session&&S.session.staff===undefined)S.session.staff=isStaff(pilot(S.session.id));
   if(!S.brand){S.brand={};ch=1}
   if(!S.social&&!CL.on){S.social=clone(DEF_SOCIAL);ch=1}
-  if(!S.live&&!CL.on){const L=S.flights.map(f=>({f,nm:dist(f.from,f.to)||0})).filter(x=>x.nm>150).sort((a,b)=>b.nm-a.nm),seen=new Set(),pick=[];for(const x of L){const k=x.f.from+x.f.to;if(seen.has(k))continue;seen.add(k);pick.push(x.f);if(pick.length>=6)break}
-    const pl=['NXR103','NXR104','NXR106','NXR108','NXR109','NXR105'];S.live=pick.map((f,i)=>{const p=pilot(pl[i]);return{no:f.no,pid:pl[i],pl:p.platform||'VATSIM',off:i*47+13}});ch=1}
+  if(S.live)S.live=null;   /* retirados los vuelos simulados del mapa */
   if(!CL.on&&!S.clean1){   /* retirada única de los tours, eventos, retos y avisos de ejemplo */
     S.tours=[];S.events=[];S.cal=[];S.chall=[];S.enroll={};S.news=(S.news||[]).filter(n=>!/^n[123]$/.test(n.id));S.clean1=1;ch=1}
   if(!S.chall){S.chall=[];if(!CL.on)ch=1}
@@ -844,16 +848,18 @@ function gcF(A,B){const r=Math.PI/180,a1=A[0]*r,o1=A[1]*r,a2=B[0]*r,o2=B[1]*r,d=
   return f=>{if(d<1e-6)return[A[0],A[1]];const a=Math.sin((1-f)*d)/Math.sin(d),b=Math.sin(f*d)/Math.sin(d),x=a*Math.cos(a1)*Math.cos(o1)+b*Math.cos(a2)*Math.cos(o2),y=a*Math.cos(a1)*Math.sin(o1)+b*Math.cos(a2)*Math.sin(o2),z=a*Math.sin(a1)+b*Math.sin(a2);return[Math.atan2(z,Math.hypot(x,y))/r,Math.atan2(y,x)/r]}}
 const px=(la,lo)=>[+(lo+180).toFixed(2),+(85-la).toFixed(2)];
 function arc(A,B,f0,f1){const g=gcF(A,B),n=Math.max(8,Math.round((f1-f0)*56));let s='',pl=null;for(let i=0;i<=n;i++){const q=g(f0+(f1-f0)*i/n),p=px(q[0],q[1]);s+=(pl===null||Math.abs(p[0]-pl)>180?'M':'L')+p[0]+' '+p[1];pl=p[0]}return s}
-function liveFlights(){const now=Date.now(),out=[];
-  S.res.forEach(r=>{if(r.status!=='flying')return;const st=r.flyTs||r.checkin||r.depTs,pr=Math.min(.98,Math.max(.03,(now-st)/(Math.max(10,r.mins)*MIN)));out.push({id:r.id,pid:r.pilot,cs:r.no,from:r.from,to:r.to,pl:r.platform,ty:r.type,pr,demo:false})});
-  (S.live||[]).forEach(d=>{const f=S.flights.find(x=>x.no===d.no);if(!f)return;const nm=dist(f.from,f.to);if(!nm)return;const mins=cmins(nm,f.type),pr=((now+d.off*MIN)%(mins*1.15*MIN))/(mins*MIN);if(pr>=1||pr<.03)return;out.push({id:'d'+d.no,pid:d.pid,cs:'NXR'+d.no,from:f.from,to:f.to,pl:d.pl,ty:f.type,pr,demo:true})});
+/* Vuelos en directo: solo los que la red real está viendo ahora (posición real recibida de VATSIM/IVAO). */
+function liveFlights(){const out=[];
+  S.res.forEach(r=>{if(r.status!=='flying'||!r.trk||r.trk.lat==null)return;const A=geo(r.from),B=geo(r.to);if(!A||!B)return;
+    const a=kmNm(A[0],A[1],r.trk.lat,r.trk.lon),b=kmNm(r.trk.lat,r.trk.lon,B[0],B[1]),pr=Math.min(.99,Math.max(.01,a+b?a/(a+b):0));
+    out.push({id:r.id,pid:r.pilot,cs:r.trk.cs||r.no,from:r.from,to:r.to,pl:r.platform,ty:r.type,pr,pos:[r.trk.lat,r.trk.lon],alt:r.trk.alt,gs:r.trk.gs})});
   return out}
 function mapInner(o){o=o||{};const F=liveFlights().filter(f=>!o.only||f.pid===o.only);let g='',pl='',ap={};
   if(o.trail){/* solo el vuelo en curso del piloto: al terminarlo el mapa se queda limpio */
     S.res.filter(r=>r.pilot===o.trail&&['reserved','checkedin','flying'].includes(r.status)).forEach(r=>{const A=geo(r.from),B=geo(r.to);if(A&&B){g+='<path d="'+arc(A,B,0,1)+'" class="tr"/>';ap[r.from]=A;ap[r.to]=B}})}
-  F.forEach(f=>{const A=geo(f.from),B=geo(f.to);if(!A||!B)return;const G=gcF(A,B),q=G(f.pr),q2=G(Math.min(1,f.pr+.012)),p=px(q[0],q[1]),p2=px(q2[0],q2[1]);ap[f.from]=A;ap[f.to]=B;
+  F.forEach(f=>{const A=geo(f.from),B=geo(f.to);if(!A||!B)return;const G=gcF(A,B),q=f.pos||G(f.pr),q2=gcF(q,B)(.02),p=px(q[0],q[1]),p2=px(q2[0],q2[1]);ap[f.from]=A;ap[f.to]=B;
     const rot=Math.abs(p2[0]-p[0])>180?0:Math.round(Math.atan2(p2[0]-p[0],-(p2[1]-p[1]))*180/Math.PI);
-    g+='<path d="'+arc(A,B,0,1)+'" class="rt"/><path d="'+arc(A,B,0,f.pr)+'" class="fl '+f.pl+'"/>';
+    g+='<path d="'+arc(A,B,0,1)+'" class="rt"/><path d="'+arc(A,q,0,1)+'" class="fl '+f.pl+'"/>';
     pl+='<g transform="translate('+p[0]+' '+p[1]+')" class="pl '+f.pl+'"><circle r="3.2" class="ring"/><g transform="rotate('+rot+') scale(.78)"><path d="'+PLANE+'"/></g><title>'+esc(f.cs+' · '+f.from+'→'+f.to+' · '+f.pl+' · '+Math.round(f.pr*100)+'%')+'</title></g>'});
   Object.keys(ap).forEach(k=>{const p=px(ap[k][0],ap[k][1]);g+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="1.1" class="ap"/>'});
   const v=F.filter(f=>f.pl==='VATSIM').length,i=F.filter(f=>f.pl==='IVAO').length;
@@ -1032,7 +1038,7 @@ const A={
  more5:()=>{const n=instances().filter(i=>!i.blocked&&i.free>0).length;ui.fl.off=((ui.fl.off|0)+5)%Math.max(5,n);render()},
  lang:()=>{S.lang=S.lang==='es'?'en':'es';done()},
  logout:()=>{S.session=null;save();go('inicio')},
- demo:id=>{const st=isStaff(pilot(id));S.session={id,staff:st};save();go(st?'s-dash':'portal')},
+ demo:id=>{if(!DEMO||!pilot(id))return;const st=isStaff(pilot(id));S.session={id,staff:st};save();go(st?'s-dash':'portal')},
  reset:()=>{const l=S.lang;try{localStorage.removeItem(KEY)}catch(e){}seed();S.lang=l;done(t('Datos restablecidos','Data reset'))},
  rsv:id=>openReserve(id),
  favr:id=>{const p=me();p.fav=p.fav.includes(id)?p.fav.filter(x=>x!==id):[...p.fav,id];done()},
@@ -1274,7 +1280,7 @@ function cloudHook(){if(!CL.on)return;
     await cloudPull();aud(audTxt,id);save();modal();render();toast(msg)};
   F.drj=(d,f)=>rm(f.dataset.id,t('Solicitud rechazada. Tendrá que volver a registrarse.','Request rejected. They will have to sign up again.'),'Rechazó solicitud');
   A.deluser=id=>rm(id,t('Cuenta eliminada','Account deleted'),'Eliminó la cuenta');
-  A.demo=()=>toast(t('Las cuentas de demostración no existen en modo nube.','Demo accounts do not exist in cloud mode.'))}
+  A.demo=()=>{}}
 /* ===== acciones: ficha de piloto, cambio de ID, búsqueda ===== */
 Object.assign(A,{
  pfile:id=>{if(!can('pilotos'))return;const f=pilotFile(id);if(f)modal(f[0],f[1],1)},
@@ -1530,12 +1536,14 @@ function netEnd(r){const k=r.trk||{},d=geo(r.to),mins=Math.max(1,Math.round(((k.
   const out=!near||wrongPlan?'route':mins<Math.max(5,r.mins*.4)?'short':'ok',e=finalize(r,r.platform,out,{mins});r.miss=0;
   toast(e.status==='Completado'?t('Vuelo finalizado y validado. ¡Añadido a tu Logbook!','Flight ended and validated. Added to your Logbook!'):t('Vuelo finalizado: en revisión del staff.','Flight ended: under staff review.'));render()}
 let netBusy=false;
-async function netTick(force){if(netBusy||!S.session||document.hidden&&!force)return;const p=me();if(!p||p.staff)return;
+async function netTick(force){if(CL.on)return;if(netBusy||!S.session||document.hidden&&!force)return;const p=me();if(!p||p.staff)return;
   const L=myRes(p.id).filter(r=>['reserved','checkedin','flying'].includes(r.status));if(!L.length)return;netBusy=true;
   try{for(const r of L)await netCheck(r,force)}finally{netBusy=false}
   if(/^#?(p-caso|p-ops|portal)/.test(location.hash||''))render()}
-setInterval(()=>netTick(false),20000);setTimeout(()=>netTick(false),4000);
+setInterval(()=>netTick(false),20000);setTimeout(()=>netTick(false),4000);   /* con Supabase lo hace el servidor (supabase/schema.sql) */
 function netCard(r){const p=pilot(r.pilot),id=netId(p,r.platform),n=r.net||{},cs=radioCs(r);
+  if(CL.on){const sv=r.status==='flying'?t('En vuelo: NEXORA AIR te sigue en '+r.platform+' desde el servidor.','Flying: NEXORA AIR is tracking you on '+r.platform+' from the server.'):t('Conéctate en '+r.platform+' con indicativo '+cs+' (o NXR…) y plan de vuelo '+r.from+' → '+r.to+'. NEXORA AIR detecta tu conexión automáticamente, aunque no tengas esta web abierta, y cierra el vuelo cuando te desconectes.','Log on to '+r.platform+' with callsign '+cs+' (or NXR…) and flight plan '+r.from+' → '+r.to+'. NEXORA AIR detects your connection automatically, even with this site closed, and closes the flight when you disconnect.');
+    return card(t('Seguimiento en '+r.platform,'Tracking on '+r.platform),`<div class="pad stack"><p><b>${r.platform}</b> · ID ${id?esc(String(id)):'—'}</p><p>${id?sv:t('Añade tu ID de '+r.platform+' en Mi perfil para que podamos seguir tu vuelo.','Add your '+r.platform+' ID in My profile so we can track your flight.')}</p></div>`)}
   const msg={noid:t('Añade tu ID de '+r.platform+' en Mi perfil para que podamos seguir tu vuelo.','Add your '+r.platform+' ID in My profile so we can track your flight.'),
    wait:t('Esperando tu conexión en '+r.platform+'. Conéctate con indicativo '+cs+' (o NXR…) y plan de vuelo '+r.from+' → '+r.to+'.','Waiting for you to connect on '+r.platform+'. Log on with callsign '+cs+' (or NXR…) and flight plan '+r.from+' → '+r.to+'.'),
    live:t('En vuelo · ','Flying · ')+esc(n.cs||'')+' · '+nf(n.alt||0)+' ft · '+nf(n.gs||0)+' kt',

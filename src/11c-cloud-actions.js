@@ -20,4 +20,4 @@ function cloudHook(){if(!CL.on)return;
     await cloudPull();aud(audTxt,id);save();modal();render();toast(msg)};
   F.drj=(d,f)=>rm(f.dataset.id,t('Solicitud rechazada. Tendrá que volver a registrarse.','Request rejected. They will have to sign up again.'),'Rechazó solicitud');
   A.deluser=id=>rm(id,t('Cuenta eliminada','Account deleted'),'Eliminó la cuenta');
-  A.demo=()=>toast(t('Las cuentas de demostración no existen en modo nube.','Demo accounts do not exist in cloud mode.'))}
+  A.demo=()=>{}}
