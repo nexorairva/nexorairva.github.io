@@ -295,7 +295,7 @@ end $$;
 -- =====================================================================
 -- Seguimiento de vuelos en VATSIM / IVAO desde el servidor (sin depender de ninguna web abierta)
 -- Cada minuto, pg_cron pide el listado público de la red con pg_net y esta lógica:
---   1. reconoce los pilotos conectados con indicativo NXR… o NEXO… cuyo ID de VATSIM/IVAO pertenece a un piloto activo,
+--   1. reconoce los pilotos conectados con indicativo NXR… (NEXO es solo el indicativo de radio) cuyo ID de VATSIM/IVAO pertenece a un piloto activo,
 --   2. los sigue (despegue, millas, última posición) y, si tienen reserva coincidente, la pasa a «en vuelo»,
 --   3. al desconectarse, escribe el vuelo en el Logbook (nx_docs coll='log') y cierra la reserva. Si algo no cuadra, va a revisión.
 -- Los puntos del vuelo los genera la web al cargar (log con src='net').
@@ -431,7 +431,7 @@ begin
            upper(case when p_plat = 'VATSIM' then e#>>'{flight_plan,aircraft_short}' else e#>>'{flightPlan,aircraftId}' end) as ac,
            (case when p_plat = 'VATSIM' then e->>'logon_time' else e->>'createdAt' end)::timestamptz as logon
     from jsonb_array_elements(pl) e
-    where (e->>'callsign') ~* '^(NXR|NEXO)'
+    where (e->>'callsign') ~* '^NXR'
   loop
     v_nxr := v_nxr + 1; v_code := null;
     select p.code into v_code from public.profiles p join public.profile_private q on q.id = p.id

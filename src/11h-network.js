@@ -10,7 +10,7 @@ const netId=(p,plat)=>plat==='VATSIM'?p.vatsim:p.ivao;
 async function netCheck(r,force){const p=pilot(r.pilot),id=netId(p,r.platform);r.net=r.net||{};
   if(!id){r.net={state:'noid',ts:Date.now()};return}
   let L;try{L=await netFeed(r.platform,force)}catch(e){r.net={state:'error',ts:Date.now(),msg:String(e.message||e)};return}
-  const x=L.find(q=>q.id===String(id)&&(/^(NXR|NEXO)/i.test(q.cs)||q.dep===r.from));r.net.ts=Date.now();
+  const x=L.find(q=>q.id===String(id)&&(/^NXR/i.test(q.cs)||q.dep===r.from));r.net.ts=Date.now();
   if(x){r.miss=0;
     if(r.status!=='flying'){if(x.dep&&x.dep!==r.from){r.net={state:'other',ts:Date.now(),cs:x.cs,dep:x.dep,arr:x.arr};return}
       r.status='flying';r.flyTs=x.logon||Date.now();r.checkin=r.checkin||Date.now();rlog(r,t('Conexión detectada en '+r.platform+' ('+x.cs+'): auto check-in y seguimiento iniciado','Connection detected on '+r.platform+' ('+x.cs+'): auto check-in and tracking started'));notify(r.pilot,t('Vuelo '+r.no+' detectado en '+r.platform+'.','Flight '+r.no+' detected on '+r.platform+'.'))}
@@ -28,11 +28,11 @@ async function netTick(force){if(CL.on)return;if(netBusy||!S.session||document.h
   try{for(const r of L)await netCheck(r,force)}finally{netBusy=false}
   if(/^#?(p-caso|p-ops|portal)/.test(location.hash||''))render()}
 setInterval(()=>netTick(false),20000);setTimeout(()=>netTick(false),4000);   /* con Supabase lo hace el servidor (supabase/schema.sql) */
-function netCard(r){const p=pilot(r.pilot),id=netId(p,r.platform),n=r.net||{},cs=radioCs(r);
-  if(CL.on){const sv=r.status==='flying'?t('En vuelo: NEXORA AIR te sigue en '+r.platform+' desde el servidor.','Flying: NEXORA AIR is tracking you on '+r.platform+' from the server.'):t('Conéctate en '+r.platform+' con indicativo '+cs+' (o NXR…) y plan de vuelo '+r.from+' → '+r.to+'. NEXORA AIR detecta tu conexión automáticamente, aunque no tengas esta web abierta, y cierra el vuelo cuando te desconectes.','Log on to '+r.platform+' with callsign '+cs+' (or NXR…) and flight plan '+r.from+' → '+r.to+'. NEXORA AIR detects your connection automatically, even with this site closed, and closes the flight when you disconnect.');
+function netCard(r){const p=pilot(r.pilot),id=netId(p,r.platform),n=r.net||{},cs='NXR'+String(r.no).replace(/\D/g,'').slice(0,4);
+  if(CL.on){const sv=r.status==='flying'?t('En vuelo: NEXORA AIR te sigue en '+r.platform+' desde el servidor.','Flying: NEXORA AIR is tracking you on '+r.platform+' from the server.'):t('Conéctate en '+r.platform+' con indicativo '+cs+' y plan de vuelo '+r.from+' → '+r.to+'. NEXORA AIR detecta tu conexión automáticamente, aunque no tengas esta web abierta, y cierra el vuelo cuando te desconectes.','Log on to '+r.platform+' with callsign '+cs+' (or NXR…) and flight plan '+r.from+' → '+r.to+'. NEXORA AIR detects your connection automatically, even with this site closed, and closes the flight when you disconnect.');
     return card(t('Seguimiento en '+r.platform,'Tracking on '+r.platform),`<div class="pad stack"><p><b>${r.platform}</b> · ID ${id?esc(String(id)):'—'}</p><p>${id?sv:t('Añade tu ID de '+r.platform+' en Mi perfil para que podamos seguir tu vuelo.','Add your '+r.platform+' ID in My profile so we can track your flight.')}</p></div>`)}
   const msg={noid:t('Añade tu ID de '+r.platform+' en Mi perfil para que podamos seguir tu vuelo.','Add your '+r.platform+' ID in My profile so we can track your flight.'),
-   wait:t('Esperando tu conexión en '+r.platform+'. Conéctate con indicativo '+cs+' (o NXR…) y plan de vuelo '+r.from+' → '+r.to+'.','Waiting for you to connect on '+r.platform+'. Log on with callsign '+cs+' (or NXR…) and flight plan '+r.from+' → '+r.to+'.'),
+   wait:t('Esperando tu conexión en '+r.platform+'. Conéctate con indicativo '+cs+' y plan de vuelo '+r.from+' → '+r.to+'.','Waiting for you to connect on '+r.platform+'. Log on with callsign '+cs+' (or NXR…) and flight plan '+r.from+' → '+r.to+'.'),
    live:t('En vuelo · ','Flying · ')+esc(n.cs||'')+' · '+nf(n.alt||0)+' ft · '+nf(n.gs||0)+' kt',
    lost:t('Sin señal en la red. Si te has desconectado, el vuelo se cerrará en unos instantes.','No signal on the network. If you disconnected, the flight will close shortly.'),
    other:t('Estás conectado con otra salida (','You are connected with a different departure (')+esc(n.dep||'?')+' → '+esc(n.arr||'?')+t('). Ajusta tu plan a ','). Adjust your plan to ')+r.from+' → '+r.to+'.',
