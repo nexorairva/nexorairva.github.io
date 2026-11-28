@@ -447,11 +447,11 @@ function doReserve(id,plat,imm){const p=me(),i=instances().find(x=>x.id===id);if
   const r={id:uid('R'),pilot:p.id,kind:'official',no:p.id,sched:i.no,instId:id,from:i.from,to:i.to,type:i.type,depTs:i.ts,mins:i.mins,nm:i.nm,platform:plat,status:'reserved',created:Date.now(),simbrief:null,checkin:null,session:'S-'+(hs(id+p.id)%1e6).toString(36).toUpperCase(),log:[{ts:Date.now(),text:t('Reserva creada; caso operacional abierto','Booking created; operational case opened')}]};
   S.res.push(r);ui.case=r.id;save();return r}
 function rlog(r,tx){r.log.push({ts:Date.now(),text:tx})}
-function finalize(r,plat,out){const p=pilot(r.pilot);let mins=Math.max(10,r.mins+Math.round((Math.random()-.5)*8));const an=[];
-  if(out==='short'){mins=6;an.push(t('Duración anormalmente corta','Abnormally short duration'))}
+function finalize(r,plat,out,real){const p=pilot(r.pilot);let mins=real?Math.max(1,real.mins):Math.max(10,r.mins+Math.round((Math.random()-.5)*8));const an=[];
+  if(out==='short'){if(!real)mins=6;an.push(t('Duración anormalmente corta','Abnormally short duration'))}
   if(out==='route')an.push(t('Aeropuerto de llegada distinto al reservado','Arrival airport differs from booking'));
   const now=Date.now(),before=rankOf(stats(p.id).h).i;
-  const e={id:uid('L'),pilot:p.id,no:r.no,kind:r.kind,from:r.from,to:r.to,type:r.type,platform:plat,depTs:now-mins*MIN,arrTs:now,mins,nm:r.nm,status:an.length?'En revisión':'Completado',session:r.session,sb:r.simbrief?(r.simbrief.disc?'discrepancia':'ok'):'none',an,pn:plat!==r.platform?t('Plataforma distinta a la reservada','Platform differs from booking'):''};
+  const e={id:uid('L'),pilot:p.id,no:r.no,kind:r.kind,from:r.from,to:r.to,type:r.type,platform:plat,depTs:now-mins*MIN,arrTs:now,mins,nm:r.nm,status:an.length?'En revisión':'Completado',session:r.session,sb:r.sbGen?'ok':'none',an,pn:plat!==r.platform?t('Plataforma distinta a la reservada','Platform differs from booking'):''};
   S.log.push(e);r.entryId=e.id;rlog(r,t('Vuelo finalizado; datos recopilados','Flight ended; data collected'));
   if(an.length){r.status='review';rlog(r,t('En revisión: ','Under review: ')+an.join(', '));notify(p.id,t('Tu vuelo ','Your flight ')+e.no+t(' está en revisión.',' is under review.'))}
   else validated(r,e,before);save();return e}
@@ -567,10 +567,10 @@ function flightsView(port){const f=ui.fl,p=port?me():null;if(port)ui.opsSearch=t
   ${sel('flt','dur',t('Duración máx.','Max duration'),[['',t('Cualquiera','Any')],['90','1h 30m'],['180','3h'],['360','6h']],f.dur)}${sel('flt','tour','Tour',[['',t('Todos','All')],...TOURS.map(x=>[x.id,x.n])],f.tour)}
   ${sel('flt','state',t('Estado','Status'),[['',t('Todos','All')],['soon',t('Salida próxima','Departing soon')]],f.state)}${sel('flt','sort',t('Ordenar por','Sort by'),[['',p?t('Recomendación','Recommended'):t('Salida','Departure')],['dep',t('Salida','Departure')],['dur',t('Duración','Duration')],['free',t('Disponibilidad','Availability')],['nm',t('Distancia','Distance')],['no',t('Nº de vuelo','Flight no.')]],f.sort)}</form>
   ${tbl(FH(),flRows(port?L.slice(f.off|0,(f.off|0)+5):L.slice(0,40),port),t('Ningún vuelo coincide con los filtros.','No flights match the filters.'))}</section>${port?(L.length>5?`<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><p class="muted">${t('Te recomendamos 5 vuelos. Hay ','We recommend 5 flights. There are ')}${L.length}${t(' en total.',' in total.')}</p>${btn(t('Recomiéndame otros 5','Recommend 5 more'),'more5','','sm pri')}</div>`:''):(L.length>40?`<p class="muted">${t('Mostrando 40 de ','Showing 40 of ')}${L.length}.</p>`:'')}`}
-const stateLabel=r=>({reserved:r.simbrief?t('SimBrief listo','SimBrief ready'):t('Reservado','Booked'),checkedin:t('Check-in hecho','Checked in'),flying:t('En vuelo','Flying'),review:t('En revisión','Under review'),closed:t('Validado','Validated'),cancelled:t('Cancelado','Cancelled'),expired:t('Caducado','Expired'),rejected:t('Rechazado','Rejected')}[r.status]);
+const stateLabel=r=>({reserved:r.sbGen?t('SimBrief listo','SimBrief ready'):t('Reservado','Booked'),checkedin:t('Check-in hecho','Checked in'),flying:t('En vuelo','Flying'),review:t('En revisión','Under review'),closed:t('Validado','Validated'),cancelled:t('Cancelado','Cancelled'),expired:t('Caducado','Expired'),rejected:t('Rechazado','Rejected')}[r.status]);
 const resRow=r=>[`<span class="mono">${r.no}</span>`,rt(r.from,r.to),`<span class="nw">${r.expires?t('Caduca en ','Expires in ')+cd(r.expires):fdt(r.depTs)}</span>`,r.platform,pill(stateLabel(r),r.status==='review'?'warn':'acc'),btn(t('Abrir','Open'),'case',r.id,'sm')];
 function pending(p){const a=[],r=myRes(p.id)[0];if(!accepted(p))a.push([t('Aceptar la normativa vigente','Accept the current rules'),'p-normativa']);
-  if(r&&r.status==='reserved'&&!r.simbrief)a.push([t('Importar el OFP de SimBrief','Import the SimBrief OFP'),'case:'+r.id]);if(r&&r.status==='reserved'&&r.simbrief)a.push([t('Hacer el check-in','Check in'),'case:'+r.id]);
+  if(r&&r.status==='reserved'&&!r.sbGen)a.push([t('Generar el briefing con SimBrief','Generate the briefing with SimBrief'),'case:'+r.id]);if(r&&r.status==='reserved'&&r.sbGen)a.push([t('Hacer el check-in','Check in'),'case:'+r.id]);
   if(r&&r.status==='review'&&!S.log.find(e=>e.id===r.entryId).just)a.push([t('Justificar la anomalía del vuelo','Explain the flight anomaly'),'case:'+r.id]);
   const i=S.inc.find(x=>x.pilot===p.id&&['Abierta','Reabierta'].includes(x.st)&&!x.responded);if(i)a.push([t('Responder al incidente ','Answer incident ')+i.id,'p-incidentes']);
   S.tickets.filter(k=>k.pilot===p.id&&k.st==='In process').forEach(k=>a.push([t('Ticket con respuesta del staff: ','Staff reply on ticket: ')+k.id,'p-soporte']));return a}
@@ -607,19 +607,17 @@ function vRankings(){const tabs=[['gen',t('General','Overall')],['mon',t('Mensua
   card('Hall of Fame',tbl([t('Temporada','Season'),t('Récord','Record'),t('Titular','Holder')],[[String(new Date().getUTCFullYear()-1),t('Más horas','Most hours'),'Luca Ferri'],[String(new Date().getUTCFullYear()-1),t('Vuelo más largo','Longest flight'),'Ana Ruiz']]))}
 function vCaso(){const r=S.res.find(x=>x.id===ui.case&&x.pilot===S.session.id);if(!r)return head(t('Caso operacional','Operational case'))+`<div class="card empty">${t('Selecciona una reserva.','Select a booking.')} <a href="#p-reservas">${t('Reservas','Bookings')}</a></div>`;
   const e=r.entryId&&S.log.find(x=>x.id===r.entryId),st=r.status,act=ACTIVE.includes(st),fin=st==='review'||st==='closed';
-  const stp=[[t('Reserva','Booking'),1],['SimBrief',!!r.simbrief],['Check-in',!!r.checkin],[t('En vuelo','Flying'),['flying','review','closed'].includes(st)],[t('Finalización','Finish'),fin],[t('Validación','Validation'),st==='closed']];
+  const stp=[[t('Reserva','Booking'),1],['SimBrief',!!r.sbGen],['Check-in',!!r.checkin],[t('En vuelo','Flying'),['flying','review','closed'].includes(st)],[t('Finalización','Finish'),fin],[t('Validación','Validation'),st==='closed']];
   const first=stp.findIndex(x=>!x[1]);const trr=TOURS.find(tr=>(S.enroll[r.pilot]||{})[tr.id]&&tr.stages.some(s=>s.some(q=>q[0]===r.from&&q[1]===r.to)));const rem=remOf(r);
   const sbUrl=sbLink(r);
   return head(r.no+' · '+r.from+' → '+r.to,fdt(r.depTs)+' · '+nf(r.nm)+' nm · '+TYPES[r.type].mf+' '+TYPES[r.type].n+' · '+t('Sesión ','Session ')+r.session,pill(stateLabel(r),st==='review'?'warn':'acc')+(r.expires&&act?' '+pill(t('Caduca en ','Expires in ')+cd(r.expires),'warn'):''))+
   `<div class="card pad"><div class="steps">${stp.map((x,i)=>`<span class="${x[1]?(i===5&&st==='review'?'rev':'done'):(i===first&&act?'now':'')}">${x[0]}</span>`).join('')}</div></div>
-  ${act?`<div class="cols"><div class="stack">${card('SimBrief',`<div class="pad stack">${r.simbrief?`<p>OFP <span class="mono">${r.simbrief.id}</span> · ${t('combustible','fuel')} ${nf(r.simbrief.fuel)} kg ${r.simbrief.disc?pill(t('Discrepancia marcada','Discrepancy flagged'),'warn'):pill(t('Coincide','Matches'),'good')}</p>`:`<p class="muted">${t('Genera el briefing en SimBrief con la ruta, el avión y el número de vuelo ya rellenos, y luego impórtalo aquí. En este prototipo la importación es simulada; en producción se leerá con tu SimBrief ID. El OFP no es criterio de validación.','Generate the briefing in SimBrief with route, aircraft and flight number prefilled, then import it here. Import is simulated in this prototype; in production it will be read with your SimBrief ID. The OFP is not a validation criterion.')}</p>`}
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn sm" href="${sbUrl}" target="_blank" rel="noopener">${t('Generar briefing en SimBrief','Generate briefing in SimBrief')}</a>${st==='reserved'?btn(t('Importar OFP (simulado)','Import OFP (simulated)'),'ofp',r.id+':0','sm pri')+btn(t('Importar con discrepancia','Import with discrepancy'),'ofp',r.id+':1','sm'):''}</div></div>`)}
-   ${card('Check-in',`<div class="pad stack"><div class="muted">${t('Participación','Participation')}: ✔ · ${t('Aeronave','Aircraft')}: ${TYPES[r.type].n} · ${t('Plataforma','Platform')}: ${r.platform} · SimBrief: ${r.simbrief?'✔':'—'} · ${t('Asistencia','Attendance')}: ${r.checkin?'✔':'—'}</div>
+  ${act?`<div class="cols"><div class="stack">${card('SimBrief',`<div class="pad stack"><p class="muted">${t('Genera tu briefing con la ruta, el avión, el indicativo y los remarks ya rellenos.','Generate your briefing with route, aircraft, callsign and remarks already filled in.')}</p><div>${btn(t('Generar briefing con SimBrief','Generate briefing with SimBrief'),'sbgen',r.id,'pri')}</div></div>`)}
+   ${card('Check-in',`<div class="pad stack"><div class="muted">${t('Participación','Participation')}: ✔ · ${t('Aeronave','Aircraft')}: ${TYPES[r.type].n} · ${t('Plataforma','Platform')}: ${r.platform} · SimBrief: ${r.sbGen?'✔':'—'} · ${t('Asistencia','Attendance')}: ${r.checkin?'✔':'—'}</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">${st==='reserved'?btn(t('Hacer check-in','Check in'),'checkin',r.id,'pri sm'):''}${st!=='flying'&&st!=='review'?btn(t('Cambiar a ','Switch to ')+(r.platform==='VATSIM'?'IVAO':'VATSIM'),'plat',r.id,'sm')+btn(t('Cancelar reserva','Cancel booking'),'cancel',r.id,'bad sm'):''}</div></div>`)}
    ${st==='review'?card(t('En revisión','Under review'),`<form data-f="just" data-id="${e.id}" class="form pad"><p class="full muted">${esc(e.an.join(' · '))}</p>${ta('just','t',t('Justificación del piloto','Pilot explanation'),e.just||'','required maxlength="300"')}<div class="full"><button class="btn pri" type="submit">${t('Enviar al staff','Send to staff')}</button></div></form>`):''}</div>
    <div class="stack">${card('Remark',`<div class="pad stack"><code class="mono">${esc(rem)}</code>${btn(t('Copiar','Copy'),'copy',rem,'sm')}</div>`)}
-   ${['reserved','checkedin'].includes(st)||st==='flying'?card(t('Simulador del motor (demo)','Engine simulator (demo)'),`<div class="pad stack"><p class="muted">${t('En producción, NEXORA sigue el vuelo en VATSIM/IVAO. Aquí puedes simular las fases.','In production NEXORA tracks the flight on VATSIM/IVAO. Simulate the phases here.')}</p>${st!=='flying'?btn(t('Simular conexión a la red','Simulate network connection'),'conn',r.id,'sm'):''}
-    <form data-f="fin" data-id="${r.id}" class="form">${sel('fin','plat',t('Plataforma usada','Platform used'),['VATSIM','IVAO'],r.platform)}${sel('fin','out',t('Resultado','Outcome'),[['ok',t('Vuelo correcto','Correct flight')],['short',t('Duración anormalmente corta','Abnormally short')],['route',t('Llegada a otro aeropuerto','Different arrival')]])}<div class="full"><button class="btn pri sm" type="submit" ${st==='flying'?'':'disabled'}>${t('Simular finalización','Simulate end of flight')}</button></div></form></div>`):''}</div></div>`:
+   ${['reserved','checkedin','flying'].includes(st)?netCard(r):''}</div></div>`:
   `<div class="card pad stack"><p>${e?t('Resultado: ','Result: ')+esc(e.status)+(e.an.length?' · '+esc(e.an.join(', ')):''):stateLabel(r)}</p><a class="btn" href="#p-historial" style="align-self:flex-start">${t('Historial operacional','Operational history')}</a></div>`}
   ${card(t('Registro del caso','Case log'),`<div class="list">${r.log.slice().reverse().map(l=>`<div><span>${esc(l.text)}</span><span class="muted">${fdt(l.ts)}</span></div>`).join('')}</div>`)}`}
 const vReservas=()=>{const rs=myRes(S.session.id);return head(t('Reservas','Bookings'),t('Cancelación libre hasta la salida, incluso tras el check-in.','Free cancellation until departure, even after check-in.'),`<a class="btn sm pri" href="#p-vuelos">${t('Nueva reserva','New booking')}</a>`)+(rs.length?`<div class="stack">${rs.map(bpass).join('')}</div>`:`<div class="card empty">${t('No tienes reservas activas.','No active bookings.')}</div>`)}
@@ -1040,9 +1038,7 @@ const A={
  rsv:id=>openReserve(id),
  favr:id=>{const p=me();p.fav=p.fav.includes(id)?p.fav.filter(x=>x!==id):[...p.fav,id];done()},
  case:id=>{ui.case=id;go('p-caso')},
- ofp:id=>{const[i,d]=id.split(':'),r=R_(i);r.simbrief={id:'OFP-'+(hs(i)%90000+10000),fuel:Math.round(r.nm*11+1500),disc:d==='1'};rlog(r,t('OFP de SimBrief importado','SimBrief OFP imported')+(d==='1'?t(' con discrepancias (marcadas y notificadas)',' with discrepancies (flagged and notified)'):''));if(d==='1')notify(r.pilot,t('Discrepancias en tu OFP de ','Discrepancies in your OFP for ')+r.no);done()},
  checkin:id=>{const r=R_(id);r.status='checkedin';r.checkin=Date.now();rlog(r,t('Check-in completado','Check-in completed'));done()},
- conn:id=>{const r=R_(id);r.status='flying';r.flyTs=Date.now();r.checkin=r.checkin||Date.now();rlog(r,t('Actividad en '+r.platform+' coincidente: auto check-in y seguimiento iniciado','Matching '+r.platform+' activity: auto check-in and tracking started'));done()},
  plat:id=>{const r=R_(id);r.platform=r.platform==='VATSIM'?'IVAO':'VATSIM';rlog(r,t('Plataforma cambiada a ','Platform changed to ')+r.platform);done()},
  cancel:id=>{cancelRes(R_(id));ui.case=null;save();go('p-ops');toast(t('Reserva cancelada','Booking cancelled'))},
  copy:id=>{const f=()=>toast(t('Copia manualmente: ','Copy manually: ')+id);try{navigator.clipboard.writeText(id).then(()=>toast(t('Remark copiado','Remark copied')),f)}catch(e){f()}},
@@ -1096,7 +1092,6 @@ const F={
   if(!p||!p.pass||p.pass!==h){k.n++;if(k.n>=5){k.until=Date.now()+10*MIN;k.n=0;S.sec.push({ts:Date.now(),txt:t('Bloqueo temporal por intentos fallidos: ','Temporary lock after failed attempts: ')+u,sev:'alta'})}S.att[u]=k;save();return err('login-err',t('Usuario o contraseña incorrectos. Las cuentas de ejemplo entran con los botones de demo.','Wrong username or password. Sample accounts log in with the demo buttons.'))}
   S.att[u]={n:0,until:0};S.session={id:p.id,staff:isStaff(p)};save();go(isStaff(p)?'s-dash':'portal')},
  rsv:(d,f)=>{const m=doReserve(f.dataset.id,d.get('platform'),!!d.get('imm'));if(typeof m==='string'){toast(m);return}modal();save();go('p-caso');setTimeout(()=>radioNotice(R_(ui.case)),60);toast(t('Reserva confirmada. Caso operacional abierto.','Booking confirmed. Operational case opened.'))},
- fin:(d,f)=>{const r=R_(f.dataset.id),e=finalize(r,d.get('plat'),d.get('out'));done(e.status==='Completado'?t('Vuelo validado y añadido al Logbook','Flight validated and added to Logbook'):t('Vuelo en revisión','Flight under review'))},
  just:(d,f)=>{S.log.find(e=>e.id===f.dataset.id).just=d.get('t');done(t('Justificación enviada al staff','Explanation sent to staff'))},
  free:d=>{const a=d.get('from'),b=d.get('to'),ty=d.get('type');if(a===b)return err('free-err',t('Origen y destino deben ser distintos.','Origin and destination must differ.'));const nm=dist(a,b);
   if(nm>TYPES[ty].r*.9)return err('free-err',t('Esa aeronave no alcanza esa distancia (','That aircraft cannot fly ')+nf(nm)+' nm).');
@@ -1512,6 +1507,46 @@ Object.assign(F,{
 document.addEventListener('change',e=>{const x=e.target;if(x.id!=='dlfile')return;const f=x.files&&x.files[0],i=document.getElementById('ndl-info');if(!f){ui.dlFile=null;return}
   if(f.size>(CL.on?DLMAX:DLMAXLOCAL)){ui.dlFile=null;x.value='';if(i)i.textContent=t('Ese archivo supera el máximo permitido; usa un enlace externo.','That file exceeds the maximum; use an external link.');return}
   ui.dlFile={name:f.name,size:f.size,file:f};if(i)i.textContent=f.name+' · '+fsz(f.size)});
+/* ----- Seguimiento en redes reales (VATSIM / IVAO) -----
+   Se consulta el feed público de la red mientras el piloto tiene NEXORA AIR abierta.
+   Detecta su conexión (por su ID de red), inicia el vuelo y, al desconectarse, lo finaliza con los datos reales. */
+const NETF={VATSIM:()=>(window.NX_CFG&&NX_CFG.vatsimFeed)||'https://data.vatsim.net/v3/vatsim-data.json',IVAO:()=>(window.NX_CFG&&NX_CFG.ivaoFeed)||'https://api.ivao.aero/v2/tracker/whazzup'},NETC={};
+const kmNm=(a,b,c,d)=>{const R=3440.065,r=x=>x*Math.PI/180,h=Math.sin(r(c-a)/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(r(d-b)/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
+function netNorm(plat,j){if(plat==='VATSIM')return(j.pilots||[]).map(x=>({id:String(x.cid),cs:x.callsign||'',lat:x.latitude,lon:x.longitude,alt:x.altitude,gs:x.groundspeed,dep:(x.flight_plan||{}).departure||'',arr:(x.flight_plan||{}).arrival||'',logon:Date.parse(x.logon_time)||0}));
+  const L=(j.clients&&j.clients.pilots)||j.pilots||[];return L.map(x=>{const k=x.lastTrack||{},f=x.flightPlan||{};return{id:String(x.userId),cs:x.callsign||'',lat:k.latitude,lon:k.longitude,alt:k.altitude,gs:k.groundSpeed,dep:f.departureId||'',arr:f.arrivalId||'',logon:Date.parse(x.createdAt)||0}})}
+async function netFeed(plat,force){const c=NETC[plat];if(c&&!force&&Date.now()-c.ts<12000)return c.data;const r=await fetch(NETF[plat](),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const d=netNorm(plat,await r.json());NETC[plat]={ts:Date.now(),data:d};return d}
+const netId=(p,plat)=>plat==='VATSIM'?p.vatsim:p.ivao;
+async function netCheck(r,force){const p=pilot(r.pilot),id=netId(p,r.platform);r.net=r.net||{};
+  if(!id){r.net={state:'noid',ts:Date.now()};return}
+  let L;try{L=await netFeed(r.platform,force)}catch(e){r.net={state:'error',ts:Date.now(),msg:String(e.message||e)};return}
+  const x=L.find(q=>q.id===String(id)&&(/^(NXR|NEXO)/i.test(q.cs)||q.dep===r.from));r.net.ts=Date.now();
+  if(x){r.miss=0;
+    if(r.status!=='flying'){if(x.dep&&x.dep!==r.from){r.net={state:'other',ts:Date.now(),cs:x.cs,dep:x.dep,arr:x.arr};return}
+      r.status='flying';r.flyTs=x.logon||Date.now();r.checkin=r.checkin||Date.now();rlog(r,t('Conexión detectada en '+r.platform+' ('+x.cs+'): auto check-in y seguimiento iniciado','Connection detected on '+r.platform+' ('+x.cs+'): auto check-in and tracking started'));notify(r.pilot,t('Vuelo '+r.no+' detectado en '+r.platform+'.','Flight '+r.no+' detected on '+r.platform+'.'))}
+    r.trk={ts:Date.now(),lat:x.lat,lon:x.lon,alt:x.alt,gs:x.gs,cs:x.cs,arr:x.arr};r.net={state:'live',ts:Date.now(),cs:x.cs,alt:x.alt,gs:x.gs};save();return}
+  if(r.status==='flying'){r.miss=(r.miss|0)+1;r.net={state:'lost',ts:Date.now()};
+    if(r.miss>=3||force&&r.miss>=1)netEnd(r);else save();return}
+  r.net={state:'wait',ts:Date.now()}}
+function netEnd(r){const k=r.trk||{},d=geo(r.to),mins=Math.max(1,Math.round(((k.ts||Date.now())-(r.flyTs||Date.now()))/MIN));
+  const near=d&&k.lat!=null&&kmNm(k.lat,k.lon,d[0],d[1])<=30&&(k.alt==null||k.alt<10000),wrongPlan=k.arr&&k.arr!==r.to;
+  const out=!near||wrongPlan?'route':mins<Math.max(5,r.mins*.4)?'short':'ok',e=finalize(r,r.platform,out,{mins});r.miss=0;
+  toast(e.status==='Completado'?t('Vuelo finalizado y validado. ¡Añadido a tu Logbook!','Flight ended and validated. Added to your Logbook!'):t('Vuelo finalizado: en revisión del staff.','Flight ended: under staff review.'));render()}
+let netBusy=false;
+async function netTick(force){if(netBusy||!S.session||document.hidden&&!force)return;const p=me();if(!p||p.staff)return;
+  const L=myRes(p.id).filter(r=>['reserved','checkedin','flying'].includes(r.status));if(!L.length)return;netBusy=true;
+  try{for(const r of L)await netCheck(r,force)}finally{netBusy=false}
+  if(/^#?(p-caso|p-ops|portal)/.test(location.hash||''))render()}
+setInterval(()=>netTick(false),20000);setTimeout(()=>netTick(false),4000);
+function netCard(r){const p=pilot(r.pilot),id=netId(p,r.platform),n=r.net||{},cs=radioCs(r);
+  const msg={noid:t('Añade tu ID de '+r.platform+' en Mi perfil para que podamos seguir tu vuelo.','Add your '+r.platform+' ID in My profile so we can track your flight.'),
+   wait:t('Esperando tu conexión en '+r.platform+'. Conéctate con indicativo '+cs+' (o NXR…) y plan de vuelo '+r.from+' → '+r.to+'.','Waiting for you to connect on '+r.platform+'. Log on with callsign '+cs+' (or NXR…) and flight plan '+r.from+' → '+r.to+'.'),
+   live:t('En vuelo · ','Flying · ')+esc(n.cs||'')+' · '+nf(n.alt||0)+' ft · '+nf(n.gs||0)+' kt',
+   lost:t('Sin señal en la red. Si te has desconectado, el vuelo se cerrará en unos instantes.','No signal on the network. If you disconnected, the flight will close shortly.'),
+   other:t('Estás conectado con otra salida (','You are connected with a different departure (')+esc(n.dep||'?')+' → '+esc(n.arr||'?')+t('). Ajusta tu plan a ','). Adjust your plan to ')+r.from+' → '+r.to+'.',
+   error:t('No se pudo consultar la red ahora mismo. Se reintentará solo.','The network could not be queried right now. It will retry automatically.')}[n.state]||t('Pendiente de la primera comprobación…','Waiting for the first check…');
+  return card(t('Seguimiento en '+r.platform,'Tracking on '+r.platform),`<div class="pad stack"><p><b>${r.platform}</b> · ID ${id?esc(String(id)):'—'}</p><p class="${n.state==='live'?'':'muted'}">${msg}</p><p class="muted">${t('NEXORA AIR sigue tu vuelo automáticamente en la red real mientras tienes esta web abierta: detecta tu conexión, hace el check-in y cierra el vuelo cuando te desconectas.','NEXORA AIR tracks your flight on the real network automatically while this site is open: it detects your connection, checks you in and closes the flight when you disconnect.')}</p><div>${btn(t('Comprobar ahora','Check now'),'netchk',r.id,'sm')}</div></div>`)}
+Object.assign(A,{netchk:async id=>{const r=R_(id);toast(t('Consultando la red…','Querying the network…'));await netCheck(r,true);render()},
+ sbgen:id=>{const r=R_(id);r.sbGen=r.sbGen||Date.now();rlog(r,t('Briefing generado con SimBrief','Briefing generated with SimBrief'));save();window.open(sbLink(r),'_blank','noopener');render()}});
 /* ===== boot ===== */
 (async()=>{
   const cloud=await cloudStart();
