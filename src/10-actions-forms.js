@@ -15,9 +15,7 @@ const A={
  rsv:id=>openReserve(id),
  favr:id=>{const p=me();p.fav=p.fav.includes(id)?p.fav.filter(x=>x!==id):[...p.fav,id];done()},
  case:id=>{ui.case=id;go('p-caso')},
- ofp:id=>{const[i,d]=id.split(':'),r=R_(i);r.simbrief={id:'OFP-'+(hs(i)%90000+10000),fuel:Math.round(r.nm*11+1500),disc:d==='1'};rlog(r,t('OFP de SimBrief importado','SimBrief OFP imported')+(d==='1'?t(' con discrepancias (marcadas y notificadas)',' with discrepancies (flagged and notified)'):''));if(d==='1')notify(r.pilot,t('Discrepancias en tu OFP de ','Discrepancies in your OFP for ')+r.no);done()},
  checkin:id=>{const r=R_(id);r.status='checkedin';r.checkin=Date.now();rlog(r,t('Check-in completado','Check-in completed'));done()},
- conn:id=>{const r=R_(id);r.status='flying';r.flyTs=Date.now();r.checkin=r.checkin||Date.now();rlog(r,t('Actividad en '+r.platform+' coincidente: auto check-in y seguimiento iniciado','Matching '+r.platform+' activity: auto check-in and tracking started'));done()},
  plat:id=>{const r=R_(id);r.platform=r.platform==='VATSIM'?'IVAO':'VATSIM';rlog(r,t('Plataforma cambiada a ','Platform changed to ')+r.platform);done()},
  cancel:id=>{cancelRes(R_(id));ui.case=null;save();go('p-ops');toast(t('Reserva cancelada','Booking cancelled'))},
  copy:id=>{const f=()=>toast(t('Copia manualmente: ','Copy manually: ')+id);try{navigator.clipboard.writeText(id).then(()=>toast(t('Remark copiado','Remark copied')),f)}catch(e){f()}},
@@ -71,7 +69,6 @@ const F={
   if(!p||!p.pass||p.pass!==h){k.n++;if(k.n>=5){k.until=Date.now()+10*MIN;k.n=0;S.sec.push({ts:Date.now(),txt:t('Bloqueo temporal por intentos fallidos: ','Temporary lock after failed attempts: ')+u,sev:'alta'})}S.att[u]=k;save();return err('login-err',t('Usuario o contraseña incorrectos. Las cuentas de ejemplo entran con los botones de demo.','Wrong username or password. Sample accounts log in with the demo buttons.'))}
   S.att[u]={n:0,until:0};S.session={id:p.id,staff:isStaff(p)};save();go(isStaff(p)?'s-dash':'portal')},
  rsv:(d,f)=>{const m=doReserve(f.dataset.id,d.get('platform'),!!d.get('imm'));if(typeof m==='string'){toast(m);return}modal();save();go('p-caso');setTimeout(()=>radioNotice(R_(ui.case)),60);toast(t('Reserva confirmada. Caso operacional abierto.','Booking confirmed. Operational case opened.'))},
- fin:(d,f)=>{const r=R_(f.dataset.id),e=finalize(r,d.get('plat'),d.get('out'));done(e.status==='Completado'?t('Vuelo validado y añadido al Logbook','Flight validated and added to Logbook'):t('Vuelo en revisión','Flight under review'))},
  just:(d,f)=>{S.log.find(e=>e.id===f.dataset.id).just=d.get('t');done(t('Justificación enviada al staff','Explanation sent to staff'))},
  free:d=>{const a=d.get('from'),b=d.get('to'),ty=d.get('type');if(a===b)return err('free-err',t('Origen y destino deben ser distintos.','Origin and destination must differ.'));const nm=dist(a,b);
   if(nm>TYPES[ty].r*.9)return err('free-err',t('Esa aeronave no alcanza esa distancia (','That aircraft cannot fly ')+nf(nm)+' nm).');

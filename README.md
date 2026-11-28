@@ -43,3 +43,10 @@ Cada vez que alguien se registra, todo el staff con permiso **Pilotos** (Admin y
 - Staff (Descargas en el menú, permiso `operaciones`): añade, edita o elimina archivos de las tres secciones. Se puede adjuntar un archivo o pegar un enlace externo (Drive, MEGA…) para archivos muy pesados. Los pilotos reciben una notificación al publicar.
 - Con Supabase los archivos se guardan en el bucket público `downloads` (máx. 50 MB); en modo demo van dentro del navegador (máx. 1,5 MB). Vuelve a ejecutar `supabase/schema.sql` para crear la colección `dl` y el bucket.
 - Certificados: se generan solos al completar un tour, evento o desafío, con felicitación de la aerolínea, y se descargan en PNG o PDF.
+
+## Seguimiento en VATSIM / IVAO reales
+
+- Se ha eliminado el simulador de vuelo del modo demo y la importación simulada de OFP. En el caso operacional solo queda el botón **Generar briefing con SimBrief** (con ruta, avión, indicativo `NEXO…` y remarks ya rellenos).
+- `src/11h-network.js` consulta el feed público de la red de la reserva (VATSIM: `https://data.vatsim.net/v3/vatsim-data.json`; IVAO: `https://api.ivao.aero/v2/tracker/whazzup`) cada 20 s mientras el piloto tiene la web abierta. Localiza al piloto por su **ID de VATSIM/IVAO** (Mi perfil), detecta la conexión con indicativo `NXR…`/`NEXO…` y salida igual a la reservada, hace el check-in, y al desconectarse cierra el vuelo con los datos reales (duración, llegada cerca del destino). Si no coincide, pasa a revisión del staff.
+- Limitación: el seguimiento ocurre en el navegador del piloto. Si cierra la web durante el vuelo, el cierre se hace al volver a abrirla y puede ir a revisión. Para seguimiento 24 h haría falta una función de servidor (p. ej. Supabase Edge Function programada).
+- El endpoint de IVAO puede exigir clave: se puede cambiar con `ivaoFeed` (y `vatsimFeed`) en `config.js`.
