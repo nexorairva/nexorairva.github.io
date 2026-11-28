@@ -574,11 +574,14 @@ create or replace function public.nx_net_poll() returns void
 language plpgsql security definer set search_path = public as $$
 declare c record; q record; v_status int; v_body text; v_rid bigint; v_url text; v_hd jsonb; v_src text; i jsonb;
 begin
+  -- pg_net guarda cada respuesta (el listado de VATSIM/IVAO pesa varios MB): se borran en cuanto se procesan y las huérfanas a los 10 min
+  begin delete from net._http_response where created < now() - interval '10 minutes'; exception when others then null; end;
   for c in select * from public.net_cfg where enabled loop
     for q in select * from public.net_reqs where plat = c.plat and not done order by id loop
       select status_code, content into v_status, v_body from net._http_response where id = q.id;
       if found then
         update public.net_reqs set done = true where id = q.id;
+        begin delete from net._http_response where id = q.id; exception when others then null; end;
         insert into public.net_diag(plat,ts,http,bytes,err) values (c.plat, now(), v_status, length(coalesce(v_body,'')), case when v_status = 200 then null else 'La red respondió HTTP ' || coalesce(v_status::text,'?') end)
           on conflict (plat) do update set ts = now(), http = excluded.http, bytes = excluded.bytes, err = excluded.err;
         if v_status = 200 then
