@@ -33,6 +33,7 @@ async function cloudPull(){const sb=CL.sb;
   TOURS=S.tours;syncCh();rebuildIx();applyApo();
   CL.snap=new Map();docsOf().forEach((d,k)=>{if(!(CL.dirty&&!rows.length))CL.snap.set(k,JSON.stringify(d.data))});
   CL.psnap={};S.pilots.forEach(p=>CL.psnap[p.id]=JSON.stringify(pilotRows(p)));
+  if(CL.uid&&S.session){let k=0;S.log.forEach(e=>{if(e.src==='net'&&e.status==='Completado'&&(e.pilot===S.session.id||S.session.staff)&&!S.tx.some(x=>x.ref==='fl:'+e.id)){flightTx(e);k++}});if(k){settle();setTimeout(()=>cloudPush(),0)}}   /* puntos de los vuelos que cerró el servidor */
   const sig=JSON.stringify([rows.length,rows.map(r=>r.id).join().length,S.pilots.length,rows.reduce((a,r)=>a+JSON.stringify(r.data).length,0)]);const ch=sig!==CL.sig;CL.sig=sig;CL.loaded=true;return ch}
 async function cloudPush(){if(!CL.on||!CL.uid||!CL.loaded)return;if(CL.busy){CL.dirty=true;return}CL.busy=true;CL.dirty=false;const sb=CL.sb;
   try{const cur=docsOf(),up=[],del={};

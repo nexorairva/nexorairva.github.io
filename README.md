@@ -47,6 +47,11 @@ Cada vez que alguien se registra, todo el staff con permiso **Pilotos** (Admin y
 ## Seguimiento en VATSIM / IVAO reales
 
 - Se ha eliminado el simulador de vuelo del modo demo y la importación simulada de OFP. En el caso operacional solo queda el botón **Generar briefing con SimBrief** (con ruta, avión, indicativo `NEXO…` y remarks ya rellenos).
-- `src/11h-network.js` consulta el feed público de la red de la reserva (VATSIM: `https://data.vatsim.net/v3/vatsim-data.json`; IVAO: `https://api.ivao.aero/v2/tracker/whazzup`) cada 20 s mientras el piloto tiene la web abierta. Localiza al piloto por su **ID de VATSIM/IVAO** (Mi perfil), detecta la conexión con indicativo `NXR…`/`NEXO…` y salida igual a la reservada, hace el check-in, y al desconectarse cierra el vuelo con los datos reales (duración, llegada cerca del destino). Si no coincide, pasa a revisión del staff.
-- Limitación: el seguimiento ocurre en el navegador del piloto. Si cierra la web durante el vuelo, el cierre se hace al volver a abrirla y puede ir a revisión. Para seguimiento 24 h haría falta una función de servidor (p. ej. Supabase Edge Function programada).
-- El endpoint de IVAO puede exigir clave: se puede cambiar con `ivaoFeed` (y `vatsimFeed`) en `config.js`.
+- **Con Supabase (producción): seguimiento desde el servidor, sin depender de ninguna web abierta.** `supabase/schema.sql` crea una tarea de `pg_cron` que cada minuto pide a VATSIM e IVAO su listado público (con `pg_net`) y:
+  1. reconoce todo vuelo con indicativo **NXR…** o **NEXO…** cuyo ID de VATSIM/IVAO (Mi perfil) pertenece a un piloto **activo**;
+  2. lo sigue (despegue, millas, última posición) y, si tiene una reserva con la misma salida y llegada, la pasa a «en vuelo» con check-in automático;
+  3. cuando se desconecta (3 minutos sin verlo) escribe el vuelo en el Logbook y cierra la reserva. Si no cuadra (sin plan de vuelo, no aterrizó, otro destino, duración muy corta, avión fuera de la flota) queda **en revisión** del staff. Un vuelo sin reserva también se registra.
+  4. avisa al piloto y la web le suma los puntos al abrirla (los vuelos del servidor llevan `src='net'`).
+- Para activarlo: ejecuta `supabase/schema.sql` y, si el script avisa, activa las extensiones **pg_cron** y **pg_net** en *Database → Extensions* y vuelve a ejecutarlo. Las direcciones de las redes están en la tabla `net_cfg` (se pueden cambiar o desactivar); las sesiones detectadas, en `net_sessions` (visibles para el staff).
+- **Modo demo (sin Supabase):** `src/11h-network.js` hace el mismo seguimiento en el navegador del piloto mientras tiene la web abierta.
+- Limitaciones: el listado de IVAO puede exigir clave (cabeceras en `net_cfg.headers`); sin coordenadas de aeropuertos en la base, el aterrizaje se deduce de la velocidad en la última posición y de que el destino del plan coincida con la reserva.
