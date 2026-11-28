@@ -482,9 +482,9 @@ begin
   end loop;
   insert into public.net_diag(plat,ts,pilots,nxr,matched,unmatched,err) values (p_plat,now(),v_tot,v_nxr,v_ok,v_un,null)
     on conflict (plat) do update set ts=now(), pilots=excluded.pilots, nxr=excluded.nxr, matched=excluded.matched, unmatched=excluded.unmatched, err=null;
-  -- sesiones de esta red que ya no aparecen en el listado = el vuelo se ha cerrado en la red: se cierra aquí en la misma pasada
+  -- sesiones de esta red que ya no aparecen en el listado = el vuelo se ha cerrado en la red; margen de 3 pasadas (~3 min) por si se cae la conexión y vuelve
   update public.net_sessions set miss = miss + 1 where state = 'live' and plat = p_plat and last_seen < v_now;
-  for s in select id from public.net_sessions where state = 'live' and plat = p_plat and miss >= 1 loop
+  for s in select id from public.net_sessions where state = 'live' and plat = p_plat and miss >= 3 loop
     perform public.nx_net_finish(s.id);
   end loop;
   return n;

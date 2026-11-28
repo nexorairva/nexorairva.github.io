@@ -1,5 +1,5 @@
 -- Seguimiento: enlace con la reserva de la MISMA red (varias reservas: gana la de misma ruta; ruta distinta → revisión),
--- enlace reintentado en cada pasada y cierre del vuelo en cuanto desaparece del listado de la red.
+-- enlace reintentado en cada pasada y cierre del vuelo tras 3 minutos sin verlo en la red.
 -- Ejecuta este archivo en el SQL Editor de Supabase (o vuelve a ejecutar schema.sql completo).
 
 -- Reserva activa del piloto EN LA MISMA RED en la que vuela. Si hay varias, gana la que coincide con la salida y la llegada
@@ -134,7 +134,7 @@ begin
     on conflict (plat) do update set ts=now(), pilots=excluded.pilots, nxr=excluded.nxr, matched=excluded.matched, unmatched=excluded.unmatched, err=null;
   -- sesiones de esta red que ya no aparecen en el listado = el vuelo se ha cerrado en la red: se cierra aquí en la misma pasada
   update public.net_sessions set miss = miss + 1 where state = 'live' and plat = p_plat and last_seen < v_now;
-  for s in select id from public.net_sessions where state = 'live' and plat = p_plat and miss >= 1 loop
+  for s in select id from public.net_sessions where state = 'live' and plat = p_plat and miss >= 3 loop
     perform public.nx_net_finish(s.id);
   end loop;
   return n;
