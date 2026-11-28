@@ -72,7 +72,7 @@ $$;
 --  own    : cada piloto escribe lo suyo    secure  : solo staff
 create or replace function public.coll_kind(c text) returns text language sql immutable as $$
   select case
-    when c in ('fleet','tours','events','cal','chall','flights','news','social','partners','brand','docs','ap','apo','routeCodes','remarks','site') then 'public'
+    when c in ('fleet','tours','events','cal','chall','flights','news','social','partners','dl','brand','docs','ap','apo','routeCodes','remarks','site') then 'public'
     when c in ('roles','res','log','tx') then 'shared'
     when c in ('notes','tickets','inc','enroll','accept','delReq','revReq') then 'own'
     else 'secure'
@@ -81,7 +81,7 @@ $$;
 create or replace function public.coll_perm(c text) returns text language sql immutable as $$
   select case
     when c in ('fleet','ap','apo') then 'flota'
-    when c in ('tours','events','cal','chall','flights','routeCodes','remarks') then 'operaciones'
+    when c in ('tours','events','cal','chall','flights','routeCodes','remarks','dl') then 'operaciones'
     when c in ('news','docs') then 'noticias'
     when c = 'social' then 'redes'
     when c in ('brand','roles') then 'admin'
@@ -271,3 +271,23 @@ create or replace function public.docs_touch() returns trigger language plpgsql 
 begin new.updated_at := now(); return new; end $$;
 drop trigger if exists docs_touch on public.nx_docs;
 create trigger docs_touch before update on public.nx_docs for each row execute function public.docs_touch();
+
+-- Descargas (libreas, documentos, logos): archivos adjuntos en Storage.
+-- Bucket público de lectura; solo quien tiene el permiso 'operaciones' sube, cambia o borra.
+do $$
+begin
+  if to_regclass('storage.buckets') is not null then
+    insert into storage.buckets (id, name, public, file_size_limit)
+      values ('downloads', 'downloads', true, 52428800)
+      on conflict (id) do update set public = true, file_size_limit = 52428800;
+    drop policy if exists "downloads_insert" on storage.objects;
+    create policy "downloads_insert" on storage.objects for insert to authenticated
+      with check (bucket_id = 'downloads' and public.has_perm('operaciones'));
+    drop policy if exists "downloads_update" on storage.objects;
+    create policy "downloads_update" on storage.objects for update to authenticated
+      using (bucket_id = 'downloads' and public.has_perm('operaciones'));
+    drop policy if exists "downloads_delete" on storage.objects;
+    create policy "downloads_delete" on storage.objects for delete to authenticated
+      using (bucket_id = 'downloads' and public.has_perm('operaciones'));
+  end if;
+end $$;

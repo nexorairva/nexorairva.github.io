@@ -119,7 +119,7 @@ function seed(){
   S.docs&&['norm','terms','priv'].forEach(d=>S.pilots.filter(p=>p.status!=='Pending').forEach(p=>S.accept.push({pid:p.id,doc:d,v:'1.0',ts:p.joined+H})));
   const nx=instances().find(i=>i.ts>now+3*H&&i.ts<now+30*H&&i.free>0&&i.type!=='B789');
   if(nx)S.res.push({id:uid('R'),pilot:'NXR102',kind:'official',no:'NXR102',sched:nx.no,instId:nx.id,from:nx.from,to:nx.to,type:nx.type,depTs:nx.ts,mins:nx.mins,nm:nx.nm,platform:'VATSIM',status:'reserved',created:now-H,simbrief:null,checkin:null,session:'S-DEMO01',log:[{ts:now-H,text:'Reserva creada; caso operacional abierto'}]});
-  S.events=[];S.cal=[];S.chall=[];S.partners=[];S.apo={};syncCh();
+  S.events=[];S.cal=[];S.chall=[];S.partners=[];S.apo={};S.dl=[];syncCh();
   S.news=[];
   S.tickets=[{id:'T-0001',pilot:'NXR103',subject:'No se importa mi OFP de SimBrief',st:'Open',last:D(2),msgs:[{from:'pilot',text:'Mi OFP no aparece en el caso operacional.',ts:D(2),files:[]}]}];
   S.inc=[{id:'NXR-INC-'+Y+'-000001',pilot:'NXR106',subject:'Desconexión en ruta NXR801',detail:'Se detectó una desconexión de 12 minutos sobre el Atlántico. Indica qué ocurrió.',st:'Abierta',created:now-2*H,deadline:now+46*H,responded:false,msgs:[]}];S.incSeq[Y]=1;
@@ -133,4 +133,4 @@ function settle(silent){S.pilots.forEach(p=>{const L=lE(p.id),want={};
   BADGES.forEach(b=>{if(b.f(L))want['bd:'+b.id]={pts:30,xp:20,why:'Logro: '+b.n}});
   S.events.forEach(ev=>{const l=(ev.part[p.id]||[]).filter(id=>S.log.some(e=>e.id===id&&e.status==='Completado'));if(l.length)want['ev:'+ev.id]={pts:ev.x,xp:60,why:'Evento: '+ev.n}});
   S.tx=S.tx.filter(x=>x.pilot!==p.id||!/^(tour|ch|ms|bd|ev):/.test(x.ref)||want[x.ref]);
-  Object.keys(want).forEach(k=>{if(!S.tx.some(x=>x.pilot===p.id&&x.ref===k)){S.tx.push(Object.assign({id:uid('X'),pilot:p.id,ref:k,ts:Date.now()},want[k]));if(!silent)notify(p.id,t('Has obtenido: ','Earned: ')+want[k].why+' (+'+want[k].pts+' '+t('puntos','points')+')')}})})}
+  Object.keys(want).forEach(k=>{if(!S.tx.some(x=>x.pilot===p.id&&x.ref===k)){S.tx.push(Object.assign({id:uid('X'),pilot:p.id,ref:k,ts:Date.now()},want[k]));if(!silent)notify(p.id,t('Has obtenido: ','Earned: ')+want[k].why+' (+'+want[k].pts+' '+t('puntos','points')+')'+(/^(tour|ev|ch):/.test(k)?t(' · Certificado disponible en Descargas','  · Certificate available in Downloads'):''))}})})}

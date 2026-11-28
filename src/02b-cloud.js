@@ -1,8 +1,8 @@
 /* ===== modo nube: Supabase (PostgreSQL + Auth). Sin public/config.js la web funciona en modo demo local ===== */
 const CL={on:false,sb:null,uid:null,snap:new Map(),psnap:{},busy:false,dirty:false,timer:null,cat:null,loaded:false,sig:''};
-const CAR={flights:['no'],fleet:['reg'],tours:['id'],log:['id','pilot'],tx:['id','pilot'],res:['id','pilot'],accept:[a=>a.pid+'-'+a.doc,'pid'],notes:['id','to'],tickets:['id','pilot'],inc:['id','pilot'],news:['id'],events:['id'],cal:['id'],audit:[a=>a.ts+'-'+hs(a.a+a.who),null],sec:[a=>a.ts+'-'+hs(a.txt),null],intg:['n'],roles:['id'],social:['id'],chall:['id'],partners:['id']};
+const CAR={flights:['no'],fleet:['reg'],tours:['id'],log:['id','pilot'],tx:['id','pilot'],res:['id','pilot'],accept:[a=>a.pid+'-'+a.doc,'pid'],notes:['id','to'],tickets:['id','pilot'],inc:['id','pilot'],news:['id'],events:['id'],cal:['id'],audit:[a=>a.ts+'-'+hs(a.a+a.who),null],sec:[a=>a.ts+'-'+hs(a.txt),null],intg:['n'],roles:['id'],social:['id'],chall:['id'],partners:['id'],dl:['id']};
 const COBJ=['brand','docs','remarks','ap','routeCodes','apo'];
-const CATS=['flights','fleet','tours','social','roles','intg','news','events','cal','chall','partners'];
+const CATS=['flights','fleet','tours','social','roles','intg','news','events','cal','chall','partners','dl'];
 const loadSB=()=>new Promise((ok,ko)=>{if(window.supabase)return ok();const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js';s.onload=ok;s.onerror=()=>ko(new Error('supabase-js'));document.head.appendChild(s)});
 function cloudBlank(){seed();CL.cat={};CATS.forEach(k=>CL.cat[k]=JSON.parse(JSON.stringify(S[k]||[])));CL.cat.roles=clone(DEF_ROLES);CL.cat.social=clone(DEF_SOCIAL);
   ['pilots','log','tx','res','notes','audit','tickets','inc','sec','accept','live','delReq','revReq'].concat(CATS).forEach(k=>S[k]=[]);S.enroll={};S.brand={};S.session=null;S.maint=false}

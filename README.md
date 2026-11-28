@@ -36,3 +36,10 @@ Cada vez que alguien se registra, todo el staff con permiso **Pilotos** (Admin y
 ## Presentación animada y eslogan
 - La pantalla de bienvenida es dinámica: rutas aéreas animadas con aviones, palabras que aparecen una a una («Conecta. Vuela. Supera.»), eslogan escrito en directo («El piloto vuela, NEXORA AIR hace el resto.»), ticker de funciones y paralaje con el puntero. Respeta `prefers-reduced-motion`.
 - En las presentaciones (bienvenida y portada) se habla de «redes de vuelo» en vez de nombrar VATSIM/IVAO. La pestaña Compañía no se ha tocado.
+
+## Descargas y certificados
+
+- Pilotos: la pestaña **Competición** pasa a llamarse **Estadísticas**. Nueva pestaña **Descargas** con subpestañas Libreas, Documentos, Logos y Certificados.
+- Staff (Descargas en el menú, permiso `operaciones`): añade, edita o elimina archivos de las tres secciones. Se puede adjuntar un archivo o pegar un enlace externo (Drive, MEGA…) para archivos muy pesados. Los pilotos reciben una notificación al publicar.
+- Con Supabase los archivos se guardan en el bucket público `downloads` (máx. 50 MB); en modo demo van dentro del navegador (máx. 1,5 MB). Vuelve a ejecutar `supabase/schema.sql` para crear la colección `dl` y el bucket.
+- Certificados: se generan solos al completar un tour, evento o desafío, con felicitación de la aerolínea, y se descargan en PNG o PDF.
