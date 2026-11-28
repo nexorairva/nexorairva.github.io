@@ -327,8 +327,8 @@ function seed(){
   const now=Date.now(),Y=new Date(now).getUTCFullYear(),R=mul(2026),D=n=>now-n*DAY;
   S={v:3,lang:'es',session:null,seq:100,pidSeq:113,ap:JSON.parse(JSON.stringify(AP0)),flights:FL0.map(x=>({no:x[0],from:x[1],to:x[2],m:x[3],type:x[4],slots:x[5],blocked:x[0]==='431'})),
    fleet:[['EC-NXA','A20N','Alhambra'],['EC-NXB','A20N','Giralda'],['EC-NXC','A20N','Montjuïc'],['EC-NXD','A21N','Teide'],['EC-NXE','A21N','Sierra Nevada'],['EC-NXF','B738','Cibeles'],['EC-NXG','B738','Retiro'],['EC-NXJ','B789','Quijote'],['EC-NXK','B789','Atlántico'],['EC-NXL','E195','Duero']].map(x=>({reg:x[0],type:x[1],name:x[2],desc:DESC[x[1]],img:x[1]==='A20N'?GALL.slice():[]})),tours:JSON.parse(JSON.stringify(TOURS0)),
-   pilots:[],log:[],tx:[],res:[],enroll:{},prefs:{},accept:[],notes:[],audit:[],tickets:[],inc:[],incSeq:{},news:[],groups:[],events:[],cal:[],sec:[],maint:false,ignored:37,delReq:[],revReq:[],att:{},routeCodes:{},
-   intg:[['SimBrief','Operativa'],['VATSIM','Operativa'],['IVAO','Degradada'],['Correo electrónico','Operativa'],['Almacenamiento de archivos','Operativa'],['Generación de PDF','Operativa']].map(x=>({n:x[0],st:x[1],ts:now-5*MIN})),
+   pilots:[],log:[],tx:[],res:[],enroll:{},prefs:{},accept:[],notes:[],audit:[],tickets:[],inc:[],incSeq:{},news:[],groups:[],events:[],cal:[],sec:[],maint:false,delReq:[],revReq:[],att:{},routeCodes:{},
+   intg:[],
    remarks:{ff:'NEXORA AIR VA | FREE FLIGHT | NXR',flight:'NEXORA AIR VA | NXR | VUELO OFICIAL',tour:'NEXORA AIR VA | NXR | TOUR',event:'NEXORA AIR VA | NXR | EVENTO',special:'NEXORA AIR VA | NXR | ESPECIAL'},
    docs:{norm:{v:'1.0',ts:D(300),text:'Los pilotos vuelan con respeto a la red, a los controladores y a la comunidad. Una cuenta por persona. Los vuelos se reservan antes de realizarse y se completan con la plataforma elegida.'},
     terms:{v:'1.0',ts:D(300),text:'NEXORA AIR VA es un servicio de simulación sin ánimo de lucro. El uso de la plataforma implica aceptar estas condiciones y la normativa vigente.'},
@@ -395,7 +395,7 @@ async function cloudPull(){const sb=CL.sb;
   const mine=prof.find(r=>r.id===CL.uid);
   if(CL.uid&&mine){const meP=S.pilots.find(p=>p.uid===CL.uid);meP.email=CL.email||'';S.session={id:mine.code,uid:CL.uid,staff:isStaff(meP)}}else S.session=null;
   if(!rows.length&&mine&&mine.rol==='admin'&&CL.cat){CATS.forEach(k=>S[k]=JSON.parse(JSON.stringify(CL.cat[k])));ensure();CL.dirty=true}   /* primer arranque: catálogo inicial */
-  TOURS=S.tours;syncCh();rebuildIx();applyApo();
+  S.intg=(S.intg||[]).filter(x=>x.id);TOURS=S.tours;syncCh();rebuildIx();applyApo();
   CL.snap=new Map();docsOf().forEach((d,k)=>{if(!(CL.dirty&&!rows.length))CL.snap.set(k,JSON.stringify(d.data))});
   CL.psnap={};S.pilots.forEach(p=>CL.psnap[p.id]=JSON.stringify(pilotRows(p)));
   const sig=JSON.stringify([rows.length,rows.map(r=>r.id).join().length,S.pilots.length,rows.reduce((a,r)=>a+JSON.stringify(r.data).length,0)]);const ch=sig!==CL.sig;CL.sig=sig;CL.loaded=true;return ch}
@@ -767,7 +767,6 @@ function vSNormativa(){return head(t('Normativa, términos y privacidad','Rules,
   <label class="full">${t('…o adjunta un archivo (.txt, .md, .html, .docx o .pdf) y se mostrará en la web como si estuviera escrito en ella','…or attach a file (.txt, .md, .html, .docx or .pdf) and it will be shown on the web as if written there')}<input id="ndoc-file" type="file" accept=".txt,.md,.html,.htm,.docx,.pdf,text/plain,application/pdf"></label>
   <p class="muted full" id="ndoc-info">${ui.docPdf?esc(ui.docPdf.name)+' · '+t('PDF listo para publicar','PDF ready to publish'):t('Los archivos de texto y Word se convierten en texto de la web; un PDF se muestra incrustado (máx. 2 MB).','Text and Word files become web text; a PDF is shown embedded (max 2 MB).')}</p>
   <div class="full"><button class="btn pri" type="submit">${t('Publicar nueva versión','Publish new version')}</button></div></form>`}
-function vSIntegr(){return head(t('Integraciones','Integrations'),t('Credenciales ocultas para el staff ordinario.','Credentials hidden from ordinary staff.'))+card('',tbl([t('Servicio','Service'),t('Estado','Status'),t('Credenciales','Credentials'),t('Última comprobación','Last check'),''],S.intg.map(x=>[x.n,pill(x.st,x.st==='Operativa'?'good':'bad'),'<span class="mono">••••••••</span>',fdt(x.ts),btn(t('Comprobar','Check'),'chk',x.n,'sm')])))+`<div class="card pad">${t('Vuelos detectados sin reserva e ignorados: ','Detected flights without booking, ignored: ')}<b>${S.ignored}</b></div>`}
 const vSSeg=()=>head(t('Seguridad','Security'))+card(t('Política de cuentas','Account policy'),tbl([t('Regla','Rule'),t('Valor','Value')],[[t('Contraseña','Password'),t('Mín. 8 caracteres, sin caducidad, sin reutilizar la última','Min. 8 characters, no expiry, last one not reusable')],[t('Recuperación','Recovery'),t('Enlace de 15 min, solo el último válido, máx. 3 por hora','15-minute link, only the latest valid, max 3 per hour')],[t('Intentos fallidos','Failed attempts'),t('Bloqueo temporal tras 5 intentos, aviso al piloto y registro','Temporary lock after 5 attempts, pilot notice and logging')],[t('Cambio de contraseña','Password change'),t('Cierra todas las sesiones','Signs out all sessions')]]))+card(t('Eventos de seguridad','Security events'),tbl([t('Fecha','Date'),t('Evento','Event'),t('Riesgo','Risk')],S.sec.slice().reverse().map(x=>[fdt(x.ts),esc(x.txt),pill(x.sev,x.sev==='alta'?'bad':'warn')]),'—'));
 const vSAud=()=>head(t('Auditoría','Audit'),t('Retención de 1 año.','1-year retention.'))+card(S.audit.length+'',tbl([t('Fecha','Date'),t('Quién','Who'),t('Acción','Action'),t('Objetivo','Target')],S.audit.slice().reverse().map(a=>[fdt(a.ts),esc(a.who),esc(a.a),esc(a.tg)])));
 const vSConfig=()=>head(t('Configuración','Settings'))+card(t('Modo mantenimiento','Maintenance mode'),`<div class="pad stack"><p class="muted">${t('Bloquea el portal de los pilotos de forma controlada.','Controlled block of the pilot portal.')}</p>${btn(S.maint?t('Desactivar mantenimiento','Disable maintenance'):t('Activar mantenimiento','Enable maintenance'),'maint','',S.maint?'good':'bad')}</div>`)+card(t('Rangos por horas','Ranks by hours'),tbl([t('Rango','Rank'),'>'+t('Horas mínimas','Minimum hours')],RANKS.map(r=>[t(r[0],r[1]),'>'+r[2]])))+card(t('Temporada','Season'),`<div class="pad">${t('Del 1 de enero 00:00 al 31 de diciembre 23:59:59 (UTC).','From January 1 00:00 to December 31 23:59:59 (UTC).')}</div>`)+partnersCard();
@@ -823,7 +822,7 @@ function ensure(){let ch=0;
   if(!S.chall){S.chall=[];if(!CL.on)ch=1}
   if(!S.partners)S.partners=[];
   if(!S.apo)S.apo={};
-  if(!S.dl)S.dl=[];
+  if(!S.dl)S.dl=[];S.intg=(S.intg||[]).filter(x=>x.id);
   TOURS=S.tours;syncCh();
   if(ch&&!CL.on)save()}
 /* ----- marca ----- */
@@ -911,7 +910,7 @@ function pilotCard(p,s){const nx=s.rank.next,pc=nx?Math.min(100,(s.h-s.rank.min)
   return `<div class="pcard"><img class="wm" src="${BR().mark||'img/brand-mark.png'}" alt=""><div class="pc-top"><span class="eyebrow">NEXORA AIR · ${t('PILOTO','PILOT')}</span>${stPill(p.status)}</div><h2>${esc(p.name)}</h2><div class="mono pc-id">${p.id} · ${p.platform}${isStaff(p)?' · '+esc(staffLabel(p)):''}</div><div class="pc-rank"><b>${s.rank.n}</b><span>${t('nivel','level')} ${s.lvl}</span></div><div class="bar"><i style="width:${pc}%"></i></div><div class="pc-st"><div><b>${nd(s.h)}</b><small>h</small></div><div><b>${s.fl}</b><small>${t('vuelos','flights')}</small></div><div><b>${nf(s.nm)}</b><small>nm</small></div><div><b>${nf(s.pts)}</b><small>pts</small></div></div>${nx?`<small>${t('Te faltan ','You need ')}${nd(nx.min-s.h)} h ${t('para ','for ')}${nx.n}</small>`:''}</div>`}
 /* ----- staff: resumen ----- */
 function vSDash(){const now=Date.now(),T=[],g=gstats(),fl=liveFlights(),L=S.log.filter(e=>e.status==='Completado'),rv=S.log.filter(e=>e.status==='En revisión').length,pend=S.pilots.filter(p=>p.status==='Pending'||(!p.netOk&&p.status!=='Pending')).length,tk=S.tickets.filter(k=>k.st!=='Closed').length,
-  inc=S.inc.length,sus=S.pilots.filter(p=>p.susp&&p.susp.ended&&p.status==='Suspended').length,ina=S.pilots.filter(p=>p.status==='Inactive').length,dl=S.delReq.length,deg=S.intg.filter(x=>x.st!=='Operativa').length;
+  inc=S.inc.length,sus=S.pilots.filter(p=>p.susp&&p.susp.ended&&p.status==='Suspended').length,ina=S.pilots.filter(p=>p.status==='Inactive').length,dl=S.delReq.length,deg=S.intg.filter(x=>x.st==='Con error').length;
   const add=(n,txt,sev,to)=>n&&can(SPERM[to])&&T.push([txt+': '+n,sev,to]);
   add(rv,t('Vuelos en revisión','Flights under review'),'warn','s-revision');add(pend,t('Altas pendientes de aprobar','Sign-ups to approve'),'warn','s-pilotos');add(tk,t('Tickets abiertos','Open tickets'),'warn','s-tickets');
   add(inc,t('Incidentes abiertos','Open incidents'),'bad','s-incidentes');add(sus,t('Suspensiones finalizadas a reactivar','Suspensions to reactivate'),'warn','s-pilotos');add(ina,t('Pilotos inactivos','Inactive pilots'),'','s-pilotos');
@@ -1071,7 +1070,6 @@ const A={
  ires:id=>{const i=S.inc.find(x=>x.id===id);S.inc=S.inc.filter(x=>x.id!==id);notify(i.pilot,t('Incidente resuelto y eliminado.','Incident resolved and removed.'));aud('Resolvió incidente',id);done(t('Incidente resuelto','Incident resolved'))},
  tkc:id=>{const k=S.tickets.find(x=>x.id===id);k.st='Closed';k.msgs=[];notify(k.pilot,t('Ticket cerrado: ','Ticket closed: ')+id);done()},
  rcode:id=>modal(t('Código de ruta','Route code'),`<form data-f="dcode" data-id="${id}" class="form pad">${fld('dcode','c',t('Código','Code'),'text','required maxlength="14"',rcode(id.slice(0,4),id.slice(4)))}<div class="full"><button class="btn pri" type="submit">${t('Guardar','Save')}</button></div></form>`),
- chk:id=>{const x=S.intg.find(q=>q.n===id);x.ts=Date.now();x.st='Operativa';aud('Comprobó integración',id);done(t('Integración operativa','Integration operational'))},
  maint:()=>{S.maint=!S.maint;aud(S.maint?'Activó mantenimiento':'Desactivó mantenimiento');done()}};
 document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el)return;const a=el.dataset.a;if(!A[a])return;if(el.tagName==='A'&&a!=='xm')return;A[a](el.dataset.id,el,e)});
 
@@ -1547,6 +1545,34 @@ function netCard(r){const p=pilot(r.pilot),id=netId(p,r.platform),n=r.net||{},cs
   return card(t('Seguimiento en '+r.platform,'Tracking on '+r.platform),`<div class="pad stack"><p><b>${r.platform}</b> · ID ${id?esc(String(id)):'—'}</p><p class="${n.state==='live'?'':'muted'}">${msg}</p><p class="muted">${t('NEXORA AIR sigue tu vuelo automáticamente en la red real mientras tienes esta web abierta: detecta tu conexión, hace el check-in y cierra el vuelo cuando te desconectas.','NEXORA AIR tracks your flight on the real network automatically while this site is open: it detects your connection, checks you in and closes the flight when you disconnect.')}</p><div>${btn(t('Comprobar ahora','Check now'),'netchk',r.id,'sm')}</div></div>`)}
 Object.assign(A,{netchk:async id=>{const r=R_(id);toast(t('Consultando la red…','Querying the network…'));await netCheck(r,true);render()},
  sbgen:id=>{const r=R_(id);r.sbGen=r.sbGen||Date.now();rlog(r,t('Briefing generado con SimBrief','Briefing generated with SimBrief'));save();window.open(sbLink(r),'_blank','noopener');render()}});
+/* ----- Staff → Integraciones: las da de alta el administrador a mano; nada viene preintegrado ----- */
+const INTK=[['api','API'],['webhook','Webhook'],['feed',['Feed de datos','Data feed']],['serv',['Servicio externo','External service']],['otro',['Otro','Other']]],INTS=['Sin comprobar','Operativa','Con error','Desactivada'];
+const intGet=id=>S.intg.find(x=>x.id===id),intKl=k=>{const a=(INTK.find(x=>x[0]===k)||INTK[4])[1];return Array.isArray(a)?t(...a):a},
+  intSl=s=>({'Sin comprobar':t('Sin comprobar','Not checked'),Operativa:t('Operativa','Operational'),'Con error':t('Con error','Error'),Desactivada:t('Desactivada','Disabled')}[s]||s);
+function vSIntegr(){const e=ui.intg||null,ico=(a,id,tt,ch,c='')=>`<button class="btn sm ${c}" data-a="${a}" data-id="${esc(id)}" title="${tt}" aria-label="${tt}">${ch}</button>`;
+  return head(t('Integraciones','Integrations'),t('Aquí das de alta manualmente los procesos y servicios que quieras conectar. No hay nada preintegrado. Las credenciales quedan ocultas y solo las ve quien tiene este permiso.','Register here, by hand, the processes and services you want to connect. Nothing is pre-integrated. Credentials stay hidden and only people with this permission can see them.'))+
+  card(S.intg.length+'',tbl([t('Nombre','Name'),t('Tipo','Type'),t('Dirección','Address'),t('Estado','Status'),t('Credencial','Credential'),t('Última comprobación','Last check'),''],S.intg.map(x=>[`<b>${esc(x.n)}</b>${x.d?`<div class="muted">${esc(x.d)}</div>`:''}`,intKl(x.k),x.url?`<span class="mono">${esc(x.url.length>40?x.url.slice(0,40)+'…':x.url)}</span>`:'—',pill(intSl(x.st),x.st==='Operativa'?'good':x.st==='Con error'?'bad':''),x.sec?'<span class="mono">••••••••</span>':'—',x.ts?fdt(x.ts)+(x.msg?`<div class="muted">${esc(x.msg)}</div>`:''):'—',`<span class="nw">${x.url?btn(t('Comprobar','Check'),'intchk',x.id,'sm')+' ':''}${ico('intedit',x.id,t('Editar','Edit'),'✎')} ${ico('intdel',x.id,t('Eliminar','Delete'),'🗑','bad')}</span>`]),t('No hay ninguna integración. Añade la primera con el formulario de abajo.','There are no integrations. Add the first one with the form below.')))+
+  `<form data-f="nint" class="card form pad"><h2 class="full">${e?t('Editar integración','Edit integration'):t('Añadir integración','Add integration')}</h2>${e?`<input type="hidden" name="id" value="${esc(e.id)}">`:''}${fld('nint','n',t('Nombre','Name'),'text','required maxlength="60"',e?e.n:'')}${sel('nint','k',t('Tipo','Type'),INTK.map(x=>[x[0],intKl(x[0])]),e?e.k:'api')}${fld('nint','url',t('Dirección o endpoint (opcional)','Address or endpoint (optional)'),'text','maxlength="400" placeholder="https://"',e?e.url||'':'')}${sel('nint','st',t('Estado','Status'),INTS.map(s=>[s,intSl(s)]),e?e.st:'Sin comprobar')}${fld('nint','hd',t('Cabecera de autenticación (opcional)','Auth header (optional)'),'text','maxlength="60" placeholder="Authorization"',e?e.hd||'':'')}${fld('nint','sec',t('Credencial o clave (opcional)','Credential or key (optional)'),'password','maxlength="400" autocomplete="new-password" placeholder="'+(e&&e.sec?t('Guardada: deja vacío para conservarla','Saved: leave empty to keep it'):'')+'"','')}${ta('nint','d',t('Notas (opcional)','Notes (optional)'),e?e.d||'':'','rows="3" maxlength="300"')}
+  <div class="full err" id="nint-err" hidden></div><div class="full" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" type="submit">${e?t('Guardar cambios','Save changes'):t('Añadir integración','Add integration')}</button>${e?btn(t('Cancelar','Cancel'),'intcancel','','sm'):''}${e&&e.sec?btn(t('Borrar la credencial','Remove credential'),'intnosec',e.id,'sm bad'):''}</div></form>`}
+Object.assign(A,{
+ intedit:id=>{const x=intGet(id);if(!x)return;ui.intg=Object.assign({},x);render();window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})},
+ intcancel:()=>{ui.intg=null;render()},
+ intnosec:id=>{const x=intGet(id);if(!x)return;delete x.sec;ui.intg=Object.assign({},x);aud('Quitó la credencial de una integración',x.n);save();render()},
+ intdel:id=>{const x=intGet(id);if(!x)return;modal(t('Eliminar integración','Delete integration'),`<form data-f="intdel" class="form pad"><input type="hidden" name="id" value="${esc(id)}"><p class="full">${t('Se eliminará «','«')}${esc(x.n)}${t('» y su credencial.','» and its credential.')}</p><div class="full" style="display:flex;gap:8px"><button class="btn bad" type="submit">${t('Eliminar','Delete')}</button>${btn(t('Cancelar','Cancel'),'xm','','')}</div></form>`)},
+ intchk:async id=>{const x=intGet(id);if(!x||!x.url)return;toast(t('Comprobando…','Checking…'));const ac=new AbortController(),to=setTimeout(()=>ac.abort(),10000);
+  try{const h={};if(x.sec)h[x.hd||'Authorization']=x.sec;const r=await fetch(x.url,{headers:h,signal:ac.signal,cache:'no-store'});x.st=r.ok?'Operativa':'Con error';x.msg=r.ok?'':'HTTP '+r.status}
+  catch(e){x.st='Con error';x.msg=t('Sin respuesta (o el servicio no admite consultas desde el navegador)','No response (or the service does not allow browser requests)')}
+  clearTimeout(to);x.ts=Date.now();aud('Comprobó una integración',x.n);save();render()}
+});
+Object.assign(F,{
+ intdel:d=>{const x=intGet(d.get('id'));if(!x)return;S.intg=S.intg.filter(y=>y.id!==x.id);if(ui.intg&&ui.intg.id===x.id)ui.intg=null;aud('Eliminó una integración',x.n);done(t('Integración eliminada','Integration deleted'))},
+ nint:d=>{const id=d.get('id'),old=id?intGet(id):null,n=(d.get('n')||'').trim();if(!n)return;let url=(d.get('url')||'').trim();
+  if(S.intg.some(x=>x.n.toLowerCase()===n.toLowerCase()&&x.id!==id))return err('nint-err',t('Ya existe una integración con ese nombre.','An integration with that name already exists.'));
+  if(url){if(!/^https?:\/\//i.test(url))url='https://'+url;if(!/^https?:\/\/[^\s"'<>]+$/i.test(url))return err('nint-err',t('La dirección no es válida.','The address is not valid.'))}
+  const sec=d.get('sec')||'',o={n,k:d.get('k'),url,st:INTS.includes(d.get('st'))?d.get('st'):'Sin comprobar',hd:(d.get('hd')||'').trim(),d:(d.get('d')||'').trim()};
+  if(old){Object.assign(old,o);if(sec)old.sec=sec;aud('Editó una integración',n)}else{const x=Object.assign({id:uid('I'),ts:0},o);if(sec)x.sec=sec;S.intg.push(x);aud('Añadió una integración',n)}
+  ui.intg=null;done(t('Integración guardada','Integration saved'))}
+});
 /* ===== boot ===== */
 (async()=>{
   const cloud=await cloudStart();

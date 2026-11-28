@@ -30,7 +30,7 @@ async function cloudPull(){const sb=CL.sb;
   const mine=prof.find(r=>r.id===CL.uid);
   if(CL.uid&&mine){const meP=S.pilots.find(p=>p.uid===CL.uid);meP.email=CL.email||'';S.session={id:mine.code,uid:CL.uid,staff:isStaff(meP)}}else S.session=null;
   if(!rows.length&&mine&&mine.rol==='admin'&&CL.cat){CATS.forEach(k=>S[k]=JSON.parse(JSON.stringify(CL.cat[k])));ensure();CL.dirty=true}   /* primer arranque: catálogo inicial */
-  TOURS=S.tours;syncCh();rebuildIx();applyApo();
+  S.intg=(S.intg||[]).filter(x=>x.id);TOURS=S.tours;syncCh();rebuildIx();applyApo();
   CL.snap=new Map();docsOf().forEach((d,k)=>{if(!(CL.dirty&&!rows.length))CL.snap.set(k,JSON.stringify(d.data))});
   CL.psnap={};S.pilots.forEach(p=>CL.psnap[p.id]=JSON.stringify(pilotRows(p)));
   const sig=JSON.stringify([rows.length,rows.map(r=>r.id).join().length,S.pilots.length,rows.reduce((a,r)=>a+JSON.stringify(r.data).length,0)]);const ch=sig!==CL.sig;CL.sig=sig;CL.loaded=true;return ch}
