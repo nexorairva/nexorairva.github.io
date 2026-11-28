@@ -1,6 +1,6 @@
 
 /* ===== actions ===== */
-const R_=id=>S.res.find(r=>r.id===id),P_=id=>S.pilots.find(p=>p.id===id);
+const R_=id=>{const me_=S.session&&S.session.id;return S.res.find(r=>r.id===id&&r.pilot===me_)||S.res.find(r=>r.id===id)},P_=id=>S.pilots.find(p=>p.id===id);
 const done=(m,keep)=>{save();if(!keep)modal();render();if(m)toast(m)};
 async function hp(s){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('nexora:'+s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}catch(e){return'x:'+s.length}}
 const A={
