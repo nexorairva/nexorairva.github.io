@@ -19,7 +19,7 @@ const A={
  checkin:id=>{const r=R_(id);r.status='checkedin';r.checkin=Date.now();rlog(r,t('Check-in completado','Check-in completed'));done()},
  conn:id=>{const r=R_(id);r.status='flying';r.flyTs=Date.now();r.checkin=r.checkin||Date.now();rlog(r,t('Actividad en '+r.platform+' coincidente: auto check-in y seguimiento iniciado','Matching '+r.platform+' activity: auto check-in and tracking started'));done()},
  plat:id=>{const r=R_(id);r.platform=r.platform==='VATSIM'?'IVAO':'VATSIM';rlog(r,t('Plataforma cambiada a ','Platform changed to ')+r.platform);done()},
- cancel:id=>{cancelRes(R_(id));ui.case=null;save();go('p-reservas');toast(t('Reserva cancelada','Booking cancelled'))},
+ cancel:id=>{cancelRes(R_(id));ui.case=null;save();go('p-ops');toast(t('Reserva cancelada','Booking cancelled'))},
  copy:id=>{const f=()=>toast(t('Copia manualmente: ','Copy manually: ')+id);try{navigator.clipboard.writeText(id).then(()=>toast(t('Remark copiado','Remark copied')),f)}catch(e){f()}},
  edit:()=>{ui.edit=!ui.edit;render()},
  wid:(id,el)=>{const pr=S.prefs[S.session.id]=S.prefs[S.session.id]||{hid:[]};pr.hid=el.checked?pr.hid.filter(x=>x!==id):[...pr.hid,id];save();render()},
