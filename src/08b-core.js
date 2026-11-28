@@ -49,7 +49,7 @@ function ensure(){let ch=0;
   if(!S.chall){S.chall=[];if(!CL.on)ch=1}
   if(!S.partners)S.partners=[];
   if(!S.apo)S.apo={};
-  if(!S.dl)S.dl=[];
+  if(!S.dl)S.dl=[];S.intg=(S.intg||[]).filter(x=>x.id);
   TOURS=S.tours;syncCh();
   if(ch&&!CL.on)save()}
 /* ----- marca ----- */

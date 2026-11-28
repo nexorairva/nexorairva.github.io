@@ -98,8 +98,8 @@ function seed(){
   const now=Date.now(),Y=new Date(now).getUTCFullYear(),R=mul(2026),D=n=>now-n*DAY;
   S={v:3,lang:'es',session:null,seq:100,pidSeq:113,ap:JSON.parse(JSON.stringify(AP0)),flights:FL0.map(x=>({no:x[0],from:x[1],to:x[2],m:x[3],type:x[4],slots:x[5],blocked:x[0]==='431'})),
    fleet:[['EC-NXA','A20N','Alhambra'],['EC-NXB','A20N','Giralda'],['EC-NXC','A20N','Montjuïc'],['EC-NXD','A21N','Teide'],['EC-NXE','A21N','Sierra Nevada'],['EC-NXF','B738','Cibeles'],['EC-NXG','B738','Retiro'],['EC-NXJ','B789','Quijote'],['EC-NXK','B789','Atlántico'],['EC-NXL','E195','Duero']].map(x=>({reg:x[0],type:x[1],name:x[2],desc:DESC[x[1]],img:x[1]==='A20N'?GALL.slice():[]})),tours:JSON.parse(JSON.stringify(TOURS0)),
-   pilots:[],log:[],tx:[],res:[],enroll:{},prefs:{},accept:[],notes:[],audit:[],tickets:[],inc:[],incSeq:{},news:[],groups:[],events:[],cal:[],sec:[],maint:false,ignored:37,delReq:[],revReq:[],att:{},routeCodes:{},
-   intg:[['SimBrief','Operativa'],['VATSIM','Operativa'],['IVAO','Degradada'],['Correo electrónico','Operativa'],['Almacenamiento de archivos','Operativa'],['Generación de PDF','Operativa']].map(x=>({n:x[0],st:x[1],ts:now-5*MIN})),
+   pilots:[],log:[],tx:[],res:[],enroll:{},prefs:{},accept:[],notes:[],audit:[],tickets:[],inc:[],incSeq:{},news:[],groups:[],events:[],cal:[],sec:[],maint:false,delReq:[],revReq:[],att:{},routeCodes:{},
+   intg:[],
    remarks:{ff:'NEXORA AIR VA | FREE FLIGHT | NXR',flight:'NEXORA AIR VA | NXR | VUELO OFICIAL',tour:'NEXORA AIR VA | NXR | TOUR',event:'NEXORA AIR VA | NXR | EVENTO',special:'NEXORA AIR VA | NXR | ESPECIAL'},
    docs:{norm:{v:'1.0',ts:D(300),text:'Los pilotos vuelan con respeto a la red, a los controladores y a la comunidad. Una cuenta por persona. Los vuelos se reservan antes de realizarse y se completan con la plataforma elegida.'},
     terms:{v:'1.0',ts:D(300),text:'NEXORA AIR VA es un servicio de simulación sin ánimo de lucro. El uso de la plataforma implica aceptar estas condiciones y la normativa vigente.'},
