@@ -31,6 +31,10 @@ jobs:
           else
             echo "Sin variables de Supabase: modo demostración"
           fi
+      - name: Descargar el mapa de países (Natural Earth, world-atlas)
+        run: |
+          mkdir -p public/geo
+          curl -fsSL --retry 3 https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json -o public/geo/countries-110m.json || { rm -f public/geo/countries-110m.json; echo "Sin mapa de países: el navegador lo pedirá a jsDelivr"; }
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
