@@ -193,8 +193,8 @@ create or replace function public.nx_esc(p text) returns text language sql immut
   select replace(replace(replace(coalesce(p,''), '&', '&amp;'), '<', '&lt;'), '>', '&gt;')
 $$;
 
--- Envío de correo por la API de Resend (pg_net). Se configura en Staff › Integraciones: una integración con
--- dirección https://api.resend.com/emails, la clave de API como credencial y el remitente en «Remitente».
+-- Envío de correo (pg_net). Se configura en Staff › Integraciones: una integración con la dirección del servicio
+-- (Resend o el script tools/enviar-correo.php del hosting), la clave como credencial y el remitente en «Remitente».
 -- Si no está configurada, no hace nada. Nunca falla (no puede impedir un alta).
 create or replace function public.nx_mail(p_to text, p_subject text, p_html text) returns void
 language plpgsql security definer set search_path = public as $$
@@ -202,11 +202,12 @@ declare i jsonb; v_key text; v_from text;
 begin
   if coalesce(p_to,'') = '' then return; end if;
   select d.data into i from public.nx_docs d
-   where d.coll = 'intg' and coalesce(d.data->>'st','') <> 'Desactivada' and lower(coalesce(d.data->>'url','')) like '%api.resend.com%'
+   where d.coll = 'intg' and coalesce(d.data->>'st','') <> 'Desactivada' and coalesce(d.data->>'url','') <> '' and coalesce(d.data->>'from','') <> ''
    order by d.updated_at desc limit 1;
   if i is null then return; end if;
   v_key := coalesce(i->>'sec',''); v_from := coalesce(i->>'from','');
-  if v_key = '' or v_from = '' then return; end if;
+  if v_key = '' then return; end if;
+  -- Resend (api.resend.com) o cualquier otra dirección que acepte el mismo JSON (script PHP del hosting, Apps Script…)
   perform net.http_post(url := i->>'url',
     headers := jsonb_build_object('Authorization', case when v_key ~* '^bearer ' then v_key else 'Bearer ' || v_key end, 'Content-Type', 'application/json', 'User-Agent', 'NexoraAirVA/1.0'),
     body := jsonb_build_object('from', v_from, 'to', jsonb_build_array(p_to), 'subject', p_subject, 'html', p_html),
