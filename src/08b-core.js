@@ -72,7 +72,7 @@ const px=(la,lo)=>[+(lo+180).toFixed(2),+(85-la).toFixed(2)];
 function arc(A,B,f0,f1){const g=gcF(A,B),n=Math.max(8,Math.round((f1-f0)*56));let s='',pl=null;for(let i=0;i<=n;i++){const q=g(f0+(f1-f0)*i/n),p=px(q[0],q[1]);s+=(pl===null||Math.abs(p[0]-pl)>180?'M':'L')+p[0]+' '+p[1];pl=p[0]}return s}
 /* Vuelos en directo: solo los que la red real está viendo ahora (posición real recibida de VATSIM/IVAO). */
 function liveFlights(){const out=[];
-  S.res.forEach(r=>{if(r.status!=='flying'||!r.trk||r.trk.lat==null)return;const A=geo(r.from),B=geo(r.to);if(!A||!B)return;
+  S.res.forEach(r=>{if(r.status!=='flying'||!r.trk||r.trk.lat==null)return;if(r.trk.ts&&Date.now()-r.trk.ts>10*60000)return;   /* posición de hace más de 10 min = ya no está conectado */const A=geo(r.from),B=geo(r.to);if(!A||!B)return;
     const a=kmNm(A[0],A[1],r.trk.lat,r.trk.lon),b=kmNm(r.trk.lat,r.trk.lon,B[0],B[1]),pr=Math.min(.99,Math.max(.01,a+b?a/(a+b):0));
     out.push({id:r.id,pid:r.pilot,cs:r.trk.cs||r.no,from:r.from,to:r.to,pl:r.platform,ty:r.type,pr,pos:[r.trk.lat,r.trk.lon],alt:r.trk.alt,gs:r.trk.gs})});
   return out}

@@ -497,6 +497,12 @@ begin
   for s in select id from public.net_sessions where state = 'live' and plat = p_plat and miss >= 3 loop
     perform public.nx_net_finish(s.id);
   end loop;
+  -- reservas que siguen «volando» sin ninguna sesión viva en esta red (desconexión antigua, sesión descartada…): vuelven a «check-in hecho»
+  update public.nx_docs d set updated_at = now(),
+    data = ((d.data - 'trk') || jsonb_build_object('status', 'checkedin'))
+           || jsonb_build_object('log', coalesce(d.data->'log','[]'::jsonb) || jsonb_build_array(jsonb_build_object('ts', public.nx_ms(now()), 'text', 'Sin conexión en ' || p_plat || ': la reserva deja de figurar como en vuelo')))
+   where d.coll = 'res' and d.data->>'status' = 'flying' and upper(coalesce(d.data->>'platform','')) = p_plat
+     and not exists (select 1 from public.net_sessions x where x.res_id = d.id and x.state = 'live');
   return n;
 end $$;
 
