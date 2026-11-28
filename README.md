@@ -96,3 +96,12 @@ Base de datos: ejecuta `supabase/schema.sql` (o `migrations/008`) para dar de al
 
 - En el registro el piloto elige su ID (NXR + 3 o 4 cifras). La pantalla lo comprueba en vivo y no deja enviar la solicitud hasta que sea válido y esté libre; el servidor lo vuelve a comprobar (`nx_code_free` y `handle_new_user`).
 - **Correos** (solicitud recibida en revisión y alta aprobada): se envían por Resend desde la base de datos. Pasos: crea una cuenta en resend.com, verifica tu dominio y crea una clave de API; en Staff › Integraciones añade una integración con dirección `https://api.resend.com/emails`, la clave como credencial y el remitente (por ejemplo `NEXORA AIR <avisos@tudominio.com>`). Sin esa integración no se envía nada y las altas funcionan igual. Ejecuta `supabase/schema.sql` (o `migrations/009`).
+
+### Correo desde el hosting (cPanel), sin Resend
+
+1. En cPanel › Cuentas de correo electrónico crea `altas@tudominio`.
+2. Sube `tools/enviar-correo.php` a `public_html/nexora-mail/` (Administrador de archivos) y edita arriba `$TOKEN` (clave larga y secreta) y `$FROM`.
+3. En Staff › Integraciones añade una integración con la dirección `https://tudominio/nexora-mail/enviar-correo.php`, la clave como credencial y el remitente `NEXORA AIR <altas@tudominio>`.
+4. Ejecuta `supabase/schema.sql` (o `migrations/010`). Comprueba en cPanel › Email Deliverability que SPF y DKIM del dominio estén correctos para que no caiga en spam.
+
+La integración de correo es la que tiene el campo «Remitente» relleno; sirve cualquier dirección que acepte el mismo JSON (Resend, este script, Apps Script…).
