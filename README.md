@@ -75,3 +75,7 @@ La pestaña **Integraciones** (permiso `sistema`) arranca vacía: no hay nada pr
 
 - La portada muestra el mapa en vivo a todo el ancho, bajo el texto de bienvenida.
 - **Conectados en Discord**: en *Staff › Redes sociales*, edita la red Discord y rellena «ID del servidor». En Discord: *Ajustes del servidor › Widget › Activar widget del servidor*. La web consulta `discord.com/api/guilds/<ID>/widget.json` y muestra solo los miembros en línea cuyo apodo contiene su ID (p. ej. «Ana NXR103»), validado contra los pilotos reales. La web pública enseña solo el ID; el portal del piloto añade nombre y estado. Límites del widget: máximo 100 miembros y solo los conectados.
+
+## Recordarme al iniciar sesión
+
+El formulario de acceso (modo nube) tiene la casilla «Recordarme en este dispositivo». Marcada (por defecto), la sesión se guarda en el dispositivo y el correo se rellena solo la próxima vez; sin marcar, la sesión se cierra al cerrar el navegador. La contraseña nunca se guarda en la web: el campo mantiene `autocomplete="current-password"` para que el gestor de contraseñas del navegador ofrezca guardarla.

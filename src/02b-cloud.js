@@ -47,9 +47,16 @@ async function cloudPush(){if(!CL.on||!CL.uid||!CL.loaded)return;if(CL.busy){CL.
     cur.forEach((d,k)=>CL.snap.set(k,JSON.stringify(d.data)));CL.snap.forEach((_,k)=>{if(!cur.has(k))CL.snap.delete(k)});S.pilots.forEach(p=>CL.psnap[p.id]=JSON.stringify(pilotRows(p)));
   }catch(e){const m=(e&&e.message)||String(e);toast(t('No se pudo guardar en la base de datos: ','Could not save to the database: ')+m);try{await cloudPull();render()}catch(x){}}
   finally{CL.busy=false;if(CL.dirty)cloudSaveSoon()}}
+/* «Recordarme»: con la casilla marcada la sesión se guarda en el dispositivo; sin marcar, solo hasta cerrar el navegador */
+const remGet=()=>{try{return localStorage.getItem('nx-rem')!=='0'}catch(e){return true}};
+const remEmail=()=>{try{return remGet()&&localStorage.getItem('nx-rem-email')||''}catch(e){return ''}};
+const remSet=(on,em)=>{try{localStorage.setItem('nx-rem',on?'1':'0');if(on&&em)localStorage.setItem('nx-rem-email',em);else localStorage.removeItem('nx-rem-email')}catch(e){}};
+const remStore={getItem:k=>{try{return sessionStorage.getItem(k)??localStorage.getItem(k)}catch(e){return null}},
+  setItem:(k,v)=>{try{const on=remGet();(on?localStorage:sessionStorage).setItem(k,v);(on?sessionStorage:localStorage).removeItem(k)}catch(e){}},
+  removeItem:k=>{try{sessionStorage.removeItem(k);localStorage.removeItem(k)}catch(e){}}};
 function cloudSaveSoon(){clearTimeout(CL.timer);CL.timer=setTimeout(cloudPush,500)}
 async function cloudStart(){const c=window.NX_CFG||{};if(!(c.supabaseUrl&&c.anonKey))return false;
-  try{await loadSB();CL.sb=window.supabase.createClient(c.supabaseUrl,c.anonKey,{auth:{persistSession:true,autoRefreshToken:true}});CL.on=true;
+  try{await loadSB();CL.sb=window.supabase.createClient(c.supabaseUrl,c.anonKey,{auth:{persistSession:true,autoRefreshToken:true,storage:remStore}});CL.on=true;
     const r=await CL.sb.auth.getSession();const u=r.data&&r.data.session&&r.data.session.user;CL.uid=u?u.id:null;CL.email=u?u.email:'';
     cloudBlank();await cloudPull();
     setInterval(async()=>{if(CL.busy||CL.dirty||document.hidden)return;const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return;try{if(await cloudPull())render()}catch(e){}},45000);
